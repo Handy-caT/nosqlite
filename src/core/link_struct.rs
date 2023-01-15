@@ -1,16 +1,28 @@
-struct PageLink {
-    page: u64,
+pub struct PageLink {
+    page_index: u64,
     start: u32,
     len: u32,
 }
 
 impl PageLink {
-    fn new(page: u64, start: u32, len: u32) -> PageLink {
+    pub fn new(page: u64, start: u32, len: u32) -> PageLink {
         PageLink {
-            page,
+            page_index: page,
             start,
             len,
         }
+    }
+
+    pub fn get_page_index(&self) -> u64 {
+        self.page_index
+    }
+
+    pub fn get_start(&self) -> u32 {
+        self.start
+    }
+
+    pub fn get_len(&self) -> u32 {
+        self.len
     }
 }
 
@@ -20,7 +32,7 @@ impl From<[u8; 16]> for PageLink {
         let start = u32::from_be_bytes(bytes[8..12].try_into().unwrap());
         let len = u32::from_be_bytes(bytes[12..16].try_into().unwrap());
         PageLink {
-            page,
+            page_index: page,
             start,
             len,
         }
@@ -30,7 +42,7 @@ impl From<[u8; 16]> for PageLink {
 impl Into<[u8; 16]> for PageLink {
     fn into(self) -> [u8; 16] {
         let mut bytes = [0; 16];
-        bytes[0..8].copy_from_slice(&self.page.to_be_bytes());
+        bytes[0..8].copy_from_slice(&self.page_index.to_be_bytes());
         bytes[8..12].copy_from_slice(&self.start.to_be_bytes());
         bytes[12..16].copy_from_slice(&self.len.to_be_bytes());
         bytes
@@ -38,12 +50,25 @@ impl Into<[u8; 16]> for PageLink {
 }
 
 
+impl Clone for PageLink {
+    fn clone(&self) -> Self {
+        PageLink {
+            page_index: self.page_index,
+            start: self.start,
+            len: self.len,
+        }
+    }
+}
+
+impl Copy for PageLink {}
+
+
 #[cfg(test)]
 mod tests {
     #[test]
     fn test_page_link_new() {
         let link = super::PageLink::new(0, 0, 10);
-        assert_eq!(link.page, 0);
+        assert_eq!(link.page_index, 0);
         assert_eq!(link.start, 0);
         assert_eq!(link.len, 10);
     }
@@ -60,7 +85,7 @@ mod tests {
         bytes[12..16].copy_from_slice(&len.to_be_bytes());
 
         let link = super::PageLink::from(bytes);
-        assert_eq!(link.page, page);
+        assert_eq!(link.page_index, page);
         assert_eq!(link.start, start);
         assert_eq!(link.len, len);
     }
