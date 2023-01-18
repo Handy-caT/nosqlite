@@ -6,11 +6,19 @@ pub struct PageInfo {
 }
 
 impl PageInfo {
-    fn new(index: u64) -> PageInfo {
+    pub fn new(index: u64) -> PageInfo {
         PageInfo {
             index,
             free: 4096,
         }
+    }
+
+    pub fn get_index(&self) -> u64 {
+        self.index
+    }
+
+    pub fn get_free(&self) -> u16 {
+        self.free
     }
 }
 
@@ -50,7 +58,7 @@ pub struct Page {
 }
 
 impl Page {
-    pub(crate) fn new(index: u64) -> Page {
+    pub fn new(index: u64) -> Page {
         Page {
             info: PageInfo::new(index),
             data: [0; 4096],
@@ -77,7 +85,7 @@ impl Page {
         self.info.free >= len
     }
 
-    pub fn attach_info(&mut self, info: &[u8]) {
+    pub fn attach_data(&mut self, info: &[u8]) {
         let mut i = 0;
 
         while i < info.len() {
@@ -174,7 +182,7 @@ mod tests {
     fn test_page_get_data() {
         let mut page = super::Page::new(0);
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        page.attach_info(&info);
+        page.attach_data(&info);
         assert_eq!(page.get_data(), &info);
     }
 
@@ -182,7 +190,7 @@ mod tests {
     fn test_page_attach_info() {
         let mut page = super::Page::new(0);
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        page.attach_info(&info);
+        page.attach_data(&info);
         assert_eq!(page.info.free, 4096 - info.len() as u16);
     }
 
@@ -190,9 +198,9 @@ mod tests {
     fn test_page_attach_to_existing() {
         let mut page = super::Page::new(0);
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        page.attach_info(&info);
+        page.attach_data(&info);
         let info2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-        page.attach_info(&info2);
+        page.attach_data(&info2);
         assert_eq!(page.info.free, 4096 - info.len() as u16 - info2.len() as u16);
         let mut expected: [u8; 20] = [0; 20];
         expected[0..10].copy_from_slice(&info);
@@ -204,12 +212,12 @@ mod tests {
     fn test_page_update_data() {
         let mut page = super::Page::new(0);
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        page.attach_info(&info);
+        page.attach_data(&info);
         let data = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
         let link = super::PageLink::new(0,0, 10);
 
-        page.update_data(&data, &link);
+        page.update_data(&data, &link).unwrap();
         assert_eq!(page.info.free, 4096 - info.len() as u16);
         assert_eq!(page.get_data(), &data);
     }
@@ -218,7 +226,7 @@ mod tests {
     fn test_page_erase_data() {
         let mut page = super::Page::new(0);
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        page.attach_info(&info);
+        page.attach_data(&info);
 
         let link = super::PageLink::new(0,0, 5);
 
@@ -231,7 +239,7 @@ mod tests {
     fn test_page_get_data_from_link() {
         let mut page = super::Page::new(0);
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        page.attach_info(&info);
+        page.attach_data(&info);
 
         let link = super::PageLink::new(0,0, 5);
 
