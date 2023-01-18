@@ -24,9 +24,14 @@ impl PageController {
         self.page_count += 1;
     }
 
-    pub fn get_page(&self, index: u64) -> &Page {
-        &self.pages[index as usize]
+    pub fn get_page(&mut self, index: u64) -> &mut Page {
+        &mut self.pages[index as usize]
     }
+
+    pub fn get_last_page(&mut self) -> &mut Page {
+        &mut self.pages[self.page_count as usize - 1]
+    }
+
 }
 
 
@@ -57,4 +62,12 @@ mod test {
         assert_eq!(page.get_index(), 0);
     }
 
+    #[test]
+    fn test_page_controller_get_last_page() {
+        let mut controller = PageController::new();
+        controller.add_page();
+        controller.add_page();
+        let page = controller.get_last_page();
+        assert_eq!(page.get_index(), 1);
+    }
 }
