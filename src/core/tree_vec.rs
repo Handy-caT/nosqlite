@@ -1,3 +1,4 @@
+use std::ops::{Index, IndexMut};
 use crate::core::tree_node::TreeNode;
 
 pub struct TreeVec<T> {
@@ -5,7 +6,7 @@ pub struct TreeVec<T> {
     empty: Vec<u64>,
 }
 
-impl <T: Default> TreeVec<T> {
+impl <T: Default + Copy> TreeVec<T> {
     pub fn new() -> TreeVec<T> {
         TreeVec {
             data: Vec::new(),
@@ -13,7 +14,7 @@ impl <T: Default> TreeVec<T> {
         }
     }
 
-    pub fn add(&mut self, value: T) -> u64 {
+    pub fn add(&mut self, value: T) -> i32 {
         let node = TreeNode::new(value);
         let index = if self.empty.len() > 0 {
             self.empty.pop().unwrap()
@@ -27,16 +28,42 @@ impl <T: Default> TreeVec<T> {
             self.data[index as usize] = node;
         }
 
-        index
+        index as i32
     }
 
-    pub fn get(&mut self, index: u64) -> &mut TreeNode<T> {
-        &mut self.data[index as usize]
+    pub fn get(&mut self, index: u64) -> TreeNode<T> {
+        self.data[index as usize]
+    }
+
+    pub fn swap(&mut self, index1: u64, index2: u64) {
+        let node1 = self.data[index1 as usize];
+        let node2 = self.data[index2 as usize];
+        self.data[index1 as usize] = node2;
+        self.data[index2 as usize] = node1;
     }
 
     pub fn remove(&mut self, index: u64) {
         self.empty.push(index);
         self.data[index as usize] = TreeNode::default();
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+}
+
+
+impl <T> Index<u64> for TreeVec<T> {
+    type Output = TreeNode<T>;
+
+    fn index(&self, index: u64) -> &Self::Output {
+        &self.data[index as usize]
+    }
+}
+
+impl <T> IndexMut<u64> for TreeVec<T> {
+    fn index_mut(&mut self, index: u64) -> &mut Self::Output {
+        &mut self.data[index as usize]
     }
 }
 
