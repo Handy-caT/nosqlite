@@ -1,5 +1,5 @@
-use crate::core::tree_node::TreeNode;
-use crate::core::tree_vec::TreeVec;
+use crate::core::tree::tree_node::TreeNode;
+use crate::core::tree::tree_vec::TreeVec;
 
 struct BalancedTree<T> {
     nodes: TreeVec<T>,
@@ -112,6 +112,58 @@ impl <T: Default + PartialOrd + Copy> BalancedTree<T> {
         }
     }
 
+    fn find_min(&self, root_index: i32) -> i32 {
+        if self.nodes[root_index as u64].left_index == -1 {
+            root_index
+        } else {
+            self.find_min(self.nodes[root_index as u64].left_index)
+        }
+    }
+
+    fn remove_min(&mut self, root_index: i32) -> i32 {
+        if self.nodes[root_index as u64].left_index == -1 {
+            self.nodes[root_index as u64].right_index
+        } else {
+            self.nodes[root_index as u64].left_index = self.remove_min(self.nodes[root_index as u64].left_index);
+            self.balance(root_index)
+        }
+    }
+
+    fn remove_from_root(&mut self, root_index: i32, value: T) -> i32 {
+        if self.nodes[root_index as u64].value > value {
+            self.nodes[root_index as u64].left_index = self.remove_from_root(self.nodes[root_index as u64].left_index, value);
+        } else if self.nodes[root_index as u64].value < value {
+            self.nodes[root_index as u64].right_index = self.remove_from_root(self.nodes[root_index as u64].right_index, value);
+        } else {
+            let left_index = self.nodes[root_index as u64].left_index;
+            let right_index = self.nodes[root_index as u64].right_index;
+
+            self.nodes.remove(root_index as u64);
+
+            if right_index == -1 {
+                return left_index;
+            }
+
+            let min_index = self.find_min(right_index);
+            self.nodes[min_index as u64].right_index = self.remove_min(right_index);
+            self.nodes[min_index as u64].left_index = left_index;
+
+            return self.balance(min_index);
+        }
+        self.balance(root_index)
+    }
+
+    pub fn remove(&mut self, value: T) {
+        if self.nodes.len() == 0 {
+            return;
+        } else if self.nodes.len() == 1 {
+            self.nodes.remove(0);
+            self.root = -1;
+            return;
+        }
+        self.root = self.remove_from_root(self.root, value);
+    }
+
 }
 
 #[cfg(test)]
@@ -217,5 +269,52 @@ mod tests {
         assert_eq!(tree.nodes.len(), 7);
         assert_eq!(tree.root, 3);
         assert_eq!(tree.nodes[3].value, 4);
+    }
+
+    #[test]
+    fn test_remove_root() {
+        let mut tree = BalancedTree::<u64>::new();
+        tree.add(1);
+        tree.remove(1);
+        assert_eq!(tree.nodes.len(), 1);
+        assert_eq!(tree.root, -1);
+    }
+
+    #[test]
+    fn test_remove_left() {
+        let mut tree = BalancedTree::<u64>::new();
+        tree.add(1);
+        tree.add(0);
+        tree.remove(0);
+        assert_eq!(tree.nodes.len(), 2);
+        assert_eq!(tree.root, 0);
+        assert_eq!(tree.nodes[0].value, 1);
+    }
+
+    #[test]
+    fn test_remove_right() {
+        let mut tree = BalancedTree::<u64>::new();
+        tree.add(1);
+        tree.add(2);
+        tree.remove(2);
+        assert_eq!(tree.nodes.len(), 2);
+        assert_eq!(tree.root, 0);
+        assert_eq!(tree.nodes[0].value, 1);
+    }
+
+    #[test]
+    fn test_remove_from_long() {
+        let mut tree = BalancedTree::<u64>::new();
+        tree.add(1);
+        tree.add(2);
+        tree.add(3);
+        tree.add(4);
+        tree.add(5);
+        tree.add(6);
+        tree.add(7);
+
+        tree.remove(4);
+
+
     }
 }

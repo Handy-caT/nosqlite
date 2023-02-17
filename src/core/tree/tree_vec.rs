@@ -1,5 +1,5 @@
 use std::ops::{Index, IndexMut};
-use crate::core::tree_node::TreeNode;
+use crate::core::tree::tree_node::TreeNode;
 
 pub struct TreeVec<T> {
     data: Vec<TreeNode<T>>,
