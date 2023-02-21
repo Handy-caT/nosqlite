@@ -1,5 +1,5 @@
 use crate::core::tree::tree_node::TreeNode;
-use crate::core::tree::tree_vec::{DefaultTreeVec, TreeVec};
+use crate::core::tree::tree_vec::{TreeVec};
 
 struct BalancedTree<'a, T>
 {
@@ -171,6 +171,7 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
 
 #[cfg(test)]
 mod tests {
+    use crate::core::tree::default_tree_vector::DefaultTreeVec;
     use super::*;
 
     #[test]
