@@ -141,7 +141,7 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
             let left_index = self.nodes[root_index as u64].left_index;
             let right_index = self.nodes[root_index as u64].right_index;
 
-            self.nodes.remove(root_index as u64);
+            self.nodes.remove(root_index);
 
             if right_index == -1 {
                 return left_index;

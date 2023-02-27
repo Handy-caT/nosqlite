@@ -74,19 +74,19 @@ impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
         index as i32
     }
 
-    fn get(self: &mut OptimizedTreeVec<T>, index: u64) -> TreeNode<T> {
+    fn get(self: &mut OptimizedTreeVec<T>, index: i32) -> TreeNode<T> {
         self.data[index as usize]
     }
 
-    fn swap(&mut self, index1: u64, index2: u64) {
+    fn swap(&mut self, index1: i32, index2: i32) {
         let node1 = self.data[index1 as usize];
         let node2 = self.data[index2 as usize];
         self.data[index1 as usize] = node2;
         self.data[index2 as usize] = node1;
     }
 
-    fn remove(&mut self, index: u64) {
-        self.empty.push(index);
+    fn remove(&mut self, index: i32) {
+        self.empty.push(index as u64);
         self.data[index as usize] = TreeNode::default();
     }
 
@@ -123,7 +123,7 @@ mod tests {
     fn test_get() {
         let mut vec = OptimizedTreeVec::<i32>::new();
         let index = vec.add(1);
-        let node = vec.get(index as u64);
+        let node = vec.get(index);
         assert_eq!(node.value, 1);
     }
 
@@ -131,7 +131,7 @@ mod tests {
     fn test_add_remove() {
         let mut vec = OptimizedTreeVec::<i32>::new();
         let index = vec.add(1);
-        vec.remove(index as u64);
+        vec.remove(index);
         assert_eq!(vec.data.len(), 1);
         assert_eq!(vec.empty.len(), 1);
 
