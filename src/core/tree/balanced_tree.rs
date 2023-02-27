@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use crate::core::tree::tree_node::TreeNode;
 use crate::core::tree::tree_vec::{TreeVec};
 
@@ -5,8 +6,18 @@ struct BalancedTree<'a, T>
 {
     root: i32,
     nodes: &'a mut dyn TreeVec<T>,
+    compare: fn(&T, &T) -> Ordering,
 }
 
+fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
+    if a < b {
+        Ordering::Less
+    } else if a > b {
+        Ordering::Greater
+    } else {
+        Ordering::Equal
+    }
+}
 
 impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
 {
@@ -14,10 +25,19 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
         BalancedTree {
             root: 0,
             nodes: vec,
+            compare: default_compare,
         }
     }
 
-    fn height(&self, root_index: i32) -> u8 {
+    pub fn new_with_compare(vec: &'a mut dyn TreeVec<T>, compare: fn(&T, &T) -> Ordering) -> BalancedTree<'a, T> {
+        BalancedTree {
+            root: 0,
+            nodes: vec,
+            compare,
+        }
+    }
+
+    fn height_from_root(&self, root_index: i32) -> u8 {
         if root_index == -1 {
             0
         } else {
@@ -27,13 +47,13 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
 
     fn bfactor(&mut self, root_index: i32) -> i8 {
         let node: &TreeNode<T> = &self.nodes[root_index as u64];
-        self.height(node.right_index) as i8 - self.height(node.left_index) as i8
+        self.height_from_root(node.right_index) as i8 - self.height_from_root(node.left_index) as i8
     }
 
     fn fix_height(&mut self, root_index: i32) {
         let node: &TreeNode<T> = &self.nodes[root_index as u64];
-        let left_height = self.height(node.left_index);
-        let right_height =  self.height(node.right_index);
+        let left_height = self.height_from_root(node.left_index);
+        let right_height =  self.height_from_root(node.right_index);
 
         let height = if left_height > right_height {
             left_height + 1
@@ -91,7 +111,7 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
     }
 
     fn add_from_root(&mut self, root_index: i32, value: T) -> i32 {
-        if self.nodes[root_index as u64].value > value {
+        if (self.compare)(&value, &self.nodes[root_index as u64].value) == Ordering::Less {
             if self.nodes[root_index as u64].left_index == -1 {
                 self.nodes[root_index as u64].left_index = self.nodes.add(value);
             } else {
@@ -133,9 +153,9 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
     }
 
     fn remove_from_root(&mut self, root_index: i32, value: T) -> i32 {
-        if self.nodes[root_index as u64].value > value {
+        if (self.compare)(&value, &self.nodes[root_index as u64].value) == Ordering::Less {
             self.nodes[root_index as u64].left_index = self.remove_from_root(self.nodes[root_index as u64].left_index, value);
-        } else if self.nodes[root_index as u64].value < value {
+        } else if (self.compare)(&value, &self.nodes[root_index as u64].value) == Ordering::Greater {
             self.nodes[root_index as u64].right_index = self.remove_from_root(self.nodes[root_index as u64].right_index, value);
         } else {
             let left_index = self.nodes[root_index as u64].left_index;
@@ -167,10 +187,15 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
         self.root = self.remove_from_root(self.root, value);
     }
 
+    pub fn height(&self) -> u8 {
+        self.nodes[self.root as u64].height
+    }
+
 }
 
 #[cfg(test)]
 mod tests {
+    use std::cmp::Ordering;
     use crate::core::tree::default_tree_vector::DefaultTreeVec;
     use super::*;
 
@@ -324,6 +349,34 @@ mod tests {
         tree.remove(2);
         assert_eq!(tree.nodes.len(), 2);
         assert_eq!(tree.root, 0);
+        assert_eq!(tree.nodes[0].value, 1);
+    }
+
+    #[test]
+    fn test_custom_compare() {
+        fn compare_reversed(a: &u64, b: &u64) -> Ordering {
+            if a < b {
+                Ordering::Greater
+            } else if a > b {
+                Ordering::Less
+            } else {
+                Ordering::Equal
+            }
+        }
+
+        let mut nodes = DefaultTreeVec::<u64>::new();
+        let mut tree = BalancedTree::<u64>::new_with_compare(&mut nodes as &mut dyn TreeVec<u64>, compare_reversed);
+
+        tree.add(1);
+        tree.add(2);
+        tree.add(3);
+
+        assert_eq!(tree.nodes.len(), 3);
+        assert_eq!(tree.root, 1);
+        assert_eq!(tree.nodes[1].value, 2);
+        assert_eq!(tree.nodes[1].left_index, 2);
+        assert_eq!(tree.nodes[1].right_index, 0);
+        assert_eq!(tree.nodes[2].value, 3);
         assert_eq!(tree.nodes[0].value, 1);
     }
 
