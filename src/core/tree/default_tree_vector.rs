@@ -2,7 +2,7 @@ use std::ops::{Index, IndexMut};
 use crate::core::tree::tree_node::TreeNode;
 use crate::core::tree::tree_vec::TreeVec;
 
-pub struct DefaultTreeVec<T> {
+pub struct DefaultTreeVec<T: Sized> {
     data: Vec<TreeNode<T>>,
     empty: Vec<u64>,
 }

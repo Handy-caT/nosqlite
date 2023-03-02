@@ -2,12 +2,21 @@ use std::cmp::Ordering;
 use crate::core::tree::tree_node::TreeNode;
 use crate::core::tree::tree_vec::{TreeVec};
 
-struct BalancedTree<'a, T>
+// struct BalancedTree<'a, T>
+// {
+//     root: i32,
+//     nodes: &'a mut dyn TreeVec<T>,
+//     compare: fn(&T, &T) -> Ordering,
+// }
+
+struct BalancedTree<'a, T, M: TreeVec<T> + Sized>
 {
     root: i32,
-    nodes: &'a mut dyn TreeVec<T>,
+    nodes: &'a mut M,
     compare: fn(&T, &T) -> Ordering,
 }
+
+
 
 fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
     if a < b {
@@ -19,9 +28,9 @@ fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
     }
 }
 
-impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
+impl <'a, T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<'a, T, M>
 {
-    pub fn new(vec: &'a mut dyn TreeVec<T>) -> BalancedTree<'a, T> {
+    pub fn new(vec: &'a mut M) -> BalancedTree<'a, T, M> {
         BalancedTree {
             root: 0,
             nodes: vec,
@@ -29,7 +38,7 @@ impl <'a, T: Default + PartialOrd + Copy> BalancedTree<'a, T>
         }
     }
 
-    pub fn new_with_compare(vec: &'a mut dyn TreeVec<T>, compare: fn(&T, &T) -> Ordering) -> BalancedTree<'a, T> {
+    pub fn new_with_compare(vec: &'a mut M, compare: fn(&T, &T) -> Ordering) -> BalancedTree<'a, T, M> {
         BalancedTree {
             root: 0,
             nodes: vec,
@@ -203,7 +212,7 @@ mod tests {
     fn test_new() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         assert_eq!(tree.nodes.len(), 0);
         assert_eq!(tree.root, 0);
     }
@@ -212,7 +221,7 @@ mod tests {
     fn test_add_root() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         assert_eq!(tree.nodes.len(), 1);
         assert_eq!(tree.root, 0);
@@ -223,7 +232,7 @@ mod tests {
     fn test_add_left() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(0);
         assert_eq!(tree.nodes.len(), 2);
@@ -237,7 +246,7 @@ mod tests {
     fn test_add_right() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(2);
         assert_eq!(tree.nodes.len(), 2);
@@ -251,7 +260,7 @@ mod tests {
     fn test_add_left_right() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(0);
         tree.add(2);
@@ -268,7 +277,7 @@ mod tests {
     fn test_balance() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(2);
         tree.add(3);
@@ -283,7 +292,7 @@ mod tests {
     fn test_balance_long() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(2);
         tree.add(3);
@@ -301,7 +310,7 @@ mod tests {
     fn test_balance_long2() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(7);
         tree.add(6);
         tree.add(5);
@@ -319,7 +328,7 @@ mod tests {
     fn test_remove_root() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.remove(1);
         assert_eq!(tree.nodes.len(), 1);
@@ -330,7 +339,7 @@ mod tests {
     fn test_remove_left() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(0);
         tree.remove(0);
@@ -343,7 +352,7 @@ mod tests {
     fn test_remove_right() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(2);
         tree.remove(2);
@@ -365,7 +374,7 @@ mod tests {
         }
 
         let mut nodes = DefaultTreeVec::<u64>::new();
-        let mut tree = BalancedTree::<u64>::new_with_compare(&mut nodes as &mut dyn TreeVec<u64>, compare_reversed);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new_with_compare(&mut nodes, compare_reversed);
 
         tree.add(1);
         tree.add(2);
@@ -384,7 +393,7 @@ mod tests {
     fn test_remove_from_long() {
         let mut nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64>::new(&mut nodes as &mut dyn TreeVec<u64>);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
         tree.add(1);
         tree.add(2);
         tree.add(3);
