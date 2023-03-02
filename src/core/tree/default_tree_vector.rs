@@ -9,12 +9,13 @@ pub struct DefaultTreeVec<T: Sized> {
 
 impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     fn add(&mut self, value: T) -> i32 {
-        let node = TreeNode::new(value);
         let index = if self.empty.len() > 0 {
             self.empty.pop().unwrap()
         } else {
             self.data.len() as u64
         };
+
+        let node = TreeNode::new_with_index(value, index as i32);
 
         if index == self.data.len() as u64 {
             self.data.push(node);
