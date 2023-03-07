@@ -1,5 +1,5 @@
 
-struct NormalizedNode<T> {
+pub struct NormalizedNode<T> {
     pub value: T,
     pub index: i32,
     pub height: u8,
