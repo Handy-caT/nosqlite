@@ -3,7 +3,7 @@ use crate::core::tree::normalized_node::NormalizedNode;
 
 const INITIAL_LEVELS: u8 = 6;
 
-struct NormalizedTreeVector<T> {
+pub struct NormalizedTreeVector<T> {
     pub data: Vec<NormalizedNode<T>>,
     pub size: u64,
     allocated_levels: u8,
@@ -26,6 +26,10 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
         vec.allocated_levels = INITIAL_LEVELS;
 
         vec
+    }
+
+    pub(crate) fn get_parent_index(index: i32) -> i32 {
+        (index - 1) / 2
     }
 
     fn allocate_level(&mut self) {
@@ -131,6 +135,7 @@ mod tests {
         assert_eq!(node2.value, 1);
         assert_eq!(node2.index, 1);
     }
+    
 }
 
 
