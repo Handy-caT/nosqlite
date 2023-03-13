@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
-use crate::core::tree::tree_node::TreeNode;
-use crate::core::tree::tree_vec::TreeVec;
+use crate::core::structs::tree_nodes::tree_node::TreeNode;
+use crate::core::structs::tree_vectors::tree_vec::TreeVec;
 
 const INITIAL_LEVELS: u8 = 6;
 

@@ -1,5 +1,5 @@
 use std::io;
-use crate::core::tree::tree_node::TreeNode;
+use crate::core::structs::tree_nodes::tree_node::TreeNode;
 
 pub struct NormalizedNode<T> {
     pub value: T,

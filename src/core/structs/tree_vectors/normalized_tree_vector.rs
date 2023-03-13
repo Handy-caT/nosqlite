@@ -1,5 +1,5 @@
 use std::ops::{Index, IndexMut};
-use crate::core::tree::normalized_node::NormalizedNode;
+use crate::core::structs::tree_nodes::normalized_node::NormalizedNode;
 
 const INITIAL_LEVELS: u8 = 6;
 
@@ -28,7 +28,7 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
         vec
     }
 
-    pub(crate) fn get_parent_index(index: i32) -> i32 {
+    pub fn get_parent_index(index: i32) -> i32 {
         (index - 1) / 2
     }
 

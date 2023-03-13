@@ -1,13 +1,6 @@
 use std::cmp::Ordering;
-use crate::core::tree::tree_node::TreeNode;
-use crate::core::tree::tree_vec::{TreeVec};
-
-// struct BalancedTree<'a, T>
-// {
-//     root: i32,
-//     nodes: &'a mut dyn TreeVec<T>,
-//     compare: fn(&T, &T) -> Ordering,
-// }
+use crate::core::structs::tree_nodes::tree_node::TreeNode;
+use crate::core::structs::tree_vectors::tree_vec::TreeVec;
 
 struct BalancedTree<'a, T, M: TreeVec<T> + Sized>
 {
@@ -204,8 +197,7 @@ impl <'a, T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<'a
 
 #[cfg(test)]
 mod tests {
-    use std::cmp::Ordering;
-    use crate::core::tree::default_tree_vector::DefaultTreeVec;
+    use crate::core::structs::tree_vectors::default_tree_vector::DefaultTreeVec;
     use super::*;
 
     #[test]

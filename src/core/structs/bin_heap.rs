@@ -1,4 +1,4 @@
-use crate::core::tree::normalized_tree_vector::NormalizedTreeVector;
+use crate::core::structs::tree_vectors::normalized_tree_vector::NormalizedTreeVector;
 
 struct BinHeap<T> {
     data: NormalizedTreeVector<T>,

@@ -1,5 +1,5 @@
 use std::ops::{Index, IndexMut};
-use crate::core::tree::tree_node::TreeNode;
+use crate::core::structs::tree_nodes::tree_node::TreeNode;
 
 pub trait TreeVec<T>: Index<u64, Output = TreeNode<T>> + IndexMut<u64, Output = TreeNode<T>> {
     fn add(&mut self, value: T) -> i32;
