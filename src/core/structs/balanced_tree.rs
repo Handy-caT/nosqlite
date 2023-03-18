@@ -1,4 +1,6 @@
+use std::borrow::Borrow;
 use std::cmp::Ordering;
+use queues::{IsQueue, Queue, queue};
 use crate::core::structs::tree_nodes::tree_node::TreeNode;
 use crate::core::structs::tree_vectors::tree_vec::TreeVec;
 
@@ -8,7 +10,6 @@ struct BalancedTree<'a, T, M: TreeVec<T> + Sized>
     nodes: &'a mut M,
     compare: fn(&T, &T) -> Ordering,
 }
-
 
 
 fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
@@ -187,6 +188,83 @@ impl <'a, T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<'a
             return;
         }
         self.root = self.remove_from_root(self.root, value);
+    }
+
+    pub fn find(&self, value: T) -> Option<T> {
+        let mut current_index = self.root;
+        while current_index != -1 {
+            if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Less {
+                current_index = self.nodes[current_index as u64].left_index;
+            } else if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Greater {
+                current_index = self.nodes[current_index as u64].right_index;
+            } else {
+                return Some(self.nodes[current_index as u64].value);
+            }
+        }
+        None
+    }
+
+    pub fn find_more_equal(&self, value: T) -> Option<T> {
+        let mut queue: Queue<(i32, String)> = queue![];
+        let mut current_index = self.root;
+        let mut last = (-1, "".to_string());
+        let mut ind = false;
+        let mut turn_count = 0;
+
+        while !ind && current_index != -1 {
+            if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Less {
+                if last.1 == "right" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "left".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "right" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes[current_index as u64].left_index;
+            } else if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Greater {
+                if last.1 == "left" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "right".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "left" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes[current_index as u64].right_index;
+            } else {
+                ind = true;
+            }
+        }
+
+        return if ind {
+            Some(self.nodes[current_index as u64].value)
+        } else {
+            if last.1 == "right" {
+                if queue.peek().unwrap().1 == "right" {
+                    None
+                } else {
+                    let mut turn = queue.remove().unwrap();
+                    while queue.peek().unwrap().1 != "right" {
+                        turn = queue.remove().unwrap();
+                    }
+
+                    Some(self.nodes[turn.0 as u64].value)
+                }
+            } else {
+                return Some(self.nodes[last.0 as u64].value);
+            }
+        }
     }
 
     pub fn height(&self) -> u8 {
@@ -395,5 +473,60 @@ mod tests {
         tree.add(7);
 
         tree.remove(4);
+    }
+
+    #[test]
+    fn test_find() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
+        tree.add(1);
+        tree.add(2);
+        tree.add(3);
+        tree.add(4);
+        tree.add(5);
+        tree.add(6);
+        tree.add(7);
+
+        assert_eq!(tree.find(4).unwrap(), 4);
+        let res = tree.find(8);
+        match res {
+            None => {assert!(true)}
+            Some(..) => {
+                panic!("Should not have found 8");
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_more_equal() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
+        tree.add(100);
+        tree.add(450);
+        tree.add(50);
+        tree.add(800);
+        tree.add(300);
+        tree.add(20);
+        tree.add(75);
+        tree.add(350);
+        tree.add(70);
+
+        assert_eq!(tree.find_more_equal(50).unwrap(), 50);
+        assert_eq!(tree.find_more_equal(73).unwrap(), 75);
+        assert_eq!(tree.find_more_equal(325).unwrap(), 350);
+
+        assert_eq!(tree.find_more_equal(68).unwrap(), 70);
+        assert_eq!(tree.find_more_equal(98).unwrap(), 100);
+        assert_eq!(tree.find_more_equal(10).unwrap(), 20);
+
+        let res = tree.find_more_equal(801);
+        match res {
+            None => {assert!(true)}
+            Some(..) => {
+                panic!("Should not have found 801");
+            }
+        }
     }
 }
