@@ -267,6 +267,70 @@ impl <'a, T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<'a
         }
     }
 
+    pub fn find_less_equal(&self, value: T) -> Option<T> {
+        let mut queue: Queue<(i32, String)> = queue![];
+        let mut current_index = self.root;
+        let mut last = (-1, "".to_string());
+        let mut ind = false;
+        let mut turn_count = 0;
+
+        while !ind && current_index != -1 {
+            if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Less {
+                if last.1 == "right" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "left".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "right" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes[current_index as u64].left_index;
+            } else if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Greater {
+                if last.1 == "left" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "right".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "left" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes[current_index as u64].right_index;
+            } else {
+                ind = true;
+            }
+        }
+
+        return if ind {
+            Some(self.nodes[current_index as u64].value)
+        } else {
+            if last.1 == "left" {
+                if queue.peek().unwrap().1 == "left" {
+                    None
+                } else {
+                    let mut turn = queue.remove().unwrap();
+                    while queue.peek().unwrap().1 != "left" {
+                        turn = queue.remove().unwrap();
+                    }
+
+                    Some(self.nodes[turn.0 as u64].value)
+                }
+            } else {
+                return Some(self.nodes[last.0 as u64].value);
+            }
+        }
+
+    }
+
     pub fn height(&self) -> u8 {
         self.nodes[self.root as u64].height
     }
@@ -526,6 +590,39 @@ mod tests {
             None => {assert!(true)}
             Some(..) => {
                 panic!("Should not have found 801");
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_less_equal() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(&mut nodes);
+        tree.add(100);
+        tree.add(450);
+        tree.add(50);
+        tree.add(800);
+        tree.add(300);
+        tree.add(20);
+        tree.add(75);
+        tree.add(350);
+        tree.add(70);
+
+        assert_eq!(tree.find_less_equal(50).unwrap(), 50);
+        assert_eq!(tree.find_less_equal(73).unwrap(), 70);
+        assert_eq!(tree.find_less_equal(325).unwrap(), 300);
+
+        assert_eq!(tree.find_less_equal(68).unwrap(), 50);
+        assert_eq!(tree.find_less_equal(98).unwrap(), 75);
+        assert_eq!(tree.find_less_equal(30).unwrap(), 20);
+
+
+        let res = tree.find_less_equal(0);
+        match res {
+            None => {assert!(true)}
+            Some(..) => {
+                panic!("Should not have found 0");
             }
         }
     }
