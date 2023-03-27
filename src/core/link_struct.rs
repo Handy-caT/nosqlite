@@ -1,3 +1,6 @@
+use std::cmp::Ordering;
+use std::fmt::{Debug, Display, Formatter};
+
 pub struct PageLink {
     page_index: u64,
     start: u32,
@@ -23,6 +26,14 @@ impl PageLink {
 
     pub fn get_len(&self) -> u32 {
         self.len
+    }
+
+    pub fn get_raw_index(&self) -> u64 {
+        self.page_index * 4096 + self.start as u64
+    }
+
+    pub fn get_raw_end(&self) -> u64 {
+        self.page_index * 4096 + self.start as u64 + self.len as u64 - 1
     }
 }
 
@@ -62,6 +73,49 @@ impl Clone for PageLink {
 
 impl Copy for PageLink {}
 
+impl Default for PageLink {
+    fn default() -> Self {
+        return PageLink::new(0,0,0)
+    }
+}
+
+impl Eq for PageLink {}
+
+
+impl PartialEq<Self> for PageLink {
+    fn eq(&self, other: &Self) -> bool {
+        self.page_index == other.page_index && self.start == other.start && self.len == other.len
+    }
+}
+
+impl Debug for PageLink {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PageLink")
+            .field("page_index", &self.page_index)
+            .field("start", &self.start)
+            .field("len", &self.len)
+            .finish()
+    }
+}
+
+impl Ord for PageLink {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.get_raw_index().cmp(&other.get_raw_index())
+    }
+}
+
+impl PartialOrd for PageLink {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Display for PageLink {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "PageLink {{ page_index: {}, start: {}, len: {} }}", self.page_index, self.start, self.len)
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -71,6 +125,8 @@ mod tests {
         assert_eq!(link.page_index, 0);
         assert_eq!(link.start, 0);
         assert_eq!(link.len, 10);
+        assert_eq!(link.get_raw_index(), 0);
+        assert_eq!(link.get_raw_end(), 9);
     }
 
     #[test]
@@ -102,5 +158,11 @@ mod tests {
         assert_eq!(bytes[0..8], page.to_be_bytes());
         assert_eq!(bytes[8..12], start.to_be_bytes());
         assert_eq!(bytes[12..16], len.to_be_bytes());
+    }
+
+    #[test]
+    fn test_page_link_display() {
+        let link = super::PageLink::new(0, 0, 10);
+        assert_eq!(format!("{}", link), "PageLink { page_index: 0, start: 0, len: 10 }");
     }
 }
