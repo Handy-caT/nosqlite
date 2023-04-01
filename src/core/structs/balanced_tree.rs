@@ -43,19 +43,19 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
         if root_index == -1 {
             0
         } else {
-            self.nodes[root_index as u64].height
+            self.nodes[root_index as u64].indexes.height
         }
     }
 
     fn bfactor(&mut self, root_index: i32) -> i8 {
         let node: &TreeNode<T> = &self.nodes[root_index as u64];
-        self.height_from_root(node.right_index) as i8 - self.height_from_root(node.left_index) as i8
+        self.height_from_root(node.indexes.right_index) as i8 - self.height_from_root(node.indexes.left_index) as i8
     }
 
     fn fix_height(&mut self, root_index: i32) {
         let node: &TreeNode<T> = &self.nodes[root_index as u64];
-        let left_height = self.height_from_root(node.left_index);
-        let right_height =  self.height_from_root(node.right_index);
+        let left_height = self.height_from_root(node.indexes.left_index);
+        let right_height =  self.height_from_root(node.indexes.right_index);
 
         let height = if left_height > right_height {
             left_height + 1
@@ -64,14 +64,14 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
         };
 
         let node: &mut TreeNode<T> = &mut self.nodes[root_index as u64];
-        node.height = height
+        node.indexes.height = height
     }
 
     fn rotate_right(&mut self, root_index: i32) -> i32 {
-        let left_index = self.nodes[root_index as u64].left_index;
+        let left_index = self.nodes[root_index as u64].indexes.left_index;
 
-        self.nodes[root_index as u64].left_index = self.nodes[left_index as u64].right_index;
-        self.nodes[left_index as u64].right_index = root_index;
+        self.nodes[root_index as u64].indexes.left_index = self.nodes[left_index as u64].indexes.right_index;
+        self.nodes[left_index as u64].indexes.right_index = root_index;
 
         self.fix_height(root_index);
         self.fix_height(left_index);
@@ -80,10 +80,10 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
     }
 
     fn rotate_left(&mut self, root_index: i32) -> i32 {
-        let right_index = self.nodes[root_index as u64].right_index;
+        let right_index = self.nodes[root_index as u64].indexes.right_index;
 
-        self.nodes[root_index as u64].right_index = self.nodes[right_index as u64].left_index;
-        self.nodes[right_index as u64].left_index = root_index;
+        self.nodes[root_index as u64].indexes.right_index = self.nodes[right_index as u64].indexes.left_index;
+        self.nodes[right_index as u64].indexes.left_index = root_index;
 
         self.fix_height(root_index);
         self.fix_height(right_index);
@@ -96,15 +96,15 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
         self.fix_height(root_index);
 
         if self.bfactor(root_index) == 2 {
-            if self.bfactor(self.nodes[root_index as u64].right_index) < 0 {
-                self.nodes[root_index as u64].right_index = self.rotate_right(self.nodes[root_index as u64].right_index);
+            if self.bfactor(self.nodes[root_index as u64].indexes.right_index) < 0 {
+                self.nodes[root_index as u64].indexes.right_index = self.rotate_right(self.nodes[root_index as u64].indexes.right_index);
             }
             new_root_index = self.rotate_left(root_index);
         }
 
         if self.bfactor(root_index) == -2 {
-            if self.bfactor(self.nodes[root_index as u64].left_index) > 0 {
-                self.nodes[root_index as u64].left_index = self.rotate_left(self.nodes[root_index as u64].left_index);
+            if self.bfactor(self.nodes[root_index as u64].indexes.left_index) > 0 {
+                self.nodes[root_index as u64].indexes.left_index = self.rotate_left(self.nodes[root_index as u64].indexes.left_index);
             }
             new_root_index = self.rotate_right(root_index);
         }
@@ -114,16 +114,16 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
 
     fn add_from_root(&mut self, root_index: i32, value: T) -> i32 {
         if (self.compare)(&value, &self.nodes[root_index as u64].value) == Ordering::Less {
-            if self.nodes[root_index as u64].left_index == -1 {
-                self.nodes[root_index as u64].left_index = self.nodes.add(value);
+            if self.nodes[root_index as u64].indexes.left_index == -1 {
+                self.nodes[root_index as u64].indexes.left_index = self.nodes.add(value);
             } else {
-                self.nodes[root_index as u64].left_index = self.add_from_root(self.nodes[root_index as u64].left_index, value);
+                self.nodes[root_index as u64].indexes.left_index = self.add_from_root(self.nodes[root_index as u64].indexes.left_index, value);
             }
         } else {
-            if self.nodes[root_index as u64].right_index == -1 {
-                self.nodes[root_index as u64].right_index = self.nodes.add(value);
+            if self.nodes[root_index as u64].indexes.right_index == -1 {
+                self.nodes[root_index as u64].indexes.right_index = self.nodes.add(value);
             } else {
-                self.nodes[root_index as u64].right_index = self.add_from_root(self.nodes[root_index as u64].right_index, value);
+                self.nodes[root_index as u64].indexes.right_index = self.add_from_root(self.nodes[root_index as u64].indexes.right_index, value);
             }
         }
         self.balance(root_index)
@@ -138,30 +138,30 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
     }
 
     fn find_min(&self, root_index: i32) -> i32 {
-        if self.nodes[root_index as u64].left_index == -1 {
+        if self.nodes[root_index as u64].indexes.left_index == -1 {
             root_index
         } else {
-            self.find_min(self.nodes[root_index as u64].left_index)
+            self.find_min(self.nodes[root_index as u64].indexes.left_index)
         }
     }
 
     fn remove_min(&mut self, root_index: i32) -> i32 {
-        if self.nodes[root_index as u64].left_index == -1 {
-            self.nodes[root_index as u64].right_index
+        if self.nodes[root_index as u64].indexes.left_index == -1 {
+            self.nodes[root_index as u64].indexes.right_index
         } else {
-            self.nodes[root_index as u64].left_index = self.remove_min(self.nodes[root_index as u64].left_index);
+            self.nodes[root_index as u64].indexes.left_index = self.remove_min(self.nodes[root_index as u64].indexes.left_index);
             self.balance(root_index)
         }
     }
 
     fn remove_from_root(&mut self, root_index: i32, value: T) -> i32 {
         if (self.compare)(&value, &self.nodes[root_index as u64].value) == Ordering::Less {
-            self.nodes[root_index as u64].left_index = self.remove_from_root(self.nodes[root_index as u64].left_index, value);
+            self.nodes[root_index as u64].indexes.left_index = self.remove_from_root(self.nodes[root_index as u64].indexes.left_index, value);
         } else if (self.compare)(&value, &self.nodes[root_index as u64].value) == Ordering::Greater {
-            self.nodes[root_index as u64].right_index = self.remove_from_root(self.nodes[root_index as u64].right_index, value);
+            self.nodes[root_index as u64].indexes.right_index = self.remove_from_root(self.nodes[root_index as u64].indexes.right_index, value);
         } else {
-            let left_index = self.nodes[root_index as u64].left_index;
-            let right_index = self.nodes[root_index as u64].right_index;
+            let left_index = self.nodes[root_index as u64].indexes.left_index;
+            let right_index = self.nodes[root_index as u64].indexes.right_index;
 
             self.nodes.remove(root_index);
 
@@ -170,8 +170,8 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
             }
 
             let min_index = self.find_min(right_index);
-            self.nodes[min_index as u64].right_index = self.remove_min(right_index);
-            self.nodes[min_index as u64].left_index = left_index;
+            self.nodes[min_index as u64].indexes.right_index = self.remove_min(right_index);
+            self.nodes[min_index as u64].indexes.left_index = left_index;
 
             return self.balance(min_index);
         }
@@ -193,9 +193,9 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
         let mut current_index = self.root;
         while current_index != -1 {
             if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Less {
-                current_index = self.nodes[current_index as u64].left_index;
+                current_index = self.nodes[current_index as u64].indexes.left_index;
             } else if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Greater {
-                current_index = self.nodes[current_index as u64].right_index;
+                current_index = self.nodes[current_index as u64].indexes.right_index;
             } else {
                 return Some(self.nodes[current_index as u64].value);
             }
@@ -225,7 +225,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
                 }
 
                 queue.add(last.clone());
-                current_index = self.nodes[current_index as u64].left_index;
+                current_index = self.nodes[current_index as u64].indexes.left_index;
             } else if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Greater {
                 if last.1 == "left" {
                     turn_count += 1;
@@ -240,7 +240,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
                 }
 
                 queue.add(last.clone());
-                current_index = self.nodes[current_index as u64].right_index;
+                current_index = self.nodes[current_index as u64].indexes.right_index;
             } else {
                 ind = true;
             }
@@ -288,7 +288,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
                 }
 
                 queue.add(last.clone());
-                current_index = self.nodes[current_index as u64].left_index;
+                current_index = self.nodes[current_index as u64].indexes.left_index;
             } else if (self.compare)(&value, &self.nodes[current_index as u64].value) == Ordering::Greater {
                 if last.1 == "left" {
                     turn_count += 1;
@@ -303,7 +303,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
                 }
 
                 queue.add(last.clone());
-                current_index = self.nodes[current_index as u64].right_index;
+                current_index = self.nodes[current_index as u64].indexes.right_index;
             } else {
                 ind = true;
             }
@@ -331,7 +331,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
     }
 
     pub fn height(&self) -> u8 {
-        self.nodes[self.root as u64].height
+        self.nodes[self.root as u64].indexes.height
     }
 
     pub fn size(&self) -> u64 {
@@ -383,7 +383,7 @@ mod tests {
         assert_eq!(tree.nodes.len(), 2);
         assert_eq!(tree.root, 0);
         assert_eq!(tree.nodes[0].value, 1);
-        assert_eq!(tree.nodes[0].left_index, 1);
+        assert_eq!(tree.nodes[0].indexes.left_index, 1);
         assert_eq!(tree.nodes[1].value, 0);
     }
 
@@ -397,7 +397,7 @@ mod tests {
         assert_eq!(tree.nodes.len(), 2);
         assert_eq!(tree.root, 0);
         assert_eq!(tree.nodes[0].value, 1);
-        assert_eq!(tree.nodes[0].right_index, 1);
+        assert_eq!(tree.nodes[0].indexes.right_index, 1);
         assert_eq!(tree.nodes[1].value, 2);
     }
 
@@ -412,8 +412,8 @@ mod tests {
         assert_eq!(tree.nodes.len(), 3);
         assert_eq!(tree.root, 0);
         assert_eq!(tree.nodes[0].value, 1);
-        assert_eq!(tree.nodes[0].left_index, 1);
-        assert_eq!(tree.nodes[0].right_index, 2);
+        assert_eq!(tree.nodes[0].indexes.left_index, 1);
+        assert_eq!(tree.nodes[0].indexes.right_index, 2);
         assert_eq!(tree.nodes[1].value, 0);
         assert_eq!(tree.nodes[2].value, 2);
     }
@@ -429,8 +429,8 @@ mod tests {
         assert_eq!(tree.nodes.len(), 3);
         assert_eq!(tree.root, 1);
         assert_eq!(tree.nodes[1].value, 2);
-        assert_eq!(tree.nodes[1].left_index, 0);
-        assert_eq!(tree.nodes[1].right_index, 2);
+        assert_eq!(tree.nodes[1].indexes.left_index, 0);
+        assert_eq!(tree.nodes[1].indexes.right_index, 2);
     }
 
     #[test]
@@ -528,8 +528,8 @@ mod tests {
         assert_eq!(tree.nodes.len(), 3);
         assert_eq!(tree.root, 1);
         assert_eq!(tree.nodes[1].value, 2);
-        assert_eq!(tree.nodes[1].left_index, 2);
-        assert_eq!(tree.nodes[1].right_index, 0);
+        assert_eq!(tree.nodes[1].indexes.left_index, 2);
+        assert_eq!(tree.nodes[1].indexes.right_index, 0);
         assert_eq!(tree.nodes[2].value, 3);
         assert_eq!(tree.nodes[0].value, 1);
     }

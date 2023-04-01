@@ -1,5 +1,6 @@
 use std::io;
 use crate::core::structs::tree_nodes::tree_node::TreeNode;
+use crate::core::structs::tree_object::index_vector::TreeIndex;
 
 pub struct NormalizedNode<T> {
     pub value: T,
@@ -25,7 +26,7 @@ impl <T> NormalizedNode<T> {
     }
 
     fn can_be_normalized(node: &TreeNode<T>) -> bool {
-        node.left_index == node.index * 2 + 1 && node.right_index == node.index * 2 + 2
+        node.indexes.left_index == node.indexes.index * 2 + 1 && node.indexes.right_index == node.indexes.index * 2 + 2
     }
 }
 
@@ -40,11 +41,13 @@ impl <T: Clone + Copy> Clone for NormalizedNode<T> {
 impl <T: Copy> Into<TreeNode<T>> for NormalizedNode<T> {
     fn into(self) -> TreeNode<T> {
         TreeNode {
-            index: self.index,
             value: self.value,
-            height: self.height,
-            left_index: self.get_left_index(),
-            right_index: self.get_right_index(),
+            indexes: TreeIndex {
+                index: self.index,
+                left_index: self.get_left_index(),
+                right_index: self.get_right_index(),
+                height: self.height,
+            },
         }
     }
 }
@@ -55,9 +58,9 @@ impl <T: Copy> From<TreeNode<T>> for Result<NormalizedNode<T>,io::Error>  {
             return Err(io::Error::new(io::ErrorKind::Other, "Node is not normalized"));
         }
         Ok(NormalizedNode {
-            index: node.index,
+            index: node.indexes.index,
             value: node.value,
-            height: node.height,
+            height: node.indexes.height,
         })
     }
 }
@@ -102,17 +105,17 @@ mod tests {
         let node = NormalizedNode::<u64>::new(1, 0);
         let tree_node: TreeNode<u64> = node.into();
         assert_eq!(tree_node.value, 1);
-        assert_eq!(tree_node.index, 0);
-        assert_eq!(tree_node.height, 1);
-        assert_eq!(tree_node.left_index, 1);
-        assert_eq!(tree_node.right_index, 2);
+        assert_eq!(tree_node.indexes.index, 0);
+        assert_eq!(tree_node.indexes.height, 1);
+        assert_eq!(tree_node.indexes.left_index, 1);
+        assert_eq!(tree_node.indexes.right_index, 2);
     }
 
     #[test]
     fn test_from() {
         let mut tree_node = TreeNode::<u64>::new_with_index(1, 0);
-        tree_node.right_index = 2;
-        tree_node.left_index = 1;
+        tree_node.indexes.right_index = 2;
+        tree_node.indexes.left_index = 1;
 
         let node: Result<NormalizedNode<u64>, io::Error> = tree_node.into();
         let unwrapped = node.unwrap();

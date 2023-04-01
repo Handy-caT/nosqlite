@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use crate::core::structs::tree_vectors::normalized_tree_vector::NormalizedTreeVector;
 
-struct BinHeap<T> {
+pub struct BinHeap<T> {
     data: NormalizedTreeVector<T>,
     compare: fn(&T, &T) -> Ordering,
 }
@@ -68,17 +68,25 @@ impl <T: Default + Copy + Ord> BinHeap<T> {
         }
     }
 
-    pub fn peek_max(&mut self) -> T {
-        self.data.get(0).value
+    pub fn peek_max(&mut self) -> Option<T> {
+        return if self.data.size == 0 {
+            None
+        } else {
+            Some(self.data.get(0).value)
+        }
     }
 
-    pub fn get_max(&mut self) -> T {
-        let max = self.data.get(0).value;
-        self.data.swap(0, self.data.size as i32 - 1);
-        self.data.size -= 1;
-        self.heapify(0);
+    pub fn get_max(&mut self) -> Option<T> {
+        return if self.data.size == 0 {
+            None
+        } else {
+            let max = self.data.get(0).value;
+            self.data.swap(0, self.data.size as i32 - 1);
+            self.data.size -= 1;
+            self.heapify(0);
 
-        max
+            Some(max)
+        }
     }
 }
 
@@ -87,13 +95,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_new() {
+    fn test_bin_heap_new() {
         let heap = BinHeap::<u64>::new();
         assert_eq!(heap.data.size, 0);
     }
 
     #[test]
-    fn test_add() {
+    fn test_bin_heap_add() {
         let mut heap = BinHeap::<u64>::new();
         heap.add(1);
         assert_eq!(heap.data.size, 1);
@@ -101,7 +109,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add_many() {
+    fn test_bin_heap_add_many() {
         let mut heap = BinHeap::<u64>::new();
         heap.add(1);
         heap.add(2);
@@ -113,31 +121,38 @@ mod tests {
     }
 
     #[test]
-    fn test_get_max() {
+    fn test_bin_heap_get_max() {
         let mut heap = BinHeap::<u64>::new();
         heap.add(1);
         heap.add(2);
         heap.add(3);
 
-        assert_eq!(heap.peek_max(), 3);
+        assert_eq!(heap.peek_max().unwrap(), 3);
 
-        assert_eq!(heap.get_max(), 3);
-        assert_eq!(heap.get_max(), 2);
-        assert_eq!(heap.get_max(), 1);
+        assert_eq!(heap.get_max().unwrap(), 3);
+        assert_eq!(heap.get_max().unwrap(), 2);
+        assert_eq!(heap.get_max().unwrap(), 1);
     }
 
     #[test]
-    fn test_get_max_with_compare() {
+    fn test_bin_heap_get_max_with_compare() {
         let mut heap = BinHeap::<u64>::new_with_compare(|a, b| b.cmp(a));
         heap.add(1);
         heap.add(2);
         heap.add(3);
 
-        assert_eq!(heap.peek_max(), 1);
+        assert_eq!(heap.peek_max().unwrap(), 1);
 
-        assert_eq!(heap.get_max(), 1);
-        assert_eq!(heap.get_max(), 2);
-        assert_eq!(heap.get_max(), 3);
+        assert_eq!(heap.get_max().unwrap(), 1);
+        assert_eq!(heap.get_max().unwrap(), 2);
+        assert_eq!(heap.get_max().unwrap(), 3);
+    }
+
+    #[test]
+    fn test_bin_heap_peak_get_empty() {
+        let mut heap = BinHeap::<u64>::new();
+        assert_eq!(heap.peek_max(), None);
+        assert_eq!(heap.get_max(), None);
     }
 
 }

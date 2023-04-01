@@ -11,3 +11,8 @@ pub trait TreeObject<T> {
     fn is_empty(&self) -> bool;
     fn len(&self) -> u64;
 }
+
+pub struct DecoratableTreeObject<T> {
+    base: T,
+    
+}
