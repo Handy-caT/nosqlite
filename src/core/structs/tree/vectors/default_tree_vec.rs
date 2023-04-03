@@ -67,8 +67,7 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     }
 
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
-        self.empty.push(index as u64);
-        let mut item = self.data.get(index as usize);
+        let item = self.data.get(index as usize);
         if item.is_none() {
             return None;
         }
@@ -79,6 +78,7 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
         }
 
         self.data[index as usize] = TreeNode::default();
+        self.empty.push(index as u64);
 
         if index as u64 == self.length - 1 {
             self.length -= 1;
@@ -173,6 +173,43 @@ mod tests {
         assert_eq!(vec.empty[0], 0);
 
         assert_eq!(vec.remove(index).is_none(), true);
+    }
+
+    #[test]
+    fn test_default_vec_remove_last() {
+        let mut vec = DefaultTreeVec::<i32>::new();
+
+        vec.push(1);
+        vec.push(2);
+        let index = vec.push(3);
+
+        assert_eq!(vec.remove(index).is_some(), true);
+        assert_eq!(vec.len(), 2);
+    }
+
+    #[test]
+    fn test_default_vec_get_out_of_bounds() {
+        let mut vec = DefaultTreeVec::<i32>::new();
+
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.get(-1).is_none(), true);
+        assert_eq!(vec.get(5).is_none(), true);
+    }
+
+    #[test]
+    fn test_default_vec_remove_out_of_bounds() {
+        let mut vec = DefaultTreeVec::<i32>::new();
+
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.remove(-1).is_none(), true);
+        assert_eq!(vec.remove(5).is_none(), true);
+        assert_eq!(vec.empty.len(), 0);
     }
 
 }

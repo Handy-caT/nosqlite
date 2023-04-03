@@ -8,6 +8,6 @@ pub trait TreeObject<T> {
 }
 
 pub trait TreeObjectFind<T> {
-    fn find_greater_equal(&mut self, value: T) -> Option<i32>;
-    fn find_less_equal(&mut self, value: T) -> Option<i32>;
+    fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)>;
+    fn find_less_equal(&mut self, value: T) -> Option<(i32,T)>;
 }

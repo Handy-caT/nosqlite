@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
-use crate::core::structs::tree::object::balanced_tree_functions::{add_from_root, remove_from_root};
-use crate::core::structs::tree::object::tree_object::TreeObject;
+use crate::core::structs::tree::object::balanced_tree_functions::{add_from_root, find_greater_equal, find_less_equal, remove_from_root};
+use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectFind};
 use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
 pub struct BalancedTree<T, M: TreeVec<T> + Sized>
@@ -90,6 +90,16 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for B
 
     fn len(&self) -> usize {
         return self.nodes.len();
+    }
+}
+
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectFind<T> for BalancedTree<T,M> {
+    fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)> {
+        find_greater_equal(&mut self.nodes, self.compare, self.root, value)
+    }
+
+    fn find_less_equal(&mut self, value: T) -> Option<(i32,T)> {
+        find_less_equal(&mut self.nodes, self.compare, self.root, value)
     }
 }
 
@@ -314,6 +324,71 @@ mod tests {
             None => { assert!(true) }
             Some(..) => {
                 panic!("Should not have found 8");
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_more_equal() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        tree.push(100);
+        tree.push(450);
+        tree.push(50);
+        tree.push(800);
+        tree.push(300);
+        tree.push(20);
+        tree.push(75);
+        tree.push(350);
+        tree.push(70);
+
+        assert_eq!(tree.find_greater_equal(50).unwrap(), (2,50));
+        assert_eq!(tree.find_greater_equal(73).unwrap(), (6,75));
+        assert_eq!(tree.find_greater_equal(325).unwrap(), (7,350));
+
+        assert_eq!(tree.find_greater_equal(68).unwrap(), (8,70));
+        assert_eq!(tree.find_greater_equal(98).unwrap(), (0,100));
+        assert_eq!(tree.find_greater_equal(10).unwrap(), (5,20));
+
+        let res = tree.find_greater_equal(801);
+        match res {
+            None => {assert!(true)}
+            Some(..) => {
+                panic!("Should not have found 801");
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_less_equal() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        tree.push(100);
+        tree.push(450);
+        tree.push(50);
+        tree.push(800);
+        tree.push(300);
+        tree.push(20);
+        tree.push(75);
+        tree.push(350);
+        tree.push(70);
+
+        assert_eq!(tree.find_less_equal(50).unwrap(), (2,50));
+        assert_eq!(tree.find_less_equal(73).unwrap(), (8,70));
+        assert_eq!(tree.find_less_equal(325).unwrap(), (4,300));
+
+        assert_eq!(tree.find_less_equal(68).unwrap(), (2,50));
+        assert_eq!(tree.find_less_equal(98).unwrap(), (6,75));
+        assert_eq!(tree.find_less_equal(30).unwrap(), (5,20));
+
+
+        let res = tree.find_less_equal(0);
+        match res {
+            None => {assert!(true)}
+            Some(..) => {
+                panic!("Should not have found 0");
             }
         }
     }
