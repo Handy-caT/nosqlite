@@ -55,7 +55,7 @@ impl <T: Default + Copy> OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy + PartialEq> TreeVec<T> for OptimizedTreeVec<T> {
+impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
     fn push(&mut self, value: T) -> i32 {
         let index = if self.empty.len() > 0 {
             self.empty.pop().unwrap()
@@ -84,12 +84,8 @@ impl <T: Default + Copy + PartialEq> TreeVec<T> for OptimizedTreeVec<T> {
             None
         } else {
             let item = item.unwrap();
-            if *item == TreeNode::default() {
-                if self.is_empty_index(index) {
-                    None
-                } else {
-                    Some(*item)
-                }
+            if item.indexes.index == -1 {
+                None
             } else {
                 Some(*item)
             }
@@ -104,6 +100,9 @@ impl <T: Default + Copy + PartialEq> TreeVec<T> for OptimizedTreeVec<T> {
         }
 
         let item = *item.unwrap();
+        if item.indexes.index == -1 {
+            return None;
+        }
 
         self.data[index as usize] = TreeNode::default();
 
@@ -120,16 +119,16 @@ impl <T: Default + Copy + PartialEq> TreeVec<T> for OptimizedTreeVec<T> {
 }
 
 
-impl <T> Index<u64> for OptimizedTreeVec<T> {
+impl <T> Index<usize> for OptimizedTreeVec<T> {
     type Output = TreeNode<T>;
 
-    fn index(&self, index: u64) -> &TreeNode<T> {
+    fn index(&self, index: usize) -> &TreeNode<T> {
         &self.data[index as usize]
     }
 }
 
-impl <T> IndexMut<u64> for OptimizedTreeVec<T> {
-    fn index_mut(&mut self, index: u64) -> &mut TreeNode<T> {
+impl <T> IndexMut<usize> for OptimizedTreeVec<T> {
+    fn index_mut(&mut self, index: usize) -> &mut TreeNode<T> {
         &mut self.data[index as usize]
     }
 }
@@ -196,5 +195,29 @@ mod tests {
 
         vec.remove(index);
         assert_eq!(vec.is_empty_index(index), true);
+    }
+
+    #[test]
+    fn test_optimized_vec_remove() {
+        let mut vec = OptimizedTreeVec::<i32>::new();
+        let index = vec.push(1);
+
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.remove(index).is_some(), true);
+        assert_eq!(vec.remove(index).is_none(), true);
+    }
+
+    #[test]
+    fn test_optimized_vec_get_removed() {
+        let mut vec = OptimizedTreeVec::<i32>::new();
+        let index = vec.push(1);
+
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.remove(index).is_some(), true);
+        assert_eq!(vec.get(index).is_none(), true);
     }
 }
