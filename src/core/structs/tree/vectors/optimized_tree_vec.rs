@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
-use crate::core::structs::tree_nodes::tree_node::TreeNode;
-use crate::core::structs::tree_vectors::tree_vec::TreeVec;
+use crate::core::structs::tree::tree_node::TreeNode;
+use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
 const INITIAL_LEVELS: u8 = 6;
 
@@ -40,18 +40,7 @@ impl <T: Default + Copy> OptimizedTreeVec<T> {
         self.allocated_levels += 1;
     }
 
-    pub(in crate::core::structs) fn peek_node(&self, index: i32) -> Option<TreeNode<T>> {
-        if index < 0 {
-            return None;
-        } else if index as u64 >= self.data.len() as u64 {
-            return None;
-        } else {
-            let node = self.data[index as usize];
-            Some(node)
-        }
-    }
-
-    pub(in crate::core::structs) fn is_empty_index(&self, index: i32) -> bool {
+    fn is_empty_index(&self, index: i32) -> bool {
         return if index < 0 {
             true
         } else if index as u64 >= self.data.len() as u64 {
@@ -66,8 +55,8 @@ impl <T: Default + Copy> OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
-    fn add(&mut self, value: T) -> i32 {
+impl <T: Default + Copy + PartialEq> TreeVec<T> for OptimizedTreeVec<T> {
+    fn push(&mut self, value: T) -> i32 {
         let index = if self.empty.len() > 0 {
             self.empty.pop().unwrap()
         } else {
@@ -89,30 +78,47 @@ impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
         index as i32
     }
 
-    fn get(self: &mut OptimizedTreeVec<T>, index: i32) -> TreeNode<T> {
-        self.data[index as usize]
+    fn get(&mut self, index: i32) -> Option<TreeNode<T>> {
+        let item = self.data.get(index as usize);
+        return if item.is_none() {
+            None
+        } else {
+            let item = item.unwrap();
+            if *item == TreeNode::default() {
+                if self.is_empty_index(index) {
+                    None
+                } else {
+                    Some(*item)
+                }
+            } else {
+                Some(*item)
+            }
+        }
     }
 
-    fn swap(&mut self, index1: i32, index2: i32) {
-        let node1 = self.data[index1 as usize];
-        let node2 = self.data[index2 as usize];
-        self.data[index1 as usize] = node2;
-        self.data[index2 as usize] = node1;
-    }
-
-    fn remove(&mut self, index: i32) {
+    fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
         self.empty.push(index as u64);
+        let mut item = self.data.get(index as usize);
+        if item.is_none() {
+            return None;
+        }
+
+        let item = *item.unwrap();
+
         self.data[index as usize] = TreeNode::default();
 
         if index as u64 == self.length - 1 {
             self.length -= 1;
         }
+
+        Some(item)
     }
 
     fn len(&self) -> usize {
         self.length as usize
     }
 }
+
 
 impl <T> Index<u64> for OptimizedTreeVec<T> {
     type Output = TreeNode<T>;
@@ -127,6 +133,7 @@ impl <T> IndexMut<u64> for OptimizedTreeVec<T> {
         &mut self.data[index as usize]
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -144,7 +151,7 @@ mod tests {
     #[test]
     fn test_optimized_vec_add() {
         let mut vec = OptimizedTreeVec::<i32>::new();
-        let index = vec.add(1);
+        let index = vec.push(1);
         assert_eq!(index, 0);
         assert_eq!(vec.data.len(), 1);
         assert_eq!(vec.empty.len(), 0);
@@ -155,16 +162,8 @@ mod tests {
     #[test]
     fn test_optimized_vec_get() {
         let mut vec = OptimizedTreeVec::<i32>::new();
-        let index = vec.add(1);
+        let index = vec.push(1);
         let node = vec.get(index);
-        assert_eq!(node.value, 1);
-    }
-
-    #[test]
-    fn test_optimized_vec_peek() {
-        let mut vec = OptimizedTreeVec::<i32>::new();
-        let index = vec.add(1);
-        let node = vec.peek_node(index);
 
         assert_eq!(node.is_some(), true);
         assert_eq!(node.unwrap().value, 1);
@@ -174,12 +173,12 @@ mod tests {
     #[test]
     fn test_optimized_vec_add_remove() {
         let mut vec = OptimizedTreeVec::<i32>::new();
-        let index = vec.add(1);
+        let index = vec.push(1);
         vec.remove(index);
         assert_eq!(vec.data.len(), 1);
         assert_eq!(vec.empty.len(), 1);
 
-        let index = vec.add(1);
+        let index = vec.push(1);
         assert_eq!(index, 0);
         assert_eq!(vec.data.len(), 1);
         assert_eq!(vec.empty.len(), 0);
@@ -191,7 +190,7 @@ mod tests {
     #[test]
     fn test_optimized_vec_is_empty() {
         let mut vec = OptimizedTreeVec::<i32>::new();
-        let index = vec.add(1);
+        let index = vec.push(1);
 
         assert_eq!(vec.is_empty_index(index), false);
 

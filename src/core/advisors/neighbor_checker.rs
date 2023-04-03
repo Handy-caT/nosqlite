@@ -1,18 +1,6 @@
-use std::cmp::Ordering;
-use std::ptr::null;
 use crate::core::link_struct::PageLink;
 use crate::core::structs::balanced_tree::BalancedTree;
 use crate::core::structs::tree_vectors::optimized_tree_vector::OptimizedTreeVec;
-
-fn compare_link_by_index(a: &PageLink, b: &PageLink) -> Ordering {
-    if a.get_raw_index() < b.get_raw_index() {
-        Ordering::Less
-    } else if a.get_raw_index() > b.get_raw_index() {
-        Ordering::Greater
-    } else {
-        Ordering::Equal
-    }
-}
 
 
 pub struct NeighborChecker {
@@ -24,7 +12,7 @@ impl NeighborChecker {
     pub fn new() -> NeighborChecker {
         let data = OptimizedTreeVec::new();
         NeighborChecker {
-            tree: BalancedTree::new_with_compare(data,compare_link_by_index)
+            tree: BalancedTree::new_with_compare(data,PageLink::compare_by_index)
         }
     }
 
@@ -69,20 +57,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_compare_link_by_index() {
-        let link1 = PageLink::new(0, 0, 16);
-        let link2 = PageLink::new(1, 0, 16);
-        let link3 = PageLink::new(0, 32, 16);
-
-        assert_eq!(compare_link_by_index(&link1, &link2), Ordering::Less);
-        assert_eq!(compare_link_by_index(&link2, &link1), Ordering::Greater);
-        assert_eq!(compare_link_by_index(&link1, &link3), Ordering::Less);
-        assert_eq!(compare_link_by_index(&link3, &link1), Ordering::Greater);
-        assert_eq!(compare_link_by_index(&link3, &link2), Ordering::Less);
-        assert_eq!(compare_link_by_index(&link2, &link3), Ordering::Greater);
-    }
-
-    #[test]
     fn test_neighbor_checker_new() {
         let checker = NeighborChecker::new();
         assert_eq!(checker.tree.size(), 0);
@@ -102,7 +76,7 @@ mod tests {
 
         assert_eq!(checker.tree.get_by_index(0).value, link1);
         assert_eq!(checker.tree.get_by_index(1).value, link2);
-        assert_eq!(checker.tree.get_root().index, 2);
+        assert_eq!(checker.tree.get_root().indexes.index, 2);
     }
 
     #[test]
@@ -169,7 +143,7 @@ mod tests {
         assert_eq!(checker.tree.get_by_index(0).value, link1);
         assert_eq!(checker.tree.get_by_index(2).value, link3);
         assert_eq!(checker.tree.get_by_index(1).value, PageLink::default());
-        assert_eq!(checker.tree.get_root().index, 2);
+        assert_eq!(checker.tree.get_root().indexes.index, 2);
     }
 
 }

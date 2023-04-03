@@ -1,4 +1,4 @@
-use crate::core::structs::tree_object::index_vector::TreeIndex;
+use crate::core::structs::tree::tree_index::TreeIndex;
 
 pub struct TreeNode<T> {
     pub value: T,
@@ -39,5 +39,30 @@ impl <T: Default> Default for TreeNode<T> {
             value: T::default(),
             indexes: TreeIndex::default(),
         }
+    }
+}
+
+impl <T: PartialEq> PartialEq for TreeNode<T> {
+    fn eq(&self, other: &Self) -> bool {
+        return self.value == other.value && self.indexes == other.indexes
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_tree_node_new_with_index() {
+        let tree_node = TreeNode::<u64>::new_with_index(1, 0);
+        assert_eq!(tree_node.value, 1);
+        assert_eq!(tree_node.indexes.index, 0);
+    }
+
+    #[test]
+    fn test_tree_node_new() {
+        let tree_node = TreeNode::<u64>::new(1);
+        assert_eq!(tree_node.value, 1);
+        assert_eq!(tree_node.indexes.index, -1);
     }
 }
