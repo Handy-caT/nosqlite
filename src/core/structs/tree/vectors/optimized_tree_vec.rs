@@ -1,4 +1,5 @@
 use std::ops::{Index, IndexMut};
+use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
@@ -6,9 +7,10 @@ const INITIAL_LEVELS: u8 = 6;
 
 pub struct OptimizedTreeVec<T> {
     allocated_levels: u8,
-    max_length: u64,
+    pub(in crate::core::structs::tree::vectors) max_length: u64,
     length: u64,
-    data: Vec<TreeNode<T>>,
+    data: Vec<T>,
+    indexes: Vec<TreeIndex>,
     empty: Vec<u64>,
 }
 
@@ -19,12 +21,15 @@ impl <T: Default + Copy> OptimizedTreeVec<T> {
             max_length: 0,
             length: 0,
             data: Vec::new(),
+            indexes: Vec::new(),
             empty: Vec::new(),
         };
 
         let length = 2u64.pow(INITIAL_LEVELS as u32) - 1;
 
         vec.data.reserve(length as usize);
+        vec.indexes.reserve(length as usize);
+
         vec.max_length = length;
         vec.allocated_levels = INITIAL_LEVELS;
 
@@ -36,6 +41,8 @@ impl <T: Default + Copy> OptimizedTreeVec<T> {
         let additional = new_length - self.max_length;
 
         self.data.reserve(additional as usize);
+        self.indexes.reserve(additional as usize);
+
         self.max_length = new_length;
         self.allocated_levels += 1;
     }
@@ -64,53 +71,82 @@ impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
             self.data.len() as u64
         };
 
-        let node = TreeNode::new_with_index(value, index as i32);
+        let indexes = TreeIndex::new_with_index(index as i32);
 
         if index == self.data.len() as u64 {
             if index == self.max_length {
                 self.allocate_level();
             }
-            self.data.push(node);
+            self.data.push(value);
+            self.indexes.push(indexes);
         } else {
-            self.data[index as usize] = node;
+            self.data[index as usize] = value;
+            self.indexes[index as usize] = indexes;
         }
 
         index as i32
     }
 
     fn get(&mut self, index: i32) -> Option<TreeNode<T>> {
-        let item = self.data.get(index as usize);
+        let item = self.indexes.get(index as usize);
         return if item.is_none() {
             None
         } else {
             let item = item.unwrap();
-            if item.indexes.index == -1 {
+            if item.index == -1 {
                 None
             } else {
-                Some(*item)
+                let value = self.data.get(index as usize);
+                Some(TreeNode {
+                    value: *value.unwrap(),
+                    indexes: *item,
+                })
             }
         }
     }
 
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
+    }
+
+    fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
+        &mut self.indexes[index as usize]
+    }
+
+
+    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
+        &mut self.indexes
+    }
+
+    fn get_index(&self, index: i32) -> &TreeIndex {
+        &self.indexes[index as usize]
+    }
+
+
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
         self.empty.push(index as u64);
-        let mut item = self.data.get(index as usize);
+        let mut item = self.indexes.get(index as usize);
         if item.is_none() {
             return None;
         }
 
         let item = *item.unwrap();
-        if item.indexes.index == -1 {
+        if item.index == -1 {
             return None;
         }
 
-        self.data[index as usize] = TreeNode::default();
+        self.indexes[index as usize] = TreeIndex::default();
 
         if index as u64 == self.length - 1 {
             self.length -= 1;
         }
 
-        Some(item)
+        let value = self.data.get(index as usize);
+
+        Some(TreeNode {
+            value: *value.unwrap(),
+            indexes: item,
+        })
     }
 
     fn len(&self) -> usize {
@@ -118,21 +154,19 @@ impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
     }
 }
 
+impl <T: Default + Copy> Index<i32> for OptimizedTreeVec<T> {
+    type Output = T;
 
-impl <T> Index<usize> for OptimizedTreeVec<T> {
-    type Output = TreeNode<T>;
-
-    fn index(&self, index: usize) -> &TreeNode<T> {
+    fn index(&self, index: i32) -> &Self::Output {
         &self.data[index as usize]
     }
 }
 
-impl <T> IndexMut<usize> for OptimizedTreeVec<T> {
-    fn index_mut(&mut self, index: usize) -> &mut TreeNode<T> {
+impl <T: Default + Copy> IndexMut<i32> for OptimizedTreeVec<T> {
+    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         &mut self.data[index as usize]
     }
 }
-
 
 #[cfg(test)]
 mod tests {

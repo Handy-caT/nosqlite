@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
-use crate::core::structs::tree::object::balanced_tree_functions::{add_from_root, find_greater_equal, find_less_equal, remove_from_root};
+use queues::{IsQueue, Queue, queue};
+use crate::core::structs::tree::object::balanced_tree_functions::{balance, find_min, remove_min};
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectFind};
 use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
@@ -38,6 +39,47 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
             compare,
         }
     }
+
+    fn add_from_root(&mut self, value: T, root_index: i32) -> i32 {
+        if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Less {
+            if self.nodes.get_index_mut(root_index).left_index == -1 {
+                self.nodes.get_index_mut(root_index).left_index = self.nodes.push(value);
+            } else {
+                self.nodes.get_index_mut(root_index).left_index = self.add_from_root(value, self.nodes.get_index(root_index).left_index);
+            }
+        } else {
+            if self.nodes.get_index_mut(root_index).right_index == -1 {
+                self.nodes.get_index_mut(root_index).right_index = self.nodes.push(value);
+            } else {
+                self.nodes.get_index_mut(root_index).right_index = self.add_from_root(value, self.nodes.get_index(root_index).right_index);
+            }
+        }
+        balance(self.nodes.get_indexes(), root_index)
+    }
+
+    fn remove_from_root(&mut self, value: T, root_index: i32) -> i32 {
+        if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Less {
+            self.nodes.get_index_mut(root_index).left_index = self.remove_from_root(value, self.nodes.get_index(root_index).left_index);
+        } else if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Greater {
+            self.nodes.get_index_mut(root_index).right_index = self.remove_from_root(value, self.nodes.get_index(root_index).right_index);
+        } else {
+            let left_index = self.nodes.get_index_mut(root_index).left_index;
+            let right_index = self.nodes.get_index_mut(root_index).right_index;
+
+            self.nodes.remove(root_index);
+
+            if right_index == -1 {
+                return left_index;
+            }
+
+            let min_index = find_min(self.nodes.get_indexes(),right_index);
+            self.nodes.get_index_mut(min_index).right_index = remove_min(self.nodes.get_indexes(),right_index);
+            self.nodes.get_index_mut(min_index).left_index = left_index;
+
+            return balance(self.nodes.get_indexes(),min_index);
+        }
+        balance(self.nodes.get_indexes(),root_index)
+    }
 }
 
 impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for BalancedTree<T,M> {
@@ -45,7 +87,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for B
         if self.nodes.len() == 0 {
             self.root = self.nodes.push(value);
         } else {
-            self.root = add_from_root(&mut self.nodes, self.compare, self.root, value);
+            self.root = self.add_from_root(value, self.root);
         }
     }
 
@@ -61,12 +103,12 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for B
     fn find(&mut self, value: T) -> Option<i32> {
         let mut current_index = self.root;
         while current_index != -1 {
-            if (self.compare)(&value, &self.nodes[current_index as usize].value) == Ordering::Less {
-                current_index = self.nodes[current_index as usize].indexes.left_index;
-            } else if (self.compare)(&value, &self.nodes[current_index as usize].value) == Ordering::Greater {
-                current_index = self.nodes[current_index as usize].indexes.right_index;
+            if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Less {
+                current_index = self.nodes.get_index_mut(current_index).left_index;
+            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Greater {
+                current_index = self.nodes.get_index_mut(current_index).right_index;
             } else {
-                return Some(self.nodes[current_index as usize].indexes.index);
+                return Some(self.nodes.get_index_mut(current_index).index);
             }
         }
         None
@@ -80,7 +122,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for B
             self.root = -1;
             return None;
         }
-        self.root = remove_from_root(&mut self.nodes, self.compare,self.root, value);
+        self.root = self.remove_from_root(value, self.root);
         Some(value)
     }
 
@@ -95,11 +137,131 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for B
 
 impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectFind<T> for BalancedTree<T,M> {
     fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)> {
-        find_greater_equal(&mut self.nodes, self.compare, self.root, value)
+        let mut queue: Queue<(i32, String)> = queue![];
+        let mut current_index = self.root;
+        let mut last = (-1, "".to_string());
+        let mut ind = false;
+        let mut turn_count = 0;
+
+        while !ind && current_index != -1 {
+            if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Less {
+                if last.1 == "right" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "left".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "right" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes.get_index_mut(current_index).left_index;
+            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Greater {
+                if last.1 == "left" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "right".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "left" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes.get_index_mut(current_index).right_index;
+            } else {
+                ind = true;
+            }
+        }
+
+        return if ind {
+            Some((self.nodes.get_index_mut(current_index).index,self.nodes[current_index]))
+        } else {
+            if last.1 == "right" {
+                if queue.peek().unwrap().1 == "right" {
+                    None
+                } else {
+                    let mut turn = queue.remove().unwrap();
+                    while queue.peek().unwrap().1 != "right" {
+                        turn = queue.remove().unwrap();
+                    }
+
+                    Some((self.nodes.get_index_mut(turn.0).index,self.nodes[turn.0]))
+                }
+            } else {
+                Some((self.nodes.get_index_mut(last.0).index,self.nodes[last.0]))
+            }
+        }
+
     }
 
     fn find_less_equal(&mut self, value: T) -> Option<(i32,T)> {
-        find_less_equal(&mut self.nodes, self.compare, self.root, value)
+        let mut queue: Queue<(i32, String)> = queue![];
+        let mut current_index = self.root;
+        let mut last = (-1, "".to_string());
+        let mut ind = false;
+        let mut turn_count = 0;
+
+        while !ind && current_index != -1 {
+            if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Less {
+                if last.1 == "right" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "left".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "right" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes.get_index_mut(current_index).left_index;
+            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Greater {
+                if last.1 == "left" {
+                    turn_count += 1;
+                }
+
+                last = (current_index, "right".to_string());
+
+                if turn_count > 1 {
+                    while queue.peek().unwrap().1 != "left" {
+                        queue.remove();
+                    }
+                }
+
+                queue.add(last.clone());
+                current_index = self.nodes.get_index_mut(current_index).right_index;
+            } else {
+                ind = true;
+            }
+        }
+
+        return if ind {
+            Some((self.nodes.get_index_mut(current_index).index, self.nodes[current_index]))
+        } else {
+            if last.1 == "left" {
+                if queue.peek().unwrap().1 == "left" {
+                    None
+                } else {
+                    let mut turn = queue.remove().unwrap();
+                    while queue.peek().unwrap().1 != "left" {
+                        turn = queue.remove().unwrap();
+                    }
+
+                    Some((self.nodes.get_index_mut(turn.0).index, self.nodes[turn.0]))
+                }
+            } else {
+                Some((self.nodes.get_index_mut(last.0).index, self.nodes[last.0]))
+            }
+        }
+
     }
 }
 
@@ -125,7 +287,7 @@ mod tests {
         tree.push(1);
         assert_eq!(tree.nodes.len(), 1);
         assert_eq!(tree.root, 0);
-        assert_eq!(tree.nodes[0].value, 1);
+        assert_eq!(tree.nodes[0], 1);
     }
 
     #[test]
@@ -137,9 +299,9 @@ mod tests {
         tree.push(0);
         assert_eq!(tree.nodes.len(), 2);
         assert_eq!(tree.root, 0);
-        assert_eq!(tree.nodes[0].value, 1);
-        assert_eq!(tree.nodes[0].indexes.left_index, 1);
-        assert_eq!(tree.nodes[1].value, 0);
+        assert_eq!(tree.nodes[0], 1);
+        assert_eq!(tree.nodes.get_indexes()[0].left_index, 1);
+        assert_eq!(tree.nodes[1], 0);
     }
 
     #[test]
@@ -151,9 +313,9 @@ mod tests {
         tree.push(2);
         assert_eq!(tree.nodes.len(), 2);
         assert_eq!(tree.root, 0);
-        assert_eq!(tree.nodes[0].value, 1);
-        assert_eq!(tree.nodes[0].indexes.right_index, 1);
-        assert_eq!(tree.nodes[1].value, 2);
+        assert_eq!(tree.nodes[0], 1);
+        assert_eq!(tree.nodes.get_indexes()[0].right_index, 1);
+        assert_eq!(tree.nodes[1], 2);
     }
 
     #[test]
@@ -166,11 +328,11 @@ mod tests {
         tree.push(2);
         assert_eq!(tree.nodes.len(), 3);
         assert_eq!(tree.root, 0);
-        assert_eq!(tree.nodes[0].value, 1);
-        assert_eq!(tree.nodes[0].indexes.left_index, 1);
-        assert_eq!(tree.nodes[0].indexes.right_index, 2);
-        assert_eq!(tree.nodes[1].value, 0);
-        assert_eq!(tree.nodes[2].value, 2);
+        assert_eq!(tree.nodes[0], 1);
+        assert_eq!(tree.nodes.get_indexes()[0].left_index, 1);
+        assert_eq!(tree.nodes.get_indexes()[0].right_index, 2);
+        assert_eq!(tree.nodes[1], 0);
+        assert_eq!(tree.nodes[2], 2);
     }
 
     #[test]
@@ -183,9 +345,9 @@ mod tests {
         tree.push(3);
         assert_eq!(tree.nodes.len(), 3);
         assert_eq!(tree.root, 1);
-        assert_eq!(tree.nodes[1].value, 2);
-        assert_eq!(tree.nodes[1].indexes.left_index, 0);
-        assert_eq!(tree.nodes[1].indexes.right_index, 2);
+        assert_eq!(tree.nodes[1], 2);
+        assert_eq!(tree.nodes.get_indexes()[1].left_index, 0);
+        assert_eq!(tree.nodes.get_indexes()[1].right_index, 2);
     }
 
     #[test]
@@ -203,7 +365,7 @@ mod tests {
 
         assert_eq!(tree.nodes.len(), 7);
         assert_eq!(tree.root, 3);
-        assert_eq!(tree.nodes[3].value, 4);
+        assert_eq!(tree.nodes[3], 4);
     }
 
     #[test]
@@ -221,7 +383,7 @@ mod tests {
 
         assert_eq!(tree.nodes.len(), 7);
         assert_eq!(tree.root, 3);
-        assert_eq!(tree.nodes[3].value, 4);
+        assert_eq!(tree.nodes[3], 4);
     }
 
     #[test]
@@ -245,7 +407,7 @@ mod tests {
         tree.remove_by_value(0);
         assert_eq!(tree.nodes.len(), 1);
         assert_eq!(tree.root, 0);
-        assert_eq!(tree.nodes[0].value, 1);
+        assert_eq!(tree.nodes[0], 1);
     }
 
     #[test]
@@ -258,7 +420,7 @@ mod tests {
         tree.remove_by_value(2);
         assert_eq!(tree.nodes.len(), 1);
         assert_eq!(tree.root, 0);
-        assert_eq!(tree.nodes[0].value, 1);
+        assert_eq!(tree.nodes[0], 1);
     }
 
     #[test]
@@ -282,11 +444,11 @@ mod tests {
 
         assert_eq!(tree.nodes.len(), 3);
         assert_eq!(tree.root, 1);
-        assert_eq!(tree.nodes[1].value, 2);
-        assert_eq!(tree.nodes[1].indexes.left_index, 2);
-        assert_eq!(tree.nodes[1].indexes.right_index, 0);
-        assert_eq!(tree.nodes[2].value, 3);
-        assert_eq!(tree.nodes[0].value, 1);
+        assert_eq!(tree.nodes[1], 2);
+        assert_eq!(tree.nodes.get_indexes()[1].left_index, 2);
+        assert_eq!(tree.nodes.get_indexes()[1].right_index, 0);
+        assert_eq!(tree.nodes[2], 3);
+        assert_eq!(tree.nodes[0], 1);
     }
 
     #[test]

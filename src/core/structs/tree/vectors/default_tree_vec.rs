@@ -1,10 +1,12 @@
 use std::ops::{Index, IndexMut};
+use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
 pub struct DefaultTreeVec<T: Sized> {
-    data: Vec<TreeNode<T>>,
+    data: Vec<T>,
     empty: Vec<u64>,
+    indexes: Vec<TreeIndex>,
     length: u64,
 }
 
@@ -13,22 +15,9 @@ impl <T: Default + Copy> DefaultTreeVec<T> {
         DefaultTreeVec {
             data: Vec::new(),
             empty: Vec::new(),
+            indexes: Vec::new(),
             length: 0,
         }
-    }
-}
-
-impl <T> Index<usize> for DefaultTreeVec<T> {
-    type Output = TreeNode<T>;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.data[index as usize]
-    }
-}
-
-impl <T> IndexMut<usize> for DefaultTreeVec<T> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.data[index as usize]
     }
 }
 
@@ -41,54 +30,95 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
             self.data.len() as u64
         };
 
-        let node = TreeNode::new_with_index(value, index as i32);
+        let indexes = TreeIndex::new_with_index(index as i32);
 
         if index == self.data.len() as u64 {
-            self.data.push(node);
+            self.data.push(value);
+            self.indexes.push(indexes);
         } else {
-            self.data[index as usize] = node;
+            self.data[index as usize] = value;
+            self.indexes[index as usize] = indexes;
         }
 
         index as i32
     }
 
     fn get(&mut self, index: i32) -> Option<TreeNode<T>> {
-        let item = self.data.get(index as usize);
+        let item = self.indexes.get(index as usize);
         return if item.is_none() {
             None
         } else {
             let item = item.unwrap();
-            if item.indexes.index == -1 {
+            if item.index == -1 {
                 None
             } else {
-                Some(*item)
+                let value = self.data.get(index as usize);
+                Some(TreeNode {
+                    value: *value.unwrap(),
+                    indexes: *item,
+                })
             }
         }
     }
 
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
+    }
+
+    fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
+        &mut self.indexes[index as usize]
+    }
+
+    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
+        &mut self.indexes
+    }
+
+    fn get_index(&self, index: i32) -> &TreeIndex {
+        &self.indexes[index as usize]
+    }
+
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
-        let item = self.data.get(index as usize);
+        let mut item = self.indexes.get(index as usize);
         if item.is_none() {
             return None;
         }
 
         let item = *item.unwrap();
-        if item.indexes.index == -1 {
+        if item.index == -1 {
             return None;
         }
 
-        self.data[index as usize] = TreeNode::default();
+        self.indexes[index as usize] = TreeIndex::default();
         self.empty.push(index as u64);
 
         if index as u64 == self.length - 1 {
             self.length -= 1;
         }
 
-        Some(item)
+        let value = self.data.get(index as usize);
+
+        Some(TreeNode {
+            value: *value.unwrap(),
+            indexes: item,
+        })
     }
 
     fn len(&self) -> usize {
         self.length as usize
+    }
+}
+
+impl <T: Default + Copy> Index<i32> for DefaultTreeVec<T> {
+    type Output = T;
+
+    fn index(&self, index: i32) -> &Self::Output {
+        &self.data[index as usize]
+    }
+}
+
+impl <T: Default + Copy> IndexMut<i32> for DefaultTreeVec<T> {
+    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
+        &mut self.data[index as usize]
     }
 }
 
@@ -109,7 +139,7 @@ mod tests {
         tree_vec.push(1);
         assert_eq!(tree_vec.data.len(), 1);
         assert_eq!(tree_vec.empty.len(), 0);
-        assert_eq!(tree_vec.data[0].value, 1);
+        assert_eq!(tree_vec.data[0], 1);
     }
 
     #[test]
@@ -141,9 +171,9 @@ mod tests {
         assert_eq!(tree_vec.data.len(), 3);
         assert_eq!(tree_vec.empty.len(), 0);
 
-        assert_eq!(tree_vec.data[0].value, 1);
-        assert_eq!(tree_vec.data[1].value, 6);
-        assert_eq!(tree_vec.data[2].value, 3);
+        assert_eq!(tree_vec.data[0], 1);
+        assert_eq!(tree_vec.data[1], 6);
+        assert_eq!(tree_vec.data[2], 3);
     }
 
     #[test]
