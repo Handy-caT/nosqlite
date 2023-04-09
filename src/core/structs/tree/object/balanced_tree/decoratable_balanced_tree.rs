@@ -63,11 +63,23 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
             }
         }
     }
+
+    fn push_index(&mut self, index: i32) {
+        if index >= self.indexes.len() as i32 {
+            self.indexes.push(TreeIndex::new_with_index(index));
+        } else {
+            self.indexes[index as usize] = TreeIndex::new_with_index(index);
+        }
+    }
 }
 
-impl <T: Default + Copy, V: TreeVec<T> + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObject<T> for DecoratableBalancedTree<T, V, M>  {
-    fn push(&mut self, value: T) {
-        todo!()
+impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObject<T> for DecoratableBalancedTree<T, V, M>  {
+    fn push(&mut self, value: T) -> i32 {
+        let index = self.base.push(value);
+        self.push_index(index);
+        self.root_index = self.add_from_root(value, self.root_index, index);
+
+        index
     }
 
     fn find(&mut self, value: T) -> Option<i32> {
@@ -104,6 +116,26 @@ mod tests {
         tree.push(3);
 
         let dec_tree = DecoratableBalancedTree::<u64, DefaultTreeVec<u64>, BalancedTree<u64, DefaultTreeVec<u64>>>::new(tree, |a, b| b.cmp(a));
+
+        assert_eq!(dec_tree.base.len(), 3);
+        assert_eq!(dec_tree.indexes.len(), 3);
+        assert_eq!(dec_tree.root_index, 1);
+        assert_eq!(dec_tree.indexes[1].left_index, 2);
+        assert_eq!(dec_tree.indexes[1].right_index, 0);
+    }
+
+    #[test]
+    fn test_decoratable_balanced_tree_push() {
+        let nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+
+        tree.push(1);
+        tree.push(2);
+
+        let mut dec_tree = DecoratableBalancedTree::<u64, DefaultTreeVec<u64>, BalancedTree<u64, DefaultTreeVec<u64>>>::new(tree, |a, b| b.cmp(a));
+
+        dec_tree.push(3);
 
         assert_eq!(dec_tree.base.len(), 3);
         assert_eq!(dec_tree.indexes.len(), 3);

@@ -40,21 +40,28 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> Bal
         }
     }
 
-    fn add_from_root(&mut self, value: T, root_index: i32) -> i32 {
+    fn add_from_root(&mut self, value: T, root_index: i32) -> (i32, i32) {
+        let mut pushed_index = -1;
         if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Less {
             if self.nodes.get_index_mut(root_index).left_index == -1 {
                 self.nodes.get_index_mut(root_index).left_index = self.nodes.push(value);
+                pushed_index = self.nodes.get_index_mut(root_index).left_index;
             } else {
-                self.nodes.get_index_mut(root_index).left_index = self.add_from_root(value, self.nodes.get_index(root_index).left_index);
+                let balanced = self.add_from_root(value, self.nodes.get_index(root_index).left_index);
+                self.nodes.get_index_mut(root_index).left_index = balanced.0;
+                pushed_index = balanced.1;
             }
         } else {
             if self.nodes.get_index_mut(root_index).right_index == -1 {
                 self.nodes.get_index_mut(root_index).right_index = self.nodes.push(value);
+                pushed_index = self.nodes.get_index_mut(root_index).right_index;
             } else {
-                self.nodes.get_index_mut(root_index).right_index = self.add_from_root(value, self.nodes.get_index(root_index).right_index);
+                let balanced = self.add_from_root(value, self.nodes.get_index(root_index).right_index);
+                self.nodes.get_index_mut(root_index).right_index = balanced.0;
+                pushed_index = balanced.1;
             }
         }
-        balance(self.nodes.get_indexes(), root_index)
+        (balance(self.nodes.get_indexes(), root_index), pushed_index)
     }
 
     fn remove_from_root(&mut self, value: T, root_index: i32) -> i32 {
@@ -83,11 +90,14 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> Bal
 }
 
 impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> TreeObject<T> for BalancedTree<T,M> {
-    fn push(&mut self, value: T) {
-        if self.nodes.len() == 0 {
+    fn push(&mut self, value: T) -> i32{
+        return if self.nodes.len() == 0 {
             self.root = self.nodes.push(value);
+            self.root
         } else {
-            self.root = self.add_from_root(value, self.root);
+            let balanced = self.add_from_root(value, self.root);
+            self.root = balanced.0;
+            balanced.1
         }
     }
 
@@ -293,6 +303,18 @@ mod tests {
     }
 
     #[test]
+    fn test_add_from_root() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        tree.push(1);
+
+        let balanced = tree.add_from_root(0, 0);
+        assert_eq!(balanced.0, 0);
+        assert_eq!(balanced.1, 1);
+    }
+
+    #[test]
     fn test_add_root() {
         let nodes = DefaultTreeVec::<u64>::new();
 
@@ -301,6 +323,22 @@ mod tests {
         assert_eq!(tree.nodes.len(), 1);
         assert_eq!(tree.root, 0);
         assert_eq!(tree.nodes[0], 1);
+    }
+
+    #[test]
+    fn test_add_root_after_remove() {
+        let nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        tree.push(1);
+        tree.push(2);
+        tree.push(3);
+
+        tree.remove_by_value(2);
+
+        let balanced = tree.add_from_root(2, tree.root);
+        assert_eq!(balanced.0, 1);
+        assert_eq!(balanced.1, 1);
     }
 
     #[test]
