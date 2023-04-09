@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
 use queues::{IsQueue, Queue, queue};
-use crate::core::structs::tree::object::balanced_tree_functions::{balance, find_min, remove_min};
-use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectFind};
-use crate::core::structs::tree::vectors::tree_vec::TreeVec;
+use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::{balance, find_min, remove_min};
+use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectFind, TreeObjectVec};
+use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
 
 pub struct BalancedTree<T, M: TreeVec<T> + Sized>
 {
@@ -22,7 +22,7 @@ fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
     }
 }
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> BalancedTree<T, M>
 {
     pub fn new(vec: M) -> BalancedTree<T, M> {
         BalancedTree {
@@ -82,21 +82,12 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> BalancedTree<T, M>
     }
 }
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for BalancedTree<T,M> {
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> TreeObject<T> for BalancedTree<T,M> {
     fn push(&mut self, value: T) {
         if self.nodes.len() == 0 {
             self.root = self.nodes.push(value);
         } else {
             self.root = self.add_from_root(value, self.root);
-        }
-    }
-
-    fn get(&mut self, index: i32) -> Option<T> {
-        let item = self.nodes.get(index);
-        return if item.is_none() {
-            None
-        } else {
-            Some(item.unwrap().value)
         }
     }
 
@@ -134,6 +125,28 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObject<T> for B
         return self.nodes.len();
     }
 }
+
+
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectVec<T, M> for BalancedTree<T,M> {
+    fn get(&mut self, index: i32) -> Option<T> {
+        let item = self.nodes.get(index);
+        return if item.is_none() {
+            None
+        } else {
+            Some(item.unwrap().value)
+        }
+    }
+
+    fn get_nodes_mut(&mut self) -> &mut M {
+        &mut self.nodes
+    }
+
+    fn get_nodes(&self) -> &M {
+        &self.nodes
+    }
+}
+
+
 
 impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectFind<T> for BalancedTree<T,M> {
     fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)> {

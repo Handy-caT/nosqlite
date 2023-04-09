@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::TreeVec;
+use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
 
 pub struct DefaultTreeVec<T: Sized> {
     data: Vec<T>,
@@ -119,6 +119,20 @@ impl <T: Default + Copy> Index<i32> for DefaultTreeVec<T> {
 impl <T: Default + Copy> IndexMut<i32> for DefaultTreeVec<T> {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         &mut self.data[index as usize]
+    }
+}
+
+impl <T> TreeVecLevels for DefaultTreeVec<T> {
+    fn get_allocated_levels(&self) -> u8 {
+        let length = f64::from(self.length as u16);
+        let levels = length.log2().ceil() as u8;
+        levels
+    }
+
+    fn get_max_length(&self) -> u64 {
+        let levels = self.get_allocated_levels();
+        let max_length = 2u64.pow(levels as u32);
+        max_length
     }
 }
 

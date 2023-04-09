@@ -1,7 +1,6 @@
 use std::cmp::Ordering;
 use queues::{IsQueue, Queue, queue};
 use crate::core::structs::tree::tree_index::TreeIndex;
-use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
 pub fn height_from_root(indexes: &mut Vec<TreeIndex>, root_index: i32) -> u8 {
     if root_index == -1 {

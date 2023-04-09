@@ -1,13 +1,13 @@
 use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::TreeVec;
+use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
 
 const INITIAL_LEVELS: u8 = 6;
 
 pub struct OptimizedTreeVec<T> {
     allocated_levels: u8,
-    pub(in crate::core::structs::tree::vectors) max_length: u64,
+    max_length: u64,
     length: u64,
     data: Vec<T>,
     indexes: Vec<TreeIndex>,
@@ -46,19 +46,15 @@ impl <T: Default + Copy> OptimizedTreeVec<T> {
         self.max_length = new_length;
         self.allocated_levels += 1;
     }
+}
 
-    fn is_empty_index(&self, index: i32) -> bool {
-        return if index < 0 {
-            true
-        } else if index as u64 >= self.data.len() as u64 {
-            true
-        } else {
-            if self.empty.contains(&(index as u64)) {
-                true
-            } else {
-                false
-            }
-        }
+impl <T> TreeVecLevels for OptimizedTreeVec<T> {
+    fn get_allocated_levels(&self) -> u8 {
+        self.allocated_levels
+    }
+
+    fn get_max_length(&self) -> u64 {
+        self.max_length
     }
 }
 
@@ -218,17 +214,6 @@ mod tests {
 
         assert_eq!(vec.allocated_levels, INITIAL_LEVELS);
         assert_eq!(vec.max_length, 2u64.pow(INITIAL_LEVELS as u32) - 1);
-    }
-
-    #[test]
-    fn test_optimized_vec_is_empty() {
-        let mut vec = OptimizedTreeVec::<i32>::new();
-        let index = vec.push(1);
-
-        assert_eq!(vec.is_empty_index(index), false);
-
-        vec.remove(index);
-        assert_eq!(vec.is_empty_index(index), true);
     }
 
     #[test]

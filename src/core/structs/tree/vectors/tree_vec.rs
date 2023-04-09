@@ -12,3 +12,8 @@ pub trait TreeVec<T>: Index<i32, Output = T> + IndexMut<i32> {
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>>;
     fn len(&self) -> usize;
 }
+
+pub trait TreeVecLevels {
+    fn get_allocated_levels(&self) -> u8;
+    fn get_max_length(&self) -> u64;
+}
