@@ -137,7 +137,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> Tre
 }
 
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectVec<T, M> for BalancedTree<T,M> {
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> TreeObjectVec<T, M> for BalancedTree<T,M> {
     fn get(&mut self, index: i32) -> Option<T> {
         let item = self.nodes.get(index);
         return if item.is_none() {
@@ -157,6 +157,15 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectVec<T, M>
 
     fn get_root_index(&self) -> i32 {
         self.root
+    }
+
+    fn remove_by_index(&mut self, index: i32) -> Option<T> {
+        let item = self.nodes.get(index);
+        return if item.is_none() {
+            None
+        } else {
+            self.remove_by_value(item.unwrap().value)
+        }
     }
 }
 
@@ -608,5 +617,27 @@ mod tests {
                 panic!("Should not have found 0");
             }
         }
+    }
+
+    #[test]
+    fn test_remove_by_index() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        tree.push(100);
+        tree.push(450);
+        tree.push(50);
+        tree.push(800);
+        tree.push(300);
+        tree.push(20);
+        tree.push(75);
+        tree.push(350);
+        tree.push(70);
+
+        tree.remove_by_index(4);
+        assert_eq!(tree.nodes.len(), 9);
+        assert_eq!(tree.root, 0);
+        assert_eq!(tree.find(300), None);
+        assert_eq!(tree.find(350), Some(7));
     }
 }

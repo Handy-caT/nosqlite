@@ -13,6 +13,7 @@ pub trait TreeObjectVec<T, M: TreeVec<T> + Sized> {
     fn get_nodes_mut(&mut self) -> &mut M;
     fn get_nodes(&self) -> &M;
     fn get_root_index(&self) -> i32;
+    fn remove_by_index(&mut self, index: i32) -> Option<T>;
 }
 
 pub trait TreeObjectFind<T> {

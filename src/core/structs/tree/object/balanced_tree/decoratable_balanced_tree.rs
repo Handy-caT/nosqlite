@@ -141,6 +141,40 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
     }
 }
 
+impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObjectVec<T, V> for DecoratableBalancedTree<T, V, M>  {
+    fn get(&mut self, index: i32) -> Option<T> {
+        self.base.get(index)
+    }
+
+    fn get_nodes_mut(&mut self) -> &mut V {
+        self.base.get_nodes_mut()
+    }
+
+    fn get_nodes(&self) -> &V {
+        self.base.get_nodes()
+    }
+
+    fn get_root_index(&self) -> i32 {
+        self.root
+    }
+
+    fn remove_by_index(&mut self, index: i32) -> Option<T> {
+        if self.len() == 0 {
+            return None;
+        } else if self.len() == 1 {
+            self.base.remove_by_index(index);
+            self.indexes[0] = TreeIndex::default();
+            self.root = -1;
+            return Some(self.base.get(index).unwrap());
+        }
+        let value = self.base.get(index).unwrap();
+        self.root = self.remove_from_root(value, self.root);
+        self.base.remove_by_index(index);
+
+        Some(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::object::balanced_tree::balanced_tree::BalancedTree;
@@ -222,5 +256,24 @@ mod tests {
         assert_eq!(dec_tree.remove_by_value(1), Some(1));
         assert_eq!(dec_tree.remove_by_value(2), Some(2));
         assert_eq!(dec_tree.remove_by_value(3), Some(3));
+    }
+
+    #[test]
+    fn test_decoratable_balanced_tree_remove_by_index() {
+        let nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+
+        tree.push(1);
+        tree.push(2);
+        tree.push(3);
+
+        let mut dec_tree = DecoratableBalancedTree::<u64, DefaultTreeVec<u64>, BalancedTree<u64, DefaultTreeVec<u64>>>::new(tree, |a, b| b.cmp(a));
+
+        assert_eq!(dec_tree.remove_by_index(0), Some(1));
+        assert_eq!(dec_tree.remove_by_index(1), Some(2));
+        assert_eq!(dec_tree.remove_by_index(2), Some(3));
+
+        assert_eq!(dec_tree.get(0), None);
     }
 }
