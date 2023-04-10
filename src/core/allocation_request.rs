@@ -1,7 +1,7 @@
 use crate::core::link_struct::PageLink;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum AllocationStatus {
+pub enum AllocationStatus {
     Allocated,
     Free,
     Used,
@@ -29,11 +29,11 @@ impl AllocationRequest {
         &self.status
     }
 
-    fn set_status(&mut self, status: AllocationStatus) {
+    pub(crate) fn set_status(&mut self, status: AllocationStatus) {
         self.status = status;
     }
 
-    fn add_link(&mut self, link: PageLink) {
+    pub fn add_link(&mut self, link: PageLink) {
         self.links.push(link);
     }
 }

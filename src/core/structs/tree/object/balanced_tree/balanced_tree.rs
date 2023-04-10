@@ -154,6 +154,10 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectVec<T, M>
     fn get_nodes(&self) -> &M {
         &self.nodes
     }
+
+    fn get_root_index(&self) -> i32 {
+        self.root
+    }
 }
 
 

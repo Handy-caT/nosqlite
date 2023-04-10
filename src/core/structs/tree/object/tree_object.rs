@@ -12,6 +12,7 @@ pub trait TreeObjectVec<T, M: TreeVec<T> + Sized> {
     fn get(&mut self, index: i32) -> Option<T>;
     fn get_nodes_mut(&mut self) -> &mut M;
     fn get_nodes(&self) -> &M;
+    fn get_root_index(&self) -> i32;
 }
 
 pub trait TreeObjectFind<T> {

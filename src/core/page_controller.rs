@@ -1,6 +1,6 @@
 use crate::core::page_struct::Page;
 
-struct PageController {
+pub struct PageController {
     pages: Vec<Page>,
     page_count: u64,
 }

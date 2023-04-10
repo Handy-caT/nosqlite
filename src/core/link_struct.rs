@@ -35,6 +35,26 @@ impl PageLink {
     pub fn get_raw_end(&self) -> u64 {
         self.page_index * 4096 + self.start as u64 + self.len as u64 - 1
     }
+
+    pub fn compare_by_len(a: &PageLink, b: &PageLink) -> Ordering {
+        if a.get_len() < b.get_len() {
+            Ordering::Less
+        } else if a.get_len() > b.get_len() {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+
+    pub fn compare_by_index(a: &PageLink, b: &PageLink) -> Ordering {
+        if a.get_raw_index() < b.get_raw_index() {
+            Ordering::Less
+        } else if a.get_raw_index() > b.get_raw_index() {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
 }
 
 impl From<[u8; 16]> for PageLink {
@@ -165,4 +185,25 @@ mod tests {
         let link = super::PageLink::new(0, 0, 10);
         assert_eq!(format!("{}", link), "PageLink { page_index: 0, start: 0, len: 10 }");
     }
+
+    #[test]
+    fn test_page_link_compare_by_len() {
+        let link1 = super::PageLink::new(0, 0, 10);
+        let link2 = super::PageLink::new(0, 0, 20);
+
+        assert_eq!(super::PageLink::compare_by_len(&link1, &link2), std::cmp::Ordering::Less);
+        assert_eq!(super::PageLink::compare_by_len(&link2, &link1), std::cmp::Ordering::Greater);
+        assert_eq!(super::PageLink::compare_by_len(&link1, &link1), std::cmp::Ordering::Equal);
+    }
+
+    #[test]
+    fn test_page_link_compare_by_index() {
+        let link1 = super::PageLink::new(0, 0, 10);
+        let link2 = super::PageLink::new(0, 10, 20);
+
+        assert_eq!(super::PageLink::compare_by_index(&link1, &link2), std::cmp::Ordering::Less);
+        assert_eq!(super::PageLink::compare_by_index(&link2, &link1), std::cmp::Ordering::Greater);
+        assert_eq!(super::PageLink::compare_by_index(&link1, &link1), std::cmp::Ordering::Equal);
+    }
+
 }
