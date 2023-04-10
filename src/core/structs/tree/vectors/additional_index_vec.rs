@@ -72,3 +72,20 @@ impl IndexMut<usize> for AdditionalIndexVec {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::core::structs::tree::vectors::additional_index_vec::AdditionalIndexVec;
+    use crate::core::structs::tree::vectors::optimized_tree_vec::OptimizedTreeVec;
+    use crate::core::structs::tree::vectors::tree_vec::TreeVecLevels;
+
+    #[test]
+    fn test_additional_index_vec() {
+        let optimized_tree_vec = OptimizedTreeVec::<u64>::new();
+
+        let vec = AdditionalIndexVec::new(&optimized_tree_vec);
+
+        assert_eq!(vec.len(), 0);
+        assert_eq!(vec.allocated_levels, optimized_tree_vec.get_allocated_levels());
+        assert_eq!(vec.max_length, optimized_tree_vec.get_max_length());
+    }
+}

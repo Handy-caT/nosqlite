@@ -162,10 +162,11 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
         if self.len() == 0 {
             return None;
         } else if self.len() == 1 {
+            let value = self.base.get(index).unwrap();
             self.base.remove_by_index(index);
             self.indexes[0] = TreeIndex::default();
             self.root = -1;
-            return Some(self.base.get(index).unwrap());
+            return Some(value);
         }
         let value = self.base.get(index).unwrap();
         self.root = self.remove_from_root(value, self.root);
@@ -276,4 +277,40 @@ mod tests {
 
         assert_eq!(dec_tree.get(0), None);
     }
+
+    #[test]
+    fn test_decoratable_balanced_tree_remove_root_values() {
+        let nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+
+        tree.push(1);
+
+        let mut dec_tree = DecoratableBalancedTree::<u64, DefaultTreeVec<u64>, BalancedTree<u64, DefaultTreeVec<u64>>>::new(tree, |a, b| b.cmp(a));
+
+        assert_eq!(dec_tree.remove_by_value(1), Some(1));
+        assert_eq!(dec_tree.len(), 0);
+        assert_eq!(dec_tree.get(0), None);
+
+        assert_eq!(dec_tree.remove_by_value(1), None);
+    }
+
+    #[test]
+    fn test_decoratable_balanced_tree_remove_root_indexes() {
+        let nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+
+        tree.push(1);
+
+        let mut dec_tree = DecoratableBalancedTree::<u64, DefaultTreeVec<u64>, BalancedTree<u64, DefaultTreeVec<u64>>>::new(tree, |a, b| b.cmp(a));
+
+        assert_eq!(dec_tree.remove_by_index(0), Some(1));
+        assert_eq!(dec_tree.len(), 0);
+        assert_eq!(dec_tree.find(1), None);
+        assert_eq!(dec_tree.get(0), None);
+
+        assert_eq!(dec_tree.remove_by_index(0), None);
+    }
+
 }
