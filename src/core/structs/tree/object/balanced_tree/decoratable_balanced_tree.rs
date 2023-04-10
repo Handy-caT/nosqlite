@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::balance;
+use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::{balance, find_min, remove_min};
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
 use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::vectors::additional_index_vec::AdditionalIndexVec;
@@ -45,6 +45,28 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
             }
         }
         balance(self.indexes.get_indexes_mut(), root_index)
+    }
+
+    fn remove_from_root(&mut self, value: T, root_index: i32) -> i32 {
+        if (self.compare)(&value, self.base.get_nodes_mut().get_value_mut(root_index)) == Ordering::Less {
+            self.indexes[root_index as usize].left_index = self.remove_from_root(value, self.indexes[root_index as usize].left_index);
+        } else if (self.compare)(&value, self.base.get_nodes_mut().get_value_mut(root_index)) == Ordering::Greater {
+            self.indexes[root_index as usize].right_index = self.remove_from_root(value, self.indexes[root_index as usize].right_index);
+        } else {
+            let left_index = self.indexes[root_index as usize].left_index;
+            let right_index = self.indexes[root_index as usize].right_index;
+
+            if right_index == -1 {
+                return left_index;
+            }
+
+            let min_index = find_min(self.indexes.get_indexes_mut(),right_index);
+            self.indexes[root_index as usize].right_index = remove_min(self.indexes.get_indexes_mut(),right_index);
+            self.indexes[root_index as usize].left_index = left_index;
+
+            return balance(self.indexes.get_indexes_mut(),min_index);
+        }
+        balance(self.indexes.get_indexes_mut(),root_index)
     }
 
     fn fill_indexes(&mut self) {
@@ -96,7 +118,18 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
     }
 
     fn remove_by_value(&mut self, value: T) -> Option<T> {
-        todo!()
+        if self.len() == 0 {
+            return None;
+        } else if self.len() == 1 {
+            self.base.remove_by_value(value);
+            self.indexes[0] = TreeIndex::default();
+            self.root = -1;
+            return Some(value);
+        }
+        self.root = self.remove_from_root(value, self.root);
+        self.base.remove_by_value(value);
+
+        Some(value)
     }
 
     fn is_empty(&self) -> bool {
@@ -172,5 +205,22 @@ mod tests {
         assert_eq!(dec_tree.find(1), Some(0));
         assert_eq!(dec_tree.find(2), Some(1));
         assert_eq!(dec_tree.find(3), Some(2));
+    }
+
+    #[test]
+    fn test_decoratable_balanced_tree_remove_by_value() {
+        let nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+
+        tree.push(1);
+        tree.push(2);
+        tree.push(3);
+
+        let mut dec_tree = DecoratableBalancedTree::<u64, DefaultTreeVec<u64>, BalancedTree<u64, DefaultTreeVec<u64>>>::new(tree, |a, b| b.cmp(a));
+
+        assert_eq!(dec_tree.remove_by_value(1), Some(1));
+        assert_eq!(dec_tree.remove_by_value(2), Some(2));
+        assert_eq!(dec_tree.remove_by_value(3), Some(3));
     }
 }
