@@ -7,6 +7,7 @@ pub struct DefaultTreeVec<T: Sized> {
     data: Vec<T>,
     empty: Vec<u64>,
     indexes: Vec<TreeIndex>,
+    
     length: u64,
 }
 

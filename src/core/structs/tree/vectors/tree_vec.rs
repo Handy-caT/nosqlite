@@ -17,3 +17,31 @@ pub trait TreeVecLevels {
     fn get_allocated_levels(&self) -> u8;
     fn get_max_length(&self) -> u64;
 }
+
+pub trait BackwardTreeVec {
+    fn get_parent(&self, index: i32) -> Option<i32>;
+}
+
+pub(in crate::core::structs::tree::vectors) trait DefaultFunctions<T> {
+    fn get_data(&self) -> &Vec<T>;
+    fn get_data_mut(&mut self) -> &mut Vec<T>;
+    
+    fn get_empty(&self) -> &Vec<u64>;
+    fn get_empty_mut(&mut self) -> &mut Vec<u64>;
+    
+    fn get_indexes(&self) -> &Vec<TreeIndex>;
+    fn get_indexes_mut(&mut self) -> &mut Vec<TreeIndex>;
+}
+
+pub(in crate::core::structs::tree::vectors) trait OptimizedFunctions<T> {
+    fn get_allocated_levels(&self) -> u8;
+    fn get_allocated_levels_mut(&mut self) -> &mut u8;
+    
+    fn get_max_length(&self) -> u64;
+    fn get_max_length_mut(&mut self) -> &mut u64;
+    
+    fn get_length(&self) -> u64;
+    fn get_length_mut(&mut self) -> &mut u64;
+
+    fn allocate_level(&mut self);
+}
