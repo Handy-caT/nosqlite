@@ -3,7 +3,7 @@ use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
 use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::vectors::additional_index_vec::AdditionalIndexVec;
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
 
 pub struct DecoratableBalancedTree<T, V: TreeVec<T> + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> {
     base: M,
@@ -13,7 +13,7 @@ pub struct DecoratableBalancedTree<T, V: TreeVec<T> + Sized, M: TreeObject<T> + 
     v: std::marker::PhantomData<V>,
 }
 
-impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> DecoratableBalancedTree<T, V, M> {
+impl <T: Default + Copy, V: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> DecoratableBalancedTree<T, V, M> {
     pub fn new(tree: M, compare: fn(&T, &T) -> Ordering) -> DecoratableBalancedTree<T, V, M> {
         let additional_index_vec = AdditionalIndexVec::new(tree.get_nodes());
 
@@ -94,7 +94,7 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
     }
 }
 
-impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObject<T> for DecoratableBalancedTree<T, V, M>  {
+impl <T: Default + Copy, V: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObject<T> for DecoratableBalancedTree<T, V, M>  {
     fn push(&mut self, value: T) -> i32 {
         let index = self.base.push(value);
         self.push_index(index);
@@ -141,7 +141,7 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
     }
 }
 
-impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObjectVec<T, V> for DecoratableBalancedTree<T, V, M>  {
+impl <T: Default + Copy, V: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObjectVec<T, V> for DecoratableBalancedTree<T, V, M>  {
     fn get(&mut self, index: i32) -> Option<T> {
         self.base.get(index)
     }

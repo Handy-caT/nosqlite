@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use queues::{IsQueue, Queue, queue};
 use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::{balance, find_min, remove_min};
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectFind, TreeObjectVec};
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
 
 pub struct BalancedTree<T, M: TreeVec<T> + Sized>
 {
@@ -22,7 +22,7 @@ fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
     }
 }
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> BalancedTree<T, M>
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecIndexes<T> + Sized> BalancedTree<T, M>
 {
     pub fn new(vec: M) -> BalancedTree<T, M> {
         BalancedTree {
@@ -89,7 +89,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> Bal
     }
 }
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> TreeObject<T> for BalancedTree<T,M> {
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized> TreeObject<T> for BalancedTree<T,M> {
     fn push(&mut self, value: T) -> i32{
         return if self.nodes.len() == 0 {
             self.root = self.nodes.push(value);
@@ -137,7 +137,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> Tre
 }
 
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> TreeObjectVec<T, M> for BalancedTree<T,M> {
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized> TreeObjectVec<T, M> for BalancedTree<T,M> {
     fn get(&mut self, index: i32) -> Option<T> {
         let item = self.nodes.get(index);
         return if item.is_none() {
@@ -171,7 +171,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + Sized> Tre
 
 
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + Sized> TreeObjectFind<T> for BalancedTree<T,M> {
+impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized> TreeObjectFind<T> for BalancedTree<T,M> {
     fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)> {
         let mut queue: Queue<(i32, String)> = queue![];
         let mut current_index = self.root;

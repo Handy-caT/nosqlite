@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
 
 pub struct DefaultTreeVec<T: Sized> {
     data: Vec<T>,
@@ -19,6 +19,24 @@ impl <T: Default + Copy> DefaultTreeVec<T> {
             indexes: Vec::new(),
             length: 0,
         }
+    }
+}
+
+impl <T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
+    }
+
+    fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
+        &mut self.indexes[index as usize]
+    }
+
+    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
+        &mut self.indexes
+    }
+
+    fn get_index(&self, index: i32) -> &TreeIndex {
+        &self.indexes[index as usize]
     }
 }
 
@@ -60,22 +78,6 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
                 })
             }
         }
-    }
-
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
-    }
-
-    fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
-        &mut self.indexes[index as usize]
-    }
-
-    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
-        &mut self.indexes
-    }
-
-    fn get_index(&self, index: i32) -> &TreeIndex {
-        &self.indexes[index as usize]
     }
 
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
