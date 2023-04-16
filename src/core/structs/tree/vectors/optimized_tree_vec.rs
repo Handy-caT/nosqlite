@@ -2,7 +2,7 @@ use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecIndexes, TreeVecLevels};
-use crate::core::structs::tree::vectors::vec_functions::{get, push, remove};
+use crate::core::structs::tree::vectors::vec_functions::{allocate_level, get, push, remove};
 
 pub const INITIAL_LEVELS: u8 = 6;
 
@@ -94,14 +94,7 @@ impl  <T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
     }
 
     fn allocate_level(&mut self) {
-        let new_length = 2u64.pow(self.allocated_levels as u32 + 1) - 1;
-        let additional = new_length - self.max_length;
-
-        self.data.reserve(additional as usize);
-        self.indexes.reserve(additional as usize);
-
-        self.max_length = new_length;
-        self.allocated_levels += 1;
+        allocate_level(self)
     }
 }
 
@@ -115,12 +108,12 @@ impl <T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
     }
 
 
-    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
-        &mut self.indexes
-    }
-
     fn get_index(&self, index: i32) -> &TreeIndex {
         &self.indexes[index as usize]
+    }
+
+    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
+        &mut self.indexes
     }
 }
 

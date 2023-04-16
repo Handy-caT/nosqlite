@@ -69,3 +69,14 @@ pub(in crate::core::structs::tree::vectors) fn remove<T: Default + Copy, V: Defa
         indexes: item,
     })
 }
+
+pub(in crate::core::structs::tree::vectors) fn allocate_level<T: Default + Copy, V: DefaultFunctions<T> + OptimizedFunctions<T> + TreeVecLevels>(vec: &mut V) {
+    let new_length = 2u64.pow(vec.get_allocated_levels() as u32 + 1) - 1;
+    let additional = new_length - vec.get_max_length();
+
+    vec.get_data_mut().reserve(additional as usize);
+    vec.get_indexes_mut().reserve(additional as usize);
+
+    *vec.get_length_mut() = new_length;
+    *vec.get_allocated_levels_mut() += 1;
+}

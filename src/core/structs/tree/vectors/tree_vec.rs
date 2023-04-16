@@ -24,6 +24,7 @@ pub trait TreeVecLevels {
 
 pub trait BackwardTreeVec {
     fn get_parent(&self, index: i32) -> Option<i32>;
+    fn add_parent(&mut self, index: i32, parent: i32);
 }
 
 pub(in crate::core::structs::tree::vectors) trait DefaultFunctions<T> {

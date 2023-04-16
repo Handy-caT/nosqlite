@@ -1,6 +1,5 @@
 use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::tree_index::TreeIndex;
-use crate::core::structs::tree::vectors::optimized_tree_vec::OptimizedTreeVec;
 use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
 
 pub struct AdditionalIndexVec {
