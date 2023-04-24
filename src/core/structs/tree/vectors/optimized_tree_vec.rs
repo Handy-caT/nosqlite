@@ -49,7 +49,7 @@ impl <T> TreeVecLevels for OptimizedTreeVec<T> {
     }
 }
 
-impl  <T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
+impl <T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }
@@ -75,7 +75,7 @@ impl  <T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl  <T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
+impl <T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
 
     fn get_allocated_levels_mut(&mut self) -> &mut u8 {
         &mut self.allocated_levels
@@ -106,8 +106,7 @@ impl <T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
     fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
         &mut self.indexes[index as usize]
     }
-
-
+    
     fn get_index(&self, index: i32) -> &TreeIndex {
         &self.indexes[index as usize]
     }

@@ -169,8 +169,6 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
     }
 }
 
-
-
 impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized> TreeObjectFind<T> for BalancedTree<T,M> {
     fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)> {
         let mut queue: Queue<(i32, String)> = queue![];

@@ -40,7 +40,6 @@ pub(in crate::core::structs::tree::vectors) trait DefaultFunctions<T> {
 
 pub(in crate::core::structs::tree::vectors) trait OptimizedFunctions<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8;
-
     fn get_max_length_mut(&mut self) -> &mut u64;
     
     fn get_length(&self) -> u64;

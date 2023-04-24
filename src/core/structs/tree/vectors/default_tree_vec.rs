@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, TreeVec, TreeVecIndexes, TreeVecLevels};
 
 pub struct DefaultTreeVec<T: Sized> {
     data: Vec<T>,
@@ -31,12 +31,12 @@ impl <T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
         &mut self.indexes[index as usize]
     }
 
-    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
-        &mut self.indexes
-    }
-
     fn get_index(&self, index: i32) -> &TreeIndex {
         &self.indexes[index as usize]
+    }
+
+    fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
+        &mut self.indexes
     }
 }
 
@@ -122,6 +122,32 @@ impl <T: Default + Copy> Index<i32> for DefaultTreeVec<T> {
 impl <T: Default + Copy> IndexMut<i32> for DefaultTreeVec<T> {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         &mut self.data[index as usize]
+    }
+}
+
+impl <T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
+    fn get_data(&self) -> &Vec<T> {
+        &self.data
+    }
+
+    fn get_data_mut(&mut self) -> &mut Vec<T> {
+        &mut self.data
+    }
+
+    fn get_empty(&self) -> &Vec<u64> {
+        &self.empty
+    }
+
+    fn get_empty_mut(&mut self) -> &mut Vec<u64> {
+        &mut self.empty
+    }
+
+    fn get_indexes(&self) -> &Vec<TreeIndex> {
+        &self.indexes
+    }
+
+    fn get_indexes_mut(&mut self) -> &mut Vec<TreeIndex> {
+        &mut self.indexes
     }
 }
 

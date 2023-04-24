@@ -9,7 +9,7 @@ pub struct AdditionalIndexVec {
 }
 
 impl AdditionalIndexVec {
-    pub(crate) fn new<T: Default + Copy, M: TreeVec<T> + TreeVecLevels + Sized>(tree_vec: &M) -> AdditionalIndexVec {
+    pub fn new<T: Default + Copy, M: TreeVec<T> + TreeVecLevels + Sized>(tree_vec: &M) -> AdditionalIndexVec {
         let mut vec = AdditionalIndexVec {
             indexes: Vec::new(),
             allocated_levels: tree_vec.get_allocated_levels(),

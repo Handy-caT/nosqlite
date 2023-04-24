@@ -45,7 +45,6 @@ impl <T: Default + Copy + Ord> BinHeap<T> {
             index = parent_index;
             parent_index = NormalizedTreeVector::<T>::get_parent_index(index);
         }
-
     }
 
     fn heapify(&mut self, index: i32) {
