@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
+use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::{balance, find_min, remove_min};
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
-use crate::core::structs::tree::tree_index::TreeIndex;
 use crate::core::structs::tree::vectors::additional_index_vec::AdditionalIndexVec;
 use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
 

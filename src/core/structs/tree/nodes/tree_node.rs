@@ -1,4 +1,4 @@
-use crate::core::structs::tree::tree_index::TreeIndex;
+use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 
 pub struct TreeNode<T> {
     pub value: T,

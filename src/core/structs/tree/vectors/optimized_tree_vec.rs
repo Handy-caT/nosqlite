@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
-use crate::core::structs::tree::tree_index::TreeIndex;
-use crate::core::structs::tree::tree_node::TreeNode;
+use crate::core::structs::tree::nodes::tree_index::TreeIndex;
+use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecIndexes, TreeVecLevels};
 use crate::core::structs::tree::vectors::vec_functions::{allocate_level, get, push, remove};
 

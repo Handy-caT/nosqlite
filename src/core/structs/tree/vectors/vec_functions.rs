@@ -1,5 +1,5 @@
-use crate::core::structs::tree::tree_index::TreeIndex;
-use crate::core::structs::tree::tree_node::TreeNode;
+use crate::core::structs::tree::nodes::tree_index::TreeIndex;
+use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, TreeVecLevels};
 
 pub(in crate::core::structs::tree::vectors) fn push<T, V: DefaultFunctions<T> + OptimizedFunctions<T> + TreeVecLevels>(vec: &mut V, value: T) -> i32 {

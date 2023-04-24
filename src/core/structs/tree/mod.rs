@@ -1,4 +1,3 @@
-mod tree_node;
-mod tree_index;
 mod vectors;
 mod object;
+pub mod nodes;

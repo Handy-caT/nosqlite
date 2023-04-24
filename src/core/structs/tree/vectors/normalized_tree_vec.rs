@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
-use crate::core::structs::tree::tree_index::TreeIndex;
-use crate::core::structs::tree::tree_node::TreeNode;
+use crate::core::structs::tree::nodes::tree_index::TreeIndex;
+use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
 use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecLevels};
 
@@ -32,6 +32,14 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
         vec.allocated_levels = INITIAL_LEVELS;
 
         vec
+    }
+
+    pub fn swap_indexes(&mut self, index1: i32, index2: i32) {
+        let index1 = self.indexes[index1 as usize];
+        let index2 = self.indexes[index2 as usize];
+
+        self.indexes[index1 as usize] = index2;
+        self.indexes[index2 as usize] = index1;
     }
 }
 
@@ -89,7 +97,7 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     }
 
     fn get(&mut self, index: i32) -> Option<TreeNode<T>> {
-        if index > self.length as i32 {
+        if index >= self.length as i32 || index < 0 {
             None
         } else {
             let tree_index = TreeIndex {
@@ -146,6 +154,50 @@ impl <T: Default + Copy> Index<i32> for NormalizedTreeVector<T> {
 impl <T: Default + Copy> IndexMut<i32> for NormalizedTreeVector<T> {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         &mut self.data[index as usize]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::structs::tree::vectors::normalized_tree_vec::NormalizedTreeVector;
+    use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
+    use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+
+    #[test]
+    fn test_normalized_tree_vector_new() {
+        let vec = NormalizedTreeVector::<u64>::new();
+
+        assert_eq!(vec.len(), 0);
+        assert_eq!(vec.get_allocated_levels(), INITIAL_LEVELS);
+        assert_eq!(vec.get_max_length(), 2u64.pow(INITIAL_LEVELS as u32) - 1);
+    }
+
+    #[test]
+    fn test_normalized_tree_vector_push() {
+        let mut vec = NormalizedTreeVector::<u64>::new();
+
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.len(), 3);
+        assert_eq!(vec[0], 1);
+        assert_eq!(vec[1], 2);
+        assert_eq!(vec[2], 3);
+    }
+
+    #[test]
+    fn test_normalized_tree_vector_get() {
+        let mut vec = NormalizedTreeVector::<u64>::new();
+
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.len(), 3);
+
+        assert_eq!(vec.get(0).is_some(), true);
+        assert_eq!(vec.get(0).unwrap().value, 1)
     }
 }
 
