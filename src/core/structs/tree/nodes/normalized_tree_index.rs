@@ -1,6 +1,5 @@
 use std::io;
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::nodes::tree_node::TreeNode;
 
 pub struct NormalizedTreeIndex {
     pub index: i32,
@@ -25,6 +24,10 @@ impl NormalizedTreeIndex {
 
     fn can_be_normalized(node: &TreeIndex) -> bool {
         node.left_index == node.index * 2 + 1 && node.right_index == node.index * 2 + 2
+    }
+
+    pub fn find_height(index: i32) -> u8 {
+        (index as f32 + 1.).log2().floor() as u8 + 1
     }
 }
 
@@ -74,26 +77,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_new() {
+    fn test_normalized_tree_index_new() {
         let node = NormalizedTreeIndex::new( 0);
         assert_eq!(node.index, 0);
         assert_eq!(node.height, 1);
     }
 
     #[test]
-    fn test_get_right_index() {
+    fn test_normalized_tree_index_get_right_index() {
         let node = NormalizedTreeIndex::new( 0);
         assert_eq!(node.get_right_index(), 2);
     }
 
     #[test]
-    fn test_get_left_index() {
+    fn test_normalized_tree_index_get_left_index() {
         let node = NormalizedTreeIndex::new( 0);
         assert_eq!(node.get_left_index(), 1);
     }
 
     #[test]
-    fn test_into() {
+    fn test_normalized_tree_index_into() {
         let node = NormalizedTreeIndex::new( 0);
         let tree_node: TreeIndex = node.into();
 
@@ -104,7 +107,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from() {
+    fn test_normalized_tree_index_from() {
         let mut tree_node =  TreeIndex::new_with_index( 0);
         tree_node.right_index = 2;
         tree_node.left_index = 1;
@@ -114,5 +117,12 @@ mod tests {
 
         assert_eq!(unwrapped.index, 0);
         assert_eq!(unwrapped.height, 1);
+    }
+
+    #[test]
+    fn test_normalized_tree_index_height() {
+        assert_eq!(NormalizedTreeIndex::find_height(0), 1);
+        assert_eq!(NormalizedTreeIndex::find_height(1), 2);
+        assert_eq!(NormalizedTreeIndex::find_height(14), 4)
     }
 }
