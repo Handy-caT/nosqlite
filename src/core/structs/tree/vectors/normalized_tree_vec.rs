@@ -3,7 +3,7 @@ use crate::core::structs::tree::nodes::normalized_tree_index::NormalizedTreeInde
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-use crate::core::structs::tree::vectors::tree_vec::{OptimizedFunctions, TreeVec, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{NormalizedTreeVecIndexes, OptimizedFunctions, TreeVec, TreeVecLevels};
 
 pub struct NormalizedTreeVector<T> {
     allocated_levels: u8,
@@ -136,16 +136,25 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
             None
         } else {
             let height = self.indexes[index as usize].height;
-            self.indexes[index as usize] = NormalizedTreeIndex::default();
+            let res_index = self.indexes[index as usize].index;
+            let data = self.data[index as usize];
+
+            if index == (self.length - 1) as i32 {
+                self.data.pop();
+                self.indexes.pop();
+                self.length -= 1;
+            } else {
+                self.indexes[index as usize] = NormalizedTreeIndex::default();
+            }
             let tree_index = TreeIndex {
-                index: self.indexes[index as usize].index,
+                index: res_index,
                 left_index: 2 * index + 1,
                 right_index: 2 * index + 2,
                 height,
             };
 
             let node = TreeNode {
-                value: self.data[index as usize],
+                value: data,
                 indexes: tree_index,
             };
 
@@ -155,6 +164,24 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
 
     fn len(&self) -> usize {
         self.length as usize
+    }
+}
+
+impl <T: Default + Copy> NormalizedTreeVecIndexes<T> for NormalizedTreeVector<T> {
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
+    }
+
+    fn get_index_mut(&mut self, index: i32) -> &mut NormalizedTreeIndex {
+        &mut self.indexes[index as usize]
+    }
+
+    fn get_index(&self, index: i32) -> &NormalizedTreeIndex {
+        &self.indexes[index as usize]
+    }
+
+    fn get_indexes(&mut self) -> &mut Vec<NormalizedTreeIndex> {
+        &mut self.indexes
     }
 }
 
