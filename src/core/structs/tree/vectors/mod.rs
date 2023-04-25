@@ -4,4 +4,4 @@ pub mod default_tree_vec;
 pub mod additional_index_vec;
 pub mod backward_tree_vec;
 mod vec_functions;
-mod normalized_tree_vec;
+pub mod normalized_tree_vec;

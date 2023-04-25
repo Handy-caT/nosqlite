@@ -3,7 +3,7 @@ use crate::core::structs::tree::nodes::normalized_tree_index::NormalizedTreeInde
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{OptimizedFunctions, TreeVec, TreeVecLevels};
 
 pub struct NormalizedTreeVector<T> {
     allocated_levels: u8,
@@ -36,11 +36,20 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
     }
 
     pub fn swap_indexes(&mut self, index1: i32, index2: i32) {
-        let index1 = self.indexes[index1 as usize].index;
-        let index2 = self.indexes[index2 as usize].index;
+        let index1_new = self.indexes[index1 as usize].index;
+        let index2_new = self.indexes[index2 as usize].index;
 
-        self.indexes[index1 as usize].index = index2;
-        self.indexes[index2 as usize].index = index1;
+        self.indexes[index1 as usize].index = index2_new;
+        self.indexes[index2 as usize].index = index1_new;
+    }
+
+    pub fn get_parent_index(index: i32) -> i32 {
+        if index == 0 {
+            return -1;
+        } else {
+            let parent_index = (index - 1) / 2;
+            parent_index as i32
+        }
     }
 }
 
@@ -228,6 +237,13 @@ mod tests {
 
         assert_eq!(vec.get(0).unwrap().indexes.height, 1);
         assert_eq!(vec.get(2).unwrap().indexes.height, 2);
+    }
+
+    #[test]
+    fn test_normalized_tree_vector_get_parent() {
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(0), -1);
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(1), 0);
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(5), 2);
     }
 }
 
