@@ -12,6 +12,7 @@ pub struct NormalizedTreeVector<T> {
 
     data: Vec<T>,
     indexes: Vec<NormalizedTreeIndex>,
+    empty: Vec<u64>,
 }
 
 impl <T: Default + Copy> NormalizedTreeVector<T> {
@@ -22,6 +23,7 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
             length: 0,
             data: Vec::new(),
             indexes: Vec::new(),
+            empty: Vec::new(),
         };
 
         let length = 2u64.pow(INITIAL_LEVELS as u32) - 1;
@@ -95,13 +97,24 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     fn push(&mut self, value: T) -> i32 {
         let index = self.length;
 
+        let data_index = if !self.empty.is_empty() {
+            self.empty.pop().unwrap()
+        } else {
+            index
+        };
+
         if index == self.max_length {
             self.allocate_level();
         }
 
-        self.data.push(value);
+        if data_index != index {
+            self.data[data_index as usize] = value;
+        } else {
+            self.data.push(value);
+        }
+
         let tree_index = NormalizedTreeIndex {
-            index: index as i32,
+            index: data_index as i32,
             height: NormalizedTreeIndex::find_height(index as i32),
         };
         self.indexes.push(tree_index);
@@ -120,7 +133,7 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
                 right_index: 2 * index + 2,
                 height: self.indexes[index as usize].height,
             };
-            let data = self.data[index as usize];
+            let data = self.data[tree_index.index as usize];
 
             let node = TreeNode {
                 value: data,
@@ -135,30 +148,36 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
         if index < 0 || index >= self.length as i32 {
             None
         } else {
-            let height = self.indexes[index as usize].height;
-            let res_index = self.indexes[index as usize].index;
-            let data = self.data[index as usize];
-
             if index == (self.length - 1) as i32 {
-                self.data.pop();
-                self.indexes.pop();
+                let item  = self.indexes.pop().unwrap();
+                let data_index = item.index;
+                let height = item.height;
+
+                let data = self.data[data_index as usize];
+                if data_index != index {
+                    self.empty.push(data_index as u64);
+                } else {
+                    self.data.pop();
+                }
+
                 self.length -= 1;
+
+                let tree_index = TreeIndex {
+                    index: data_index,
+                    left_index: 2 * index + 1,
+                    right_index: 2 * index + 2,
+                    height,
+                };
+
+                let node = TreeNode {
+                    value: data,
+                    indexes: tree_index,
+                };
+
+                Some(node)
             } else {
-                self.indexes[index as usize] = NormalizedTreeIndex::default();
+                None
             }
-            let tree_index = TreeIndex {
-                index: res_index,
-                left_index: 2 * index + 1,
-                right_index: 2 * index + 2,
-                height,
-            };
-
-            let node = TreeNode {
-                value: data,
-                indexes: tree_index,
-            };
-
-            Some(node)
         }
     }
 
@@ -263,7 +282,9 @@ mod tests {
         assert_eq!(vec.get(2).unwrap().indexes.index, 0);
 
         assert_eq!(vec.get(0).unwrap().indexes.height, 1);
+        assert_eq!(vec.get(0).unwrap().value, 3);
         assert_eq!(vec.get(2).unwrap().indexes.height, 2);
+        assert_eq!(vec.get(2).unwrap().value, 1);
     }
 
     #[test]
@@ -271,6 +292,51 @@ mod tests {
         assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(0), -1);
         assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(1), 0);
         assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(5), 2);
+    }
+
+    #[test]
+    fn test_normalized_tree_vector_remove() {
+        let mut vec = NormalizedTreeVector::<u64>::new();
+
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.remove(1), None);
+        assert_eq!(vec.len(), 3);
+
+        let node = vec.remove(2);
+        assert_eq!(node.is_some(), true);
+        assert_eq!(node.unwrap().value, 3);
+        assert_eq!(vec.len(), 2);
+        assert_eq!(vec.empty.len(), 0);
+    }
+
+    #[test]
+    fn test_normalized_tree_vector_remove_swap_push() {
+        let mut vec = NormalizedTreeVector::<u64>::new();
+
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.len(), 3);
+
+        vec.swap_indexes(0, 2);
+        let node = vec.remove(2);
+        assert_eq!(node.is_some(), true);
+
+        assert_eq!(node.unwrap().value, 1);
+        assert_eq!(vec.empty.len(), 1);
+
+        vec.push(4);
+        let node = vec.get(2);
+        assert_eq!(node.is_some(), true);
+
+        let node = node.unwrap();
+        assert_eq!(node.value, 4);
+        assert_eq!(node.indexes.index, 0);
+        assert_eq!(vec.empty.len(), 0);
     }
 }
 

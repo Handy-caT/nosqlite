@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter};
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 
 pub struct TreeNode<T> {
@@ -45,6 +46,15 @@ impl <T: Default> Default for TreeNode<T> {
 impl <T: PartialEq> PartialEq for TreeNode<T> {
     fn eq(&self, other: &Self) -> bool {
         return self.value == other.value && self.indexes == other.indexes
+    }
+}
+
+impl <T: Debug> Debug for TreeNode<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TreeNode")
+            .field("value", &self.value)
+            .field("indexes", &self.indexes)
+            .finish()
     }
 }
 

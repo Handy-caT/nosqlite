@@ -29,13 +29,13 @@ impl <T: Default + PartialOrd + Copy> BinHeap<T> {
 
         let mut largest_index = index;
 
-        if left_index < self.data.len() as i32 && (self.compare)(&self.data.get(self.data.get_index(left_index).index).unwrap().value,
-                                                                 &self.data.get(self.data.get_index(index).index).unwrap().value) == Ordering::Greater {
+        if left_index < self.data.len() as i32 && (self.compare)(&self.data.get(left_index).unwrap().value,
+                                                                 &self.data.get(index).unwrap().value) == Ordering::Greater {
             largest_index = left_index;
         }
 
-        if right_index < self.data.len() as i32 && (self.compare)(&self.data.get(self.data.get_index(right_index).index).unwrap().value,
-                                                                  &self.data.get(self.data.get_index(largest_index).index).unwrap().value) == Ordering::Greater {
+        if right_index < self.data.len() as i32 && (self.compare)(&self.data.get(right_index).unwrap().value,
+                                                                  &self.data.get(largest_index).unwrap().value) == Ordering::Greater {
             largest_index = right_index;
         }
 
@@ -49,8 +49,7 @@ impl <T: Default + PartialOrd + Copy> BinHeap<T> {
         return if self.data.len() == 0 {
             None
         } else {
-            let index = self.data.get_index(0).index;
-            Some(self.data.get(index).unwrap().value)
+            Some(self.data.get(0).unwrap().value)
         }
     }
 
@@ -87,19 +86,53 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
     }
 
     fn find(&mut self, value: T) -> Option<i32> {
-        todo!()
+        if self.data.len() == 0 {
+            return None;
+        } else {
+            let mut index = 0;
+            let mut found = false;
+
+            while index < self.data.len() as i32 && !found {
+                if self.data.get(index).unwrap().value == value {
+                    found = true;
+                } else {
+                    index += 1;
+                }
+            }
+
+            if found {
+                Some(index)
+            } else {
+                None
+            }
+        }
     }
 
     fn remove_by_value(&mut self, value: T) -> Option<T> {
-        todo!()
+        if self.data.len() == 0 {
+            return None;
+        } else {
+            let index = self.find(value);
+            if index.is_none() {
+                return None;
+            } else {
+                let index = index.unwrap();
+                let value = self.data.get(index).unwrap().value;
+                self.data.swap_indexes(index, self.data.len() as i32 - 1);
+                self.data.remove(self.data.len() as i32 - 1);
+                self.heapify(index);
+
+                Some(value)
+            }
+        }
     }
 
     fn is_empty(&self) -> bool {
-        todo!()
+        self.data.len() == 0
     }
 
     fn len(&self) -> usize {
-        todo!()
+        self.data.len()
     }
 }
 
@@ -165,6 +198,34 @@ mod tests {
         heap.push(3);
 
         assert_eq!(heap.peek_max().unwrap(), 3);
+        assert_eq!(heap.data.len(), 3);
+    }
+
+    #[test]
+    fn test_bin_heap_find() {
+        let mut heap = BinHeap::<u64>::new();
+
+        heap.push(1);
+        heap.push(2);
+        heap.push(3);
+
+        assert_eq!(heap.find(1).unwrap(), 1);
+        assert_eq!(heap.find(2).unwrap(), 2);
+        assert_eq!(heap.find(3).unwrap(), 0);
+        assert_eq!(heap.find(4), None);
+        assert_eq!(heap.find(0), None)
+    }
+
+    #[test]
+    fn test_bin_heap_remove_by_value() {
+        let mut heap = BinHeap::<u64>::new();
+
+        heap.push(1);
+        heap.push(2);
+        heap.push(3);
+        heap.push(4);
+
+        assert_eq!(heap.remove_by_value(2).unwrap(), 2);
         assert_eq!(heap.data.len(), 3);
     }
 }
