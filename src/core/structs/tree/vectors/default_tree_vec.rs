@@ -23,10 +23,6 @@ impl <T: Default + Copy> DefaultTreeVec<T> {
 }
 
 impl <T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
-    }
-
     fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
         &mut self.indexes[index as usize]
     }
@@ -78,6 +74,10 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
                 })
             }
         }
+    }
+
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
     }
 
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {

@@ -1,3 +1,4 @@
 mod tree_object;
-mod balanced_tree;
-mod bin_heap;
+pub mod balanced_tree;
+pub mod bin_heap;
+mod test_objects;

@@ -13,7 +13,7 @@ pub struct DecoratableBalancedTree<T, V: TreeVec<T> + Sized, M: TreeObject<T> + 
     v: std::marker::PhantomData<V>,
 }
 
-impl <T: Default + Copy, V: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> DecoratableBalancedTree<T, V, M> {
+impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> DecoratableBalancedTree<T, V, M> {
     pub fn new(tree: M, compare: fn(&T, &T) -> Ordering) -> DecoratableBalancedTree<T, V, M> {
         let additional_index_vec = AdditionalIndexVec::new(tree.get_nodes());
 
@@ -94,7 +94,7 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Siz
     }
 }
 
-impl <T: Default + Copy, V: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObject<T> for DecoratableBalancedTree<T, V, M>  {
+impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T> + Sized + TreeObjectVec<T, V>> TreeObject<T> for DecoratableBalancedTree<T, V, M>  {
     fn push(&mut self, value: T) -> i32 {
         let index = self.base.push(value);
         self.push_index(index);

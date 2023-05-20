@@ -144,6 +144,10 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
         }
     }
 
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
+    }
+
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
         if index < 0 || index >= self.length as i32 {
             None
@@ -187,10 +191,6 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
 }
 
 impl <T: Default + Copy> NormalizedTreeVecIndexes<T> for NormalizedTreeVector<T> {
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
-    }
-
     fn get_index_mut(&mut self, index: i32) -> &mut NormalizedTreeIndex {
         &mut self.indexes[index as usize]
     }

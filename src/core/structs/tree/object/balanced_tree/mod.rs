@@ -1,3 +1,3 @@
 mod balanced_tree_functions;
-mod balanced_tree;
-mod decoratable_balanced_tree;
+pub mod balanced_tree;
+pub mod decoratable_balanced_tree;

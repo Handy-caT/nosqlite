@@ -99,10 +99,6 @@ impl <T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
 }
 
 impl <T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
-    }
-
     fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
         &mut self.indexes[index as usize]
     }
@@ -117,6 +113,10 @@ impl <T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
 }
 
 impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
+    }
+
     fn push(&mut self, value: T) -> i32 {
         push(self, value)
     }

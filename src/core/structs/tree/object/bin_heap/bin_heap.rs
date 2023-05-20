@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
-use crate::core::structs::tree::object::tree_object::TreeObject;
+use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
 use crate::core::structs::tree::vectors::normalized_tree_vec::NormalizedTreeVector;
-use crate::core::structs::tree::vectors::tree_vec::{NormalizedTreeVecIndexes, TreeVec};
+use crate::core::structs::tree::vectors::tree_vec::{TreeVec};
 
 pub struct BinHeap<T> {
     data: NormalizedTreeVector<T>,
@@ -117,12 +117,7 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
                 return None;
             } else {
                 let index = index.unwrap();
-                let value = self.data.get(index).unwrap().value;
-                self.data.swap_indexes(index, self.data.len() as i32 - 1);
-                self.data.remove(self.data.len() as i32 - 1);
-                self.heapify(index);
-
-                Some(value)
+                self.remove_by_index(index)
             }
         }
     }
@@ -136,10 +131,45 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
     }
 }
 
+impl <T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>> for BinHeap<T> {
+    fn get(&mut self, index: i32) -> Option<T> {
+        if index < self.data.len() as i32 && index >= 0 {
+            Some(self.data.get(index).unwrap().value)
+        } else {
+            None
+        }
+    }
+
+    fn get_nodes_mut(&mut self) -> &mut NormalizedTreeVector<T> {
+        &mut self.data
+    }
+
+    fn get_nodes(&self) -> &NormalizedTreeVector<T> {
+        &self.data
+    }
+
+    fn get_root_index(&self) -> i32 {
+        0
+    }
+
+    fn remove_by_index(&mut self, index: i32) -> Option<T> {
+        if index < self.data.len() as i32 || index >= 0 {
+            let value = self.data.get(index).unwrap().value;
+            self.data.swap_indexes(index, self.data.len() as i32 - 1);
+            self.data.remove(self.data.len() as i32 - 1);
+            self.heapify(index);
+
+            Some(value)
+        } else {
+            None
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::object::bin_heap::bin_heap::BinHeap;
-    use crate::core::structs::tree::object::tree_object::TreeObject;
+    use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
     use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
     use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
 
@@ -149,6 +179,7 @@ mod tests {
 
         assert_eq!(heap.data.len(), 0);
         assert_eq!(heap.data.get_allocated_levels(), INITIAL_LEVELS);
+        assert_eq!(heap.is_empty(), true);
     }
 
     #[test]
@@ -227,5 +258,39 @@ mod tests {
 
         assert_eq!(heap.remove_by_value(2).unwrap(), 2);
         assert_eq!(heap.data.len(), 3);
+        assert_eq!(heap.peek_max().is_some(), true);
+        assert_eq!(heap.peek_max().unwrap(), 4);
+    }
+
+    #[test]
+    fn test_bin_heap_remove_by_index() {
+        let mut heap = BinHeap::<u64>::new();
+
+        heap.push(1);
+        heap.push(2);
+        heap.push(3);
+        heap.push(4);
+
+        assert_eq!(heap.remove_by_index(2).unwrap(), 2);
+        assert_eq!(heap.data.len(), 3);
+        assert_eq!(heap.peek_max().is_some(), true);
+        assert_eq!(heap.peek_max().unwrap(), 4);
+    }
+
+    #[test]
+    fn test_bin_heap_get() {
+        let mut heap = BinHeap::<u64>::new();
+
+        heap.push(1);
+        heap.push(2);
+        heap.push(3);
+        heap.push(4);
+
+        assert_eq!(heap.get(0).unwrap(), 4);
+        assert_eq!(heap.get(1).unwrap(), 3);
+        assert_eq!(heap.get(2).unwrap(), 2);
+        assert_eq!(heap.get(3).unwrap(), 1);
+        assert_eq!(heap.get(4), None);
+        assert_eq!(heap.get(-1), None);
     }
 }
