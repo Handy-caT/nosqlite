@@ -11,8 +11,11 @@ use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, Tre
 /// It also can be customized with compare function
 pub struct BalancedTree<T, M: TreeVec<T> + Sized>
 {
+    /// Index of the root node
     root: i32,
+    /// Vector of nodes
     nodes: M,
+    /// Compare function
     compare: fn(&T, &T) -> Ordering,
 }
 
@@ -32,6 +35,10 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
 {
     /// Creates new balanced tree using specified vector
     /// Vector must implement TreeVec trait
+    /// # Arguments
+    /// * `vec` - Vector to be used as a tree
+    /// # Returns
+    /// * `BalancedTree<T, M>` - New balanced tree
     pub fn new(vec: M) -> BalancedTree<T, M> {
         BalancedTree {
             root: 0,
@@ -41,6 +48,11 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
     }
 
     /// Creates new balanced tree using specified vector and compare function
+    /// # Arguments
+    /// * `vec` - Vector to be used as a tree
+    /// * `compare` - Compare function
+    /// # Returns
+    /// * `BalancedTree<T, M>` - New balanced tree
     pub fn new_with_compare(vec: M, compare: fn(&T, &T) -> Ordering) -> BalancedTree<T, M> {
         BalancedTree {
             root: 0,
@@ -51,6 +63,11 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
 
     /// Function to add value to the tree from it's root
     /// It returns index of the root in case the root was changed
+    /// # Arguments
+    /// * `value` - Value to be added
+    /// * `root_index` - Index of the root
+    /// # Returns
+    /// * `(i32, i32)` - Index of the new root and index of the new node
     fn add_from_root(&mut self, value: T, root_index: i32) -> (i32, i32) {
         let mut pushed_index = -1;
         if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Less {
@@ -77,6 +94,11 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
 
     /// Function to remove value from the tree from it's root
     /// It returns index of the root in case the root was changed
+    /// # Arguments
+    /// * `value` - Value to be removed
+    /// * `root_index` - Index of the root
+    /// # Returns
+    /// * `i32` - Index of the new root
     fn remove_from_root(&mut self, value: T, root_index: i32) -> i32 {
         if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Less {
             self.nodes.get_index_mut(root_index).left_index = self.remove_from_root(value, self.nodes.get_index(root_index).left_index);

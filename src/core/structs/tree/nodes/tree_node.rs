@@ -1,12 +1,21 @@
 use std::fmt::{Debug, Formatter};
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 
+/// Struct that represents a node in a tree
 pub struct TreeNode<T> {
+    /// Value of the node
     pub value: T,
+    /// Indexes of the node
     pub indexes: TreeIndex,
 }
 
 impl <T> TreeNode<T> {
+    /// Creates a new node with the given value and indexes
+    /// # Arguments
+    /// * `value` - Value of the node
+    /// * `index` - Index of the node
+    /// # Returns
+    /// * `TreeNode<T>` - New node
     pub fn new_with_index(value: T, index: i32) -> TreeNode<T> {
         TreeNode {
             value,
@@ -14,6 +23,11 @@ impl <T> TreeNode<T> {
         }
     }
 
+    /// Creates a new node with the given value and default indexes
+    /// # Arguments
+    /// * `value` - Value of the node
+    /// # Returns
+    /// * `TreeNode<T>` - New node
     pub fn new(value: T) -> TreeNode<T> {
         TreeNode {
             value,

@@ -1,13 +1,26 @@
 use std::fmt::Debug;
 
+/// Struct that represents tree node indexes
 pub struct TreeIndex {
+    /// Index of the node
     pub index: i32,
+    /// Index of the left child
     pub left_index: i32,
+    /// Index of the right child
     pub right_index: i32,
+    /// Height of the node
+    /// By default, height is 1
     pub height: u8,
 }
 
 impl TreeIndex {
+    /// Creates a new node with the given index
+    /// Left and right indexes are set to -1 by default
+    /// Height is set to 1 by default
+    /// # Arguments
+    /// * `index` - Index of the node
+    /// # Returns
+    /// * `TreeIndex` - New node
     pub fn new_with_index(index: i32) -> TreeIndex {
         TreeIndex {
             index,
@@ -17,6 +30,9 @@ impl TreeIndex {
         }
     }
 
+    /// Creates a new node with default values
+    /// # Returns
+    /// * `TreeIndex` - New node
     pub fn new() -> TreeIndex {
         TreeIndex {
             index: -1,

@@ -1,12 +1,22 @@
 use std::io;
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 
+/// Struct that represents a normalized index in a tree
+/// A normalized index is a index where left_index = index * 2 + 1 and right_index = index * 2 + 2
 pub struct NormalizedTreeIndex {
+    /// Index of the node
     pub index: i32,
+    /// Height of the node
     pub height: u8,
 }
 
 impl NormalizedTreeIndex {
+    /// Creates a new node with the given index
+    /// Height is set to 1 by default
+    /// # Arguments
+    /// * `index` - Index of the node
+    /// # Returns
+    /// * `NormalizedTreeIndex` - New node
     pub fn new(index: i32) -> NormalizedTreeIndex {
         NormalizedTreeIndex {
             index,
@@ -14,18 +24,34 @@ impl NormalizedTreeIndex {
         }
     }
 
+    /// Returns the index of the right child
+    /// # Returns
+    /// * `i32` - Index of the right child
     pub fn get_right_index(&self) -> i32 {
         self.index * 2 + 2
     }
 
+    /// Returns the index of the left child
+    /// # Returns
+    /// * `i32` - Index of the left child
     pub fn get_left_index(&self) -> i32 {
         self.index * 2 + 1
     }
 
+    /// Checks if the given node can be normalized
+    /// # Arguments
+    /// * `node` - TreeIndex to check
+    /// # Returns
+    /// * `bool` - True if the node can be normalized, false otherwise
     fn can_be_normalized(node: &TreeIndex) -> bool {
         node.left_index == node.index * 2 + 1 && node.right_index == node.index * 2 + 2
     }
 
+    /// Returns the height of the node at the given index
+    /// # Arguments
+    /// * `index` - Index of the node
+    /// # Returns
+    /// * `u8` - Height of the node
     pub fn find_height(index: i32) -> u8 {
         (index as f32 + 1.).log2().floor() as u8 + 1
     }
