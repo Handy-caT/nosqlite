@@ -123,7 +123,7 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
         index as i32
     }
 
-    fn get(&mut self, index: i32) -> Option<TreeNode<T>> {
+    fn get(&self, index: i32) -> Option<TreeNode<T>> {
         if index >= self.length as i32 || index < 0 {
             None
         } else {

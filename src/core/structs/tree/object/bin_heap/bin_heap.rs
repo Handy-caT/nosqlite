@@ -93,6 +93,7 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
         }
 
         let mut index = self.data.push(value);
+        let result_index = index;
         let mut parent_index = NormalizedTreeVector::<T>::get_parent_index(index);
 
         while index > 0 && (self.compare)(&self.data.get(index).unwrap().value, &self.data.get(parent_index).unwrap().value) == Ordering::Greater {
@@ -100,7 +101,7 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
             index = parent_index;
             parent_index = NormalizedTreeVector::<T>::get_parent_index(index);
         }
-        parent_index
+        result_index
     }
 
     /// Function that returns the index of the element with the given value
@@ -159,6 +160,7 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
 impl <T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>> for BinHeap<T> {
     /// Function that returns the value of the element by the given index
     /// If the index is incorrect, it returns None
+    /// The index represents index in heap not in underlying vector
     fn get(&mut self, index: i32) -> Option<T> {
         if index < self.data.len() as i32 && index >= 0 {
             Some(self.data.get(index).unwrap().value)
@@ -324,4 +326,13 @@ mod tests {
         assert_eq!(heap.get(4), None);
         assert_eq!(heap.get(-1), None);
     }
+
+     #[test]
+    fn test_bin_heap_push_index() {
+         let mut heap = BinHeap::<u64>::new();
+
+         assert_eq!(heap.push(1), 0);
+         assert_eq!(heap.push(2), 1);
+         assert_eq!(heap.push(3), 2);
+     }
 }

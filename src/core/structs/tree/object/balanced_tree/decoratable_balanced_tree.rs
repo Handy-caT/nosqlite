@@ -31,6 +31,8 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
     }
 
     fn add_from_root(&mut self, value: T, root_index: i32, value_index: i32) -> i32 {
+        let val = self.base.get_nodes_mut().get_value_mut(root_index);
+        let cmp = (self.compare)(&value, self.base.get_nodes_mut().get_value_mut(root_index));
         if (self.compare)(&value, self.base.get_nodes_mut().get_value_mut(root_index)) == Ordering::Less {
             if self.indexes[root_index as usize].left_index == -1 {
                 self.indexes[root_index as usize].left_index = value_index;
@@ -75,12 +77,13 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
         self.root = 0;
 
         for i in 1..length {
-            let item = self.base.get(i as i32);
+            let item = self.base.get_nodes().get(i as i32);
             if item.is_none() {
                 self.indexes.push(TreeIndex::default());
             } else {
                 self.indexes.push(TreeIndex::new_with_index(i as i32));
-                self.root = self.add_from_root(item.unwrap(), self.root, i as i32);
+                let value = self.base.get_nodes().get(item.unwrap().indexes.index);
+                self.root = self.add_from_root(value.unwrap().value, self.root, i as i32);
             }
         }
     }

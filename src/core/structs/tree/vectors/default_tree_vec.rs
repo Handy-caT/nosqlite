@@ -58,7 +58,7 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
         index as i32
     }
 
-    fn get(&mut self, index: i32) -> Option<TreeNode<T>> {
+    fn get(&self, index: i32) -> Option<TreeNode<T>> {
         let item = self.indexes.get(index as usize);
         return if item.is_none() {
             None

@@ -5,7 +5,7 @@ use crate::core::structs::tree::nodes::tree_node::TreeNode;
 
 pub trait TreeVec<T>: Index<i32, Output = T> + IndexMut<i32> {
     fn push(&mut self, value: T) -> i32;
-    fn get(&mut self, index: i32) -> Option<TreeNode<T>>;
+    fn get(&self, index: i32) -> Option<TreeNode<T>>;
     fn get_value_mut(&mut self, index: i32) -> &mut T;
 
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>>;
