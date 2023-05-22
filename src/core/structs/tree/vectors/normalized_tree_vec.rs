@@ -5,17 +5,32 @@ use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
 use crate::core::structs::tree::vectors::tree_vec::{NormalizedTreeVecIndexes, OptimizedFunctions, TreeVec, TreeVecLevels};
 
+/// Struct that represents normalized tree vector.
+/// In this vector child indexes are 2i+1 and 2i+2.
+/// This vector has empty vector to contain empty indexes.
+/// Indexes vector contains indexes of data vector, so data is independent from indexes.
 pub struct NormalizedTreeVector<T> {
+    /// Number of allocated levels.
     allocated_levels: u8,
+    /// Max length of vector.
     max_length: u64,
+    /// Length of vector.
     length: u64,
 
+    /// Data vector.
     data: Vec<T>,
+    /// Indexes vector of NormalizedTreeIndex.
     indexes: Vec<NormalizedTreeIndex>,
+    /// Empty vector.
+    /// Contains indexes of empty data vector.
     empty: Vec<u64>,
 }
 
+/// NormalizedTreeVector implementation.
 impl <T: Default + Copy> NormalizedTreeVector<T> {
+    /// Creates new NormalizedTreeVector.
+    /// # Returns
+    /// New NormalizedTreeVector.
     pub fn new() -> NormalizedTreeVector<T> {
         let mut vec = NormalizedTreeVector {
             allocated_levels: 0,
@@ -37,6 +52,11 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
         vec
     }
 
+    /// Swaps two indexes.
+    /// Indexes must be in bounds.
+    /// # Arguments
+    /// * `index1` - First index.
+    /// * `index2` - Second index.
     pub fn swap_indexes(&mut self, index1: i32, index2: i32) {
         let index1_new = self.indexes[index1 as usize].index;
         let index2_new = self.indexes[index2 as usize].index;
@@ -45,6 +65,12 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
         self.indexes[index2 as usize].index = index1_new;
     }
 
+    /// Function to get parent index of given index.
+    /// Index must be more than 0 to have parent.
+    /// # Arguments
+    /// * `index` - Index to get parent index.
+    /// # Returns
+    /// Parent index of given index.
     pub fn get_parent_index(index: i32) -> i32 {
         if index == 0 {
             return -1;
@@ -55,6 +81,7 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
     }
 }
 
+/// TreeVecLevels implementation for NormalizedTreeVector.
 impl <T> TreeVecLevels for NormalizedTreeVector<T> {
     fn get_allocated_levels(&self) -> u8 {
         self.allocated_levels

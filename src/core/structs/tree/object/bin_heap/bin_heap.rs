@@ -9,7 +9,10 @@ use crate::core::structs::tree::vectors::tree_vec::{TreeVec};
 /// It is implemented using a vector.
 /// It is using custom NormalizedTreeVector struct that represents the tree, where childrens are on 2*i + 1 and 2*i + 2 positions.
 pub struct BinHeap<T> {
+    /// NormalizedTreeVector that represents the tree
+    /// It is used to store the data
     data: NormalizedTreeVector<T>,
+    /// Compare function that is used to compare the nodes
     compare: fn(&T, &T) -> Ordering,
 }
 
@@ -27,6 +30,10 @@ impl <T: Default + PartialOrd + Copy> BinHeap<T> {
 
     /// Creates a new BinHeap struct
     /// With custom compare function
+    /// # Arguments
+    /// * `compare` - Compare function that is used to compare the nodes
+    /// # Returns
+    /// * `BinHeap` - New BinHeap struct
     pub fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self {
         BinHeap {
             data: NormalizedTreeVector::new(),
@@ -36,6 +43,8 @@ impl <T: Default + PartialOrd + Copy> BinHeap<T> {
 
     /// Function that heapifies the object
     /// It is used when we remove the root node
+    /// # Arguments
+    /// * `index` - Index of the node that we will start heapifying
     fn heapify(&mut self, index: i32) {
         let left_index = index * 2 + 1;
         let right_index = index * 2 + 2;
@@ -59,6 +68,10 @@ impl <T: Default + PartialOrd + Copy> BinHeap<T> {
     }
 
     /// Function that returns the value of the root item
+    /// It does not remove the root item
+    /// If there is no root item, it returns None
+    /// # Returns
+    /// * `Option<T>` - Value of the root item
     pub fn peek_max(&mut self) -> Option<T> {
         return if self.data.len() == 0 {
             None
@@ -68,6 +81,9 @@ impl <T: Default + PartialOrd + Copy> BinHeap<T> {
     }
 
     /// Function that removes the root item and returns it
+    /// If there is no root item, it returns None
+    /// # Returns
+    /// * `Option<T>` - Value of the root item
     pub fn get_max(&mut self) -> Option<T> {
         return if self.data.len() == 0 {
             None
@@ -85,7 +101,6 @@ impl <T: Default + PartialOrd + Copy> BinHeap<T> {
 /// Implementation of TreeObject trait for BinHeap struct
 /// It is used for tree operations and to use as part of TreeDecorator
 impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
-    /// Function that pushes new item to the heap
     fn push(&mut self, value: T) -> i32 {
         if self.data.len() == 0 {
             let index = self.data.push(value);
@@ -104,8 +119,6 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
         result_index
     }
 
-    /// Function that returns the index of the element with the given value
-    /// If there is no such element, it returns None
     fn find(&mut self, value: T) -> Option<i32> {
         if self.data.len() == 0 {
             return None;
@@ -129,8 +142,6 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
         }
     }
 
-    /// Function that removes the element by the given value
-    /// If there is no such element, it returns None
     fn remove_by_value(&mut self, value: T) -> Option<T> {
         if self.data.len() == 0 {
             return None;
@@ -145,12 +156,10 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
         }
     }
 
-    /// Function that checks if the heap is empty
     fn is_empty(&self) -> bool {
         self.data.len() == 0
     }
 
-    /// Function that returns the length of the heap
     fn len(&self) -> usize {
         self.data.len()
     }
@@ -158,9 +167,6 @@ impl <T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
 
 /// Implementation of TreeObjectVec trait for BinHeap struct
 impl <T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>> for BinHeap<T> {
-    /// Function that returns the value of the element by the given index
-    /// If the index is incorrect, it returns None
-    /// The index represents index in heap not in underlying vector
     fn get(&mut self, index: i32) -> Option<T> {
         if index < self.data.len() as i32 && index >= 0 {
             Some(self.data.get(index).unwrap().value)
@@ -169,22 +175,18 @@ impl <T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>> 
         }
     }
 
-    /// Function that returns the mutable reference to it's vector
     fn get_nodes_mut(&mut self) -> &mut NormalizedTreeVector<T> {
         &mut self.data
     }
 
-    /// Function that returns the reference to it's vector
     fn get_nodes(&self) -> &NormalizedTreeVector<T> {
         &self.data
     }
 
-    /// Function that returns the index of the root element
     fn get_root_index(&self) -> i32 {
         0
     }
 
-    /// Function that removes the element by the given index
     fn remove_by_index(&mut self, index: i32) -> Option<T> {
         if index < self.data.len() as i32 || index >= 0 {
             let value = self.data.get(index).unwrap().value;
