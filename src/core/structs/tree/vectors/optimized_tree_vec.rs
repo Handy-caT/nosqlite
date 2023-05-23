@@ -6,6 +6,17 @@ use crate::core::structs::tree::vectors::vec_functions::{allocate_level, get, pu
 
 pub const INITIAL_LEVELS: u8 = 6;
 
+/// Struct that represents a tree vector that is optimized for memory usage.
+/// It allocates memory for a tree level when it is needed.
+/// # Type parameters
+/// * `T`: Type of the data that will be stored in the tree.
+/// # Fields
+/// * `allocated_levels`: Number of levels that are allocated in the tree.
+/// * `max_length`: Maximum number of elements that can be stored in the tree.
+/// * `length`: Number of elements that are stored in the tree.
+/// * `data`: Vector that stores the data of the tree.
+/// * `indexes`: Vector that stores the indexes of the tree.
+/// * `empty`: Vector that stores the indexes of the empty nodes in the tree.
 pub struct OptimizedTreeVec<T> {
     allocated_levels: u8,
     max_length: u64,
@@ -17,6 +28,9 @@ pub struct OptimizedTreeVec<T> {
 }
 
 impl <T: Default + Copy> OptimizedTreeVec<T> {
+    /// Creates a new `OptimizedTreeVec<T>`.
+    /// # Returns
+    /// * `OptimizedTreeVec<T>`: New `OptimizedTreeVec<T>`.
     pub fn new() -> OptimizedTreeVec<T> {
         let mut vec = OptimizedTreeVec {
             allocated_levels: 0,

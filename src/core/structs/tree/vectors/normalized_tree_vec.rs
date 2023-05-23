@@ -9,20 +9,22 @@ use crate::core::structs::tree::vectors::tree_vec::{NormalizedTreeVecIndexes, Op
 /// In this vector child indexes are 2i+1 and 2i+2.
 /// This vector has empty vector to contain empty indexes.
 /// Indexes vector contains indexes of data vector, so data is independent from indexes.
+/// # Type parameters
+/// * `T` - Type of the data that the vector stores
+/// # Fields
+/// * `allocated_levels` - Number of allocated levels.
+/// * `max_length` - Maximum length of the vector.
+/// * `length` - Current length of the vector.
+/// * `data` - Vector that contains data.
+/// * `indexes` - Vector that contains indexes.
+/// * `empty` - Vector that contains empty indexes.
 pub struct NormalizedTreeVector<T> {
-    /// Number of allocated levels.
     allocated_levels: u8,
-    /// Max length of vector.
     max_length: u64,
-    /// Length of vector.
     length: u64,
 
-    /// Data vector.
     data: Vec<T>,
-    /// Indexes vector of NormalizedTreeIndex.
     indexes: Vec<NormalizedTreeIndex>,
-    /// Empty vector.
-    /// Contains indexes of empty data vector.
     empty: Vec<u64>,
 }
 

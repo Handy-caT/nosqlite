@@ -3,6 +3,15 @@ use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, TreeVec, TreeVecIndexes, TreeVecLevels};
 
+/// Struct that represents a vector that stores tree nodes.
+/// It has empty spaces that can be filled.
+/// # Type parameters
+/// * `T` - Type of the data that the vector stores
+/// # Fields
+/// * `data` - Vector that stores the data
+/// * `empty` - Vector that stores the indexes of the empty spaces
+/// * `indexes` - Vector that stores the indexes of the nodes
+/// * `length` - Length of the vector
 pub struct DefaultTreeVec<T: Sized> {
     data: Vec<T>,
     empty: Vec<u64>,
@@ -12,6 +21,7 @@ pub struct DefaultTreeVec<T: Sized> {
 }
 
 impl <T: Default + Copy> DefaultTreeVec<T> {
+    /// Creates a new instance of the vector
     pub fn new() -> DefaultTreeVec<T> {
         DefaultTreeVec {
             data: Vec::new(),
