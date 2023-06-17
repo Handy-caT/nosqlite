@@ -1,4 +1,5 @@
 use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal};
+use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
 
 /// A static hash table that uses vectors as buckets.
 /// # Arguments
@@ -7,7 +8,7 @@ use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexe
 struct StaticHashVec<V, const N: u64> {
     data: Vec<Vec<V>>,
     size: u64,
-    max_length: usize,
+    statistics: HashVecStatistics,
 }
 
 impl <V: Default + Eq, const N: u64> StaticHashVec<V, N> {
@@ -24,7 +25,7 @@ impl <V: Default + Eq, const N: u64> StaticHashVec<V, N> {
         StaticHashVec {
             data,
             size: 0,
-            max_length: 0,
+            statistics: HashVecStatistics::new(N as usize)
         }
     }
 }
@@ -35,8 +36,10 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
         self.data[index as usize].push(value);
         let data_index = self.data[index as usize].len() - 1;
 
-        if self.data[index as usize].len() > self.max_length {
-            self.max_length = self.data[index as usize].len();
+        if self.data[index as usize].len() > self.statistics.get_max_length() {
+            self.statistics.update(self.data[index as usize].len());
+        } else if self.data[index as usize].len() == self.statistics.get_max_length() {
+            self.statistics.add_bucket(index as usize);
         }
         self.size += 1;
 
@@ -66,8 +69,20 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
        let item_index = self.find_item(index, value);
          match item_index {
               Some(i) => {
-                self.size -= 1;
-                Some(self.data[index as usize].swap_remove(i))
+                  self.size -= 1;
+
+                  let is_max = self.statistics.is_max_length_bucket(index as usize);
+                  match is_max {
+                      Some(true) => {
+                          self.statistics.remove_bucket(index as usize);
+                          if self.statistics.get_count() == 0 {
+                              self.statistics.update(self.data[index as usize].len());
+                              self.statistics.add_bucket(index as usize);
+                          }
+                      },
+                      _ => {}
+                  }
+                  Some(self.data[index as usize].swap_remove(i))
               },
               None => None,
          }
@@ -135,7 +150,6 @@ mod tests {
 
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.size, 0);
-        assert_eq!(hash_vec.max_length, 0);
 
         assert_eq!(hash_vec.data.len(), 8);
     }

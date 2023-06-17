@@ -1,11 +1,13 @@
 
 /// Struct that stores statistics about a hash vector.
 /// Now implemented only for the maximum length of the buckets.
-struct HashVecStatistics {
+pub struct HashVecStatistics {
     /// Maximum length of the buckets.
     max_length: usize,
     /// Buckets with the maximum length.
-    max_length_buckets: Vec<bool>
+    max_length_buckets: Vec<bool>,
+    /// Number of buckets.
+    count: usize,
 }
 
 impl HashVecStatistics {
@@ -21,7 +23,8 @@ impl HashVecStatistics {
     pub fn new(pool_size: usize) -> Self {
         Self {
             max_length: 0,
-            max_length_buckets: vec![false; pool_size as usize]
+            max_length_buckets: vec![false; pool_size],
+            count: 0,
         }
     }
 
@@ -33,10 +36,10 @@ impl HashVecStatistics {
     /// # Returns
     /// * `usize` - Current maximum length.
     pub fn update(&mut self, length: usize) -> usize {
-        if length > self.max_length {
-            self.max_length = length;
-            self.max_length_buckets.fill_with(|| false);
-        }
+        self.max_length = length;
+        self.max_length_buckets.fill_with(|| false);
+        self.count = 0;
+
         self.max_length
     }
 
@@ -44,7 +47,10 @@ impl HashVecStatistics {
     /// # Arguments
     /// * `bucket` - Bucket to mark.
     pub fn add_bucket(&mut self, bucket: usize) {
-        self.max_length_buckets[bucket] = true;
+        if !self.max_length_buckets[bucket] {
+            self.max_length_buckets[bucket] = true;
+            self.count += 1;
+        }
     }
 
     /// Removes a bucket from the maximum length buckets.
@@ -54,8 +60,11 @@ impl HashVecStatistics {
     /// * `Option<usize>` - Bucket removed. None if the bucket is out of range.
     pub fn remove_bucket(&mut self, bucket: usize) -> Option<usize>{
         if bucket < self.max_length_buckets.len() {
-            self.max_length_buckets[bucket] = false;
-            return Some(bucket)
+            if self.max_length_buckets[bucket] {
+                self.max_length_buckets[bucket] = false;
+                self.count -= 1;
+                return Some(bucket)
+            }
         }
         None
     }
@@ -70,6 +79,13 @@ impl HashVecStatistics {
             return Some(self.max_length_buckets[bucket])
         }
         None
+    }
+
+    /// Returns the number of buckets with the maximum length.
+    /// # Returns
+    /// * `usize` - Number of buckets with the maximum length.
+    pub fn get_count(&self) -> usize {
+        self.count
     }
 
     /// Returns the maximum length of the buckets.
@@ -106,16 +122,12 @@ mod tests {
         assert_eq!(hash_vec_statistics.max_length, 5);
         assert_eq!(hash_vec_statistics.max_length_buckets, vec![false; 10]);
 
-        assert_eq!(hash_vec_statistics.update(3), 5);
-        assert_eq!(hash_vec_statistics.max_length, 5);
-        assert_eq!(hash_vec_statistics.max_length_buckets, vec![false; 10]);
-
         assert_eq!(hash_vec_statistics.update(7), 7);
         assert_eq!(hash_vec_statistics.max_length, 7);
         assert_eq!(hash_vec_statistics.max_length_buckets, vec![false; 10]);
 
-        assert_eq!(hash_vec_statistics.update(3), 7);
-        assert_eq!(hash_vec_statistics.max_length, 7);
+        assert_eq!(hash_vec_statistics.update(3), 3);
+        assert_eq!(hash_vec_statistics.max_length, 3);
         assert_eq!(hash_vec_statistics.max_length_buckets, vec![false; 10]);
     }
 
@@ -128,6 +140,7 @@ mod tests {
 
         assert_eq!(hash_vec_statistics.max_length, 5);
         assert_eq!(hash_vec_statistics.max_length_buckets[5], true);
+        assert_eq!(hash_vec_statistics.count, 1);
     }
 
     #[test]
@@ -139,11 +152,13 @@ mod tests {
 
         assert_eq!(hash_vec_statistics.max_length, 5);
         assert_eq!(hash_vec_statistics.max_length_buckets[5], true);
+        assert_eq!(hash_vec_statistics.count, 1);
 
         hash_vec_statistics.update(6);
 
         assert_eq!(hash_vec_statistics.max_length, 6);
         assert_eq!(hash_vec_statistics.max_length_buckets[5], false);
+        assert_eq!(hash_vec_statistics.count, 0);
     }
 
     #[test]
@@ -160,6 +175,7 @@ mod tests {
 
         assert_eq!(hash_vec_statistics.max_length, 5);
         assert_eq!(hash_vec_statistics.max_length_buckets[5], false);
+        assert_eq!(hash_vec_statistics.count, 0);
     }
 
     #[test]
