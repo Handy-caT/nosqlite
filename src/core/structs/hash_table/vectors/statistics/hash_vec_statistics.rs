@@ -2,11 +2,14 @@
 /// Struct that stores statistics about a hash vector.
 /// Now implemented only for the maximum length of the buckets.
 pub struct HashVecStatistics {
+    /// Size of the hash vector.
+    pub size: u64,
+
     /// Maximum length of the buckets.
-    max_length: usize,
+    pub max_length: usize,
     /// Buckets with the maximum length.
     max_length_buckets: Vec<bool>,
-    /// Number of buckets.
+    /// Number of buckets with the maximum length.
     count: usize,
 }
 
@@ -22,6 +25,7 @@ impl HashVecStatistics {
     /// * `max_length_buckets` - Vec of size `pool_size` filled with false.
     pub fn new(pool_size: usize) -> Self {
         Self {
+            size: 0,
             max_length: 0,
             max_length_buckets: vec![false; pool_size],
             count: 0,
@@ -86,13 +90,6 @@ impl HashVecStatistics {
     /// * `usize` - Number of buckets with the maximum length.
     pub fn get_count(&self) -> usize {
         self.count
-    }
-
-    /// Returns the maximum length of the buckets.
-    /// # Returns
-    /// * `usize` - Maximum length of the buckets.
-    pub fn get_max_length(&self) -> usize {
-        self.max_length
     }
 
     /// Returns the buckets with the maximum length.

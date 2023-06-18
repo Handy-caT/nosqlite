@@ -1,5 +1,6 @@
 use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal};
 use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
+use crate::core::structs::hash_table::vectors::statistics::statistics_functions::{statistics_add_actions, statistics_remove_actions};
 
 /// A static hash table that uses vectors as buckets.
 /// # Arguments
@@ -7,7 +8,6 @@ use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::
 /// * `N` - Number of buckets, must be a power of 2, if it is not, it will be rounded up to the next power of 2
 struct StaticHashVec<V, const N: u64> {
     data: Vec<Vec<V>>,
-    size: u64,
     statistics: HashVecStatistics,
 }
 
@@ -24,7 +24,6 @@ impl <V: Default + Eq, const N: u64> StaticHashVec<V, N> {
         }
         StaticHashVec {
             data,
-            size: 0,
             statistics: HashVecStatistics::new(N as usize)
         }
     }
@@ -36,13 +35,7 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
         self.data[index as usize].push(value);
         let data_index = self.data[index as usize].len() - 1;
 
-        if self.data[index as usize].len() > self.statistics.get_max_length() {
-            self.statistics.update(self.data[index as usize].len());
-            self.statistics.add_bucket(index as usize);
-        } else if self.data[index as usize].len() == self.statistics.get_max_length() {
-            self.statistics.add_bucket(index as usize);
-        }
-        self.size += 1;
+        statistics_add_actions(self, index);
 
         (index, data_index)
     }
@@ -77,7 +70,7 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
     }
 
     fn len(&self) -> u64 {
-        self.size
+        self.statistics.size
     }
 }
 
@@ -87,18 +80,7 @@ impl <V: Default + Eq, const N: u64> HashVecIndexes<V, N> for StaticHashVec<V, N
         if value_index >= self.data[index as usize].len() {
             None
         } else {
-            self.size -= 1;
-            let is_max = self.statistics.is_max_length_bucket(index as usize);
-            match is_max {
-                Some(true) => {
-                    self.statistics.remove_bucket(index as usize);
-                    if self.statistics.get_count() == 0 {
-                        self.statistics.update(self.data[index as usize].len() - 1);
-                        self.statistics.add_bucket(index as usize);
-                    }
-                },
-                _ => {}
-            }
+            statistics_remove_actions(self, index);
             Some(self.data[index as usize].swap_remove(value_index))
         }
     }
@@ -140,11 +122,23 @@ impl <V: Default + Eq, const N: u64> HashVecInternal<V, N> for StaticHashVec<V, 
 
 impl <V: Default + Eq, const N: u64> HashVecStatisticsInternal<V, N> for StaticHashVec<V, N> {
     fn get_max_len(&self) -> usize {
-        self.statistics.get_max_length()
+        self.statistics.max_length
     }
 
     fn get_statistics(&self) -> &HashVecStatistics {
         &self.statistics
+    }
+
+    fn get_statistics_mut(&mut self) -> &mut HashVecStatistics {
+        &mut self.statistics
+    }
+
+    fn get_bucket_len(&self, index: u64) -> Option<usize> {
+        if index >= N {
+            None
+        } else {
+            Some(self.data[index as usize].len())
+        }
     }
 }
 
@@ -158,7 +152,7 @@ mod tests {
         let hash_vec: StaticHashVec<u64, 8> = StaticHashVec::new();
 
         assert_eq!(hash_vec.len(), 0);
-        assert_eq!(hash_vec.size, 0);
+        assert_eq!(hash_vec.statistics.size, 0);
 
         assert_eq!(hash_vec.data.len(), 8);
     }
@@ -171,14 +165,14 @@ mod tests {
         hash_vec.push(0, 2);
 
         assert_eq!(hash_vec.len(), 2);
-        assert_eq!(hash_vec.size, 2);
+        assert_eq!(hash_vec.statistics.size, 2);
 
         assert_eq!(hash_vec.data[0].len(), 2);
         assert_eq!(hash_vec.data[0][0], 1);
         assert_eq!(hash_vec.data[0][1], 2);
 
         assert_eq!(hash_vec.statistics.get_count(), 1);
-        assert_eq!(hash_vec.statistics.get_max_length(), 2);
+        assert_eq!(hash_vec.statistics.max_length, 2);
     }
 
     #[test]
@@ -213,24 +207,24 @@ mod tests {
         hash_vec.push(0, 2);
 
         assert_eq!(hash_vec.statistics.get_count(), 1);
-        assert_eq!(hash_vec.statistics.get_max_length(), 2);
+        assert_eq!(hash_vec.statistics.max_length, 2);
 
         assert_eq!(hash_vec.remove(0, 1), Some(1));
         assert_eq!(hash_vec.find_item(0, 1), None);
         assert_eq!(hash_vec.have_item(0, 1), false);
         assert_eq!(hash_vec.statistics.get_count(), 1);
-        assert_eq!(hash_vec.statistics.get_max_length(), 1);
+        assert_eq!(hash_vec.statistics.max_length, 1);
 
         assert_eq!(hash_vec.remove(0, 2), Some(2));
         assert_eq!(hash_vec.find_item(0, 2), None);
         assert_eq!(hash_vec.have_item(0, 2), false);
         assert_eq!(hash_vec.statistics.get_count(), 0);
-        assert_eq!(hash_vec.statistics.get_max_length(), 0);
+        assert_eq!(hash_vec.statistics.max_length, 0);
 
         assert_eq!(hash_vec.remove(0, 3), None);
 
         assert_eq!(hash_vec.len(), 0);
-        assert_eq!(hash_vec.size, 0);
+        assert_eq!(hash_vec.statistics.size, 0);
 
         assert_eq!(hash_vec.data[0].len(), 0);
     }
@@ -246,18 +240,18 @@ mod tests {
         assert_eq!(hash_vec.find_item(0, 1), None);
         assert_eq!(hash_vec.have_item(0, 1), false);
         assert_eq!(hash_vec.statistics.get_count(), 1);
-        assert_eq!(hash_vec.statistics.get_max_length(), 1);
+        assert_eq!(hash_vec.statistics.max_length, 1);
 
         assert_eq!(hash_vec.remove_by_index(0, 0), Some(2));
         assert_eq!(hash_vec.find_item(0, 2), None);
         assert_eq!(hash_vec.have_item(0, 2), false);
         assert_eq!(hash_vec.statistics.get_count(), 0);
-        assert_eq!(hash_vec.statistics.get_max_length(), 0);
+        assert_eq!(hash_vec.statistics.max_length, 0);
 
         assert_eq!(hash_vec.remove_by_index(0, 0), None);
 
         assert_eq!(hash_vec.len(), 0);
-        assert_eq!(hash_vec.size, 0);
+        assert_eq!(hash_vec.statistics.size, 0);
 
         assert_eq!(hash_vec.data[0].len(), 0);
     }
@@ -313,7 +307,7 @@ mod tests {
         let statistics = hash_vec.get_statistics();
 
         assert_eq!(statistics.get_count(), 1);
-        assert_eq!(statistics.get_max_length(), 2);
+        assert_eq!(statistics.max_length, 2);
         assert_eq!(hash_vec.get_max_len(), 2);
     }
 }

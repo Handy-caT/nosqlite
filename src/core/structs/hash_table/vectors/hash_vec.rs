@@ -95,4 +95,16 @@ pub(in crate::core::structs::hash_table) trait HashVecStatisticsInternal<V, cons
     /// # Returns
     /// * `&HashVecStatistics` - Reference to the Statistics about underlying vectors
     fn get_statistics(&self) -> &HashVecStatistics;
+
+    /// Returns mutable reference to the Statistics about underlying vectors
+    /// # Returns
+    /// * `&mut HashVecStatistics` - Mutable reference to the Statistics about underlying vectors
+    fn get_statistics_mut(&mut self) -> &mut HashVecStatistics;
+
+    /// Returns length of the underlying vector by underlying vector index
+    /// # Arguments
+    /// * `index` - Index of the underlying vector
+    /// # Returns
+    /// * `Option<usize>` - Length of the underlying vector, None if index was out of bounds
+    fn get_bucket_len(&self, index: u64) -> Option<usize>;
 }
