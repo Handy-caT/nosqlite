@@ -1,4 +1,4 @@
-use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal};
+use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal};
 use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
 
 /// A static hash table that uses vectors as buckets.
@@ -38,6 +38,7 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
 
         if self.data[index as usize].len() > self.statistics.get_max_length() {
             self.statistics.update(self.data[index as usize].len());
+            self.statistics.add_bucket(index as usize);
         } else if self.data[index as usize].len() == self.statistics.get_max_length() {
             self.statistics.add_bucket(index as usize);
         }
@@ -69,20 +70,7 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
        let item_index = self.find_item(index, value);
          match item_index {
               Some(i) => {
-                  self.size -= 1;
-
-                  let is_max = self.statistics.is_max_length_bucket(index as usize);
-                  match is_max {
-                      Some(true) => {
-                          self.statistics.remove_bucket(index as usize);
-                          if self.statistics.get_count() == 0 {
-                              self.statistics.update(self.data[index as usize].len());
-                              self.statistics.add_bucket(index as usize);
-                          }
-                      },
-                      _ => {}
-                  }
-                  Some(self.data[index as usize].swap_remove(i))
+                  return self.remove_by_index(index, i);
               },
               None => None,
          }
@@ -100,6 +88,17 @@ impl <V: Default + Eq, const N: u64> HashVecIndexes<V, N> for StaticHashVec<V, N
             None
         } else {
             self.size -= 1;
+            let is_max = self.statistics.is_max_length_bucket(index as usize);
+            match is_max {
+                Some(true) => {
+                    self.statistics.remove_bucket(index as usize);
+                    if self.statistics.get_count() == 0 {
+                        self.statistics.update(self.data[index as usize].len() - 1);
+                        self.statistics.add_bucket(index as usize);
+                    }
+                },
+                _ => {}
+            }
             Some(self.data[index as usize].swap_remove(value_index))
         }
     }
@@ -139,10 +138,20 @@ impl <V: Default + Eq, const N: u64> HashVecInternal<V, N> for StaticHashVec<V, 
     }
 }
 
+impl <V: Default + Eq, const N: u64> HashVecStatisticsInternal<V, N> for StaticHashVec<V, N> {
+    fn get_max_len(&self) -> usize {
+        self.statistics.get_max_length()
+    }
+
+    fn get_statistics(&self) -> &HashVecStatistics {
+        &self.statistics
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
-    use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal};
+    use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal};
 
     #[test]
     fn test_static_hash_vec_new() {
@@ -167,6 +176,9 @@ mod tests {
         assert_eq!(hash_vec.data[0].len(), 2);
         assert_eq!(hash_vec.data[0][0], 1);
         assert_eq!(hash_vec.data[0][1], 2);
+
+        assert_eq!(hash_vec.statistics.get_count(), 1);
+        assert_eq!(hash_vec.statistics.get_max_length(), 2);
     }
 
     #[test]
@@ -200,13 +212,20 @@ mod tests {
         hash_vec.push(0, 1);
         hash_vec.push(0, 2);
 
+        assert_eq!(hash_vec.statistics.get_count(), 1);
+        assert_eq!(hash_vec.statistics.get_max_length(), 2);
+
         assert_eq!(hash_vec.remove(0, 1), Some(1));
         assert_eq!(hash_vec.find_item(0, 1), None);
         assert_eq!(hash_vec.have_item(0, 1), false);
+        assert_eq!(hash_vec.statistics.get_count(), 1);
+        assert_eq!(hash_vec.statistics.get_max_length(), 1);
 
         assert_eq!(hash_vec.remove(0, 2), Some(2));
         assert_eq!(hash_vec.find_item(0, 2), None);
         assert_eq!(hash_vec.have_item(0, 2), false);
+        assert_eq!(hash_vec.statistics.get_count(), 0);
+        assert_eq!(hash_vec.statistics.get_max_length(), 0);
 
         assert_eq!(hash_vec.remove(0, 3), None);
 
@@ -226,10 +245,14 @@ mod tests {
         assert_eq!(hash_vec.remove_by_index(0, 0), Some(1));
         assert_eq!(hash_vec.find_item(0, 1), None);
         assert_eq!(hash_vec.have_item(0, 1), false);
+        assert_eq!(hash_vec.statistics.get_count(), 1);
+        assert_eq!(hash_vec.statistics.get_max_length(), 1);
 
         assert_eq!(hash_vec.remove_by_index(0, 0), Some(2));
         assert_eq!(hash_vec.find_item(0, 2), None);
         assert_eq!(hash_vec.have_item(0, 2), false);
+        assert_eq!(hash_vec.statistics.get_count(), 0);
+        assert_eq!(hash_vec.statistics.get_max_length(), 0);
 
         assert_eq!(hash_vec.remove_by_index(0, 0), None);
 
@@ -278,5 +301,19 @@ mod tests {
         let vec = hash_vec.get_vec(9);
 
         assert_eq!(vec.is_some(), false);
+    }
+
+    #[test]
+    fn test_static_hash_vec_get_statistics() {
+        let mut hash_vec: StaticHashVec<u64, 8> = StaticHashVec::new();
+
+        hash_vec.push(0, 1);
+        hash_vec.push(0, 2);
+
+        let statistics = hash_vec.get_statistics();
+
+        assert_eq!(statistics.get_count(), 1);
+        assert_eq!(statistics.get_max_length(), 2);
+        assert_eq!(hash_vec.get_max_len(), 2);
     }
 }

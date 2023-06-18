@@ -1,3 +1,4 @@
+use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
 
 /// Common trait for HashTable data
 pub trait HashVec<V, const N: u64> {
@@ -66,7 +67,7 @@ pub trait HashVecIndexes<V, const N: u64> {
     fn get_by_index_mut(&mut self, index: u64, value_index: usize) -> Option<&mut V>;
 }
 
-
+/// Internal trait for HashTable to get underlying vectors by underlying vector index
 pub(in crate::core::structs::hash_table) trait HashVecInternal<V, const N: u64> {
     /// Returns reference to the underlying vector from the HashVector by underlying vector index
     /// # Arguments
@@ -81,4 +82,17 @@ pub(in crate::core::structs::hash_table) trait HashVecInternal<V, const N: u64> 
     /// # Returns
     /// * 'Option<&mut Vec<V>>' - Mutable reference to the underlying vector, None if index was out of bounds
     fn get_vec_mut(&mut self, index: u64) -> Option<&mut Vec<V>>;
+}
+
+/// Common trait for HashTable to get statistics about underlying vectors
+pub(in crate::core::structs::hash_table) trait HashVecStatisticsInternal<V, const N: u64> {
+    /// Returns max length of the underlying vectors
+    /// # Returns
+    /// * `usize` - Max length of the underlying vectors
+    fn get_max_len(&self) -> usize;
+
+    /// Returns Statistics about underlying vectors
+    /// # Returns
+    /// * `&HashVecStatistics` - Reference to the Statistics about underlying vectors
+    fn get_statistics(&self) -> &HashVecStatistics;
 }

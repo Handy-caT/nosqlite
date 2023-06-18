@@ -47,7 +47,7 @@ impl HashVecStatistics {
     /// # Arguments
     /// * `bucket` - Bucket to mark.
     pub fn add_bucket(&mut self, bucket: usize) {
-        if !self.max_length_buckets[bucket] {
+        if !self.max_length_buckets[bucket] && self.max_length > 0{
             self.max_length_buckets[bucket] = true;
             self.count += 1;
         }
@@ -134,6 +134,11 @@ mod tests {
     #[test]
     fn test_hash_vec_statistics_add_bucket() {
         let mut hash_vec_statistics = HashVecStatistics::new(10);
+
+        hash_vec_statistics.add_bucket(5);
+        assert_eq!(hash_vec_statistics.max_length, 0);
+        assert_eq!(hash_vec_statistics.count, 0);
+
 
         hash_vec_statistics.update(5);
         hash_vec_statistics.add_bucket(5);
