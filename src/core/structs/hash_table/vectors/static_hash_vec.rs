@@ -30,7 +30,7 @@ impl <V: Default + Eq, const N: u64> StaticHashVec<V, N> {
 }
 
 /// Implementation of basic HashVec trait for StaticHashVec
-impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
+impl <V: Default + Eq + Copy, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
     fn push(&mut self, index: u64, value: V) -> (u64, usize) {
         self.data[index as usize].push(value);
         let data_index = self.data[index as usize].len() - 1;
@@ -40,7 +40,7 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
         (index, data_index)
     }
 
-    fn have_item(&self, index: u64, value: V) -> bool {
+    fn have_item(&mut self, index: u64, value: V) -> bool {
         let item_index = self.find_item(index, value);
         match item_index {
             Some(_) => true,
@@ -48,7 +48,7 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
         }
     }
 
-    fn find_item(&self, index: u64, value: V) -> Option<usize> {
+    fn find_item(&mut self, index: u64, value: V) -> Option<usize> {
         let mut i = 0;
         while i < self.data[index as usize].len() {
             if self.data[index as usize][i] == value {
@@ -75,7 +75,7 @@ impl <V: Default + Eq, const N: u64> HashVec<V, N> for StaticHashVec<V, N> {
 }
 
 /// Implementation of HashVecIndexes trait for StaticHashVec
-impl <V: Default + Eq, const N: u64> HashVecIndexes<V, N> for StaticHashVec<V, N> {
+impl <V: Default + Eq + Copy, const N: u64> HashVecIndexes<V, N> for StaticHashVec<V, N> {
     fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<V> {
         if value_index >= self.data[index as usize].len() {
             None
@@ -85,19 +85,11 @@ impl <V: Default + Eq, const N: u64> HashVecIndexes<V, N> for StaticHashVec<V, N
         }
     }
 
-    fn get_by_index(&self, index: u64, value_index: usize) -> Option<&V> {
+    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<V> {
         if value_index >= self.data[index as usize].len() {
             None
         } else {
-            Some(&self.data[index as usize][value_index])
-        }
-    }
-
-    fn get_by_index_mut(&mut self, index: u64, value_index: usize) -> Option<&mut V> {
-        if value_index >= self.data[index as usize].len() {
-            None
-        } else {
-            Some(&mut self.data[index as usize][value_index])
+            Some(self.data[index as usize][value_index])
         }
     }
 }
@@ -263,21 +255,9 @@ mod tests {
         hash_vec.push(0, 1);
         hash_vec.push(0, 2);
 
-        assert_eq!(hash_vec.get_by_index(0, 0), Some(&1));
-        assert_eq!(hash_vec.get_by_index(0, 1), Some(&2));
+        assert_eq!(hash_vec.get_by_index(0, 0), Some(1));
+        assert_eq!(hash_vec.get_by_index(0, 1), Some(2));
         assert_eq!(hash_vec.get_by_index(0, 2), None);
-    }
-
-    #[test]
-    fn test_static_hash_vec_get_by_index_mut() {
-        let mut hash_vec: StaticHashVec<u64, 8> = StaticHashVec::new();
-
-        hash_vec.push(0, 1);
-        hash_vec.push(0, 2);
-
-        assert_eq!(hash_vec.get_by_index_mut(0, 0), Some(&mut 1));
-        assert_eq!(hash_vec.get_by_index_mut(0, 1), Some(&mut 2));
-        assert_eq!(hash_vec.get_by_index_mut(0, 2), None);
     }
 
     #[test]

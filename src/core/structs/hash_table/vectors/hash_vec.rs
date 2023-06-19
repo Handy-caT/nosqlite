@@ -16,7 +16,7 @@ pub trait HashVec<V, const N: u64> {
     /// * `value` - Value to check
     /// # Returns
     /// * `(bool, usize)` - True if the HashVector has value, false otherwise and index of the value in the vector
-    fn have_item(&self, index: u64, value: V) -> bool;
+    fn have_item(&mut self, index: u64, value: V) -> bool;
 
     /// Finds value in the HashVector by underlying vector index and value itself
     /// # Arguments
@@ -24,7 +24,7 @@ pub trait HashVec<V, const N: u64> {
     /// * `value` - Value to find
     /// # Returns
     /// * `Option<usize>` - Index of the value in the vector if it was found, None otherwise
-    fn find_item(&self, index: u64, value: V) -> Option<usize>;
+    fn find_item(&mut self, index: u64, value: V) -> Option<usize>;
 
     /// Removes value from the HashVector by underlying vector index and value itself
     /// # Arguments
@@ -56,15 +56,7 @@ pub trait HashVecIndexes<V, const N: u64> {
     /// * `value_index` - Index of the value in the vector
     /// # Returns
     /// * 'Option<&V>' - Reference to the value, None if value index was out of bounds
-    fn get_by_index(&self, index: u64, value_index: usize) -> Option<&V>;
-
-    /// Returns mutable reference to the value from the HashVector by underlying vector index and value index
-    /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `value_index` - Index of the value in the vector
-    /// # Returns
-    /// * 'Option<&mut V>' - Mutable reference to the value, None if value index was out of bounds
-    fn get_by_index_mut(&mut self, index: u64, value_index: usize) -> Option<&mut V>;
+    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<V>;
 }
 
 /// Internal trait for HashTable to get underlying vectors by underlying vector index

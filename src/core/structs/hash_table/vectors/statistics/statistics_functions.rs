@@ -1,6 +1,16 @@
 use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecStatisticsInternal};
 
-pub(in crate::core::structs::hash_table) fn statistics_add_actions<V: Default + Eq, const N: u64,M: HashVec<V, N> + HashVecStatisticsInternal<V, N>>(hash_vec: &mut M, index: u64) {
+/// Function that updates statistics after push action.
+/// It checks if bucket length is bigger than max length and updates statistics.
+/// If bucket length is equal to max length, it adds bucket to max length buckets.
+/// # Arguments
+/// * `hash_vec` - hash_vec to update
+/// * `index` - index of bucket
+pub(in crate::core::structs::hash_table) fn statistics_add_actions<V, const N: u64, M>(hash_vec: &mut M, index: u64)
+where
+    V: Default + Eq,
+    M: HashVec<V, N> + HashVecStatisticsInternal<V, N>
+{
     let bucket_len = hash_vec.get_bucket_len(index);
     match bucket_len {
         Some(len) => {
@@ -16,7 +26,16 @@ pub(in crate::core::structs::hash_table) fn statistics_add_actions<V: Default + 
     hash_vec.get_statistics_mut().size += 1;
 }
 
-pub(in crate::core::structs::hash_table) fn statistics_remove_actions<V: Default + Eq, const N: u64,M: HashVec<V, N> + HashVecStatisticsInternal<V, N>>(hash_vec: &mut M, index: u64) {
+/// Function that updates statistics after remove action.
+/// It checks if bucket length is equal to max length and updates statistics.
+/// If bucket length is equal to max length, it removes bucket from max length buckets.
+/// # Arguments
+/// * `hash_vec` - hash_vec to update
+/// * `index` - index of bucket
+pub(in crate::core::structs::hash_table) fn statistics_remove_actions<V, const N: u64, M>(hash_vec: &mut M, index: u64)
+where V: Default + Eq,
+      M: HashVec<V, N> + HashVecStatisticsInternal<V, N>
+{
     hash_vec.get_statistics_mut().size -= 1;
     let is_max = hash_vec.get_statistics().is_max_length_bucket(index as usize);
     match is_max {
