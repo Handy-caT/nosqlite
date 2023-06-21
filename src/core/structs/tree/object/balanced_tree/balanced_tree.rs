@@ -15,6 +15,8 @@ pub struct BalancedTree<T, M: TreeVec<T> + Sized>
     root: i32,
     /// Vector of nodes
     nodes: M,
+    /// Length of the tree
+    len: usize,
     /// Compare function
     compare: fn(&T, &T) -> Ordering,
 }
@@ -44,6 +46,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
             root: 0,
             nodes: vec,
             compare: default_compare,
+            len: 0,
         }
     }
 
@@ -58,6 +61,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
             root: 0,
             nodes: vec,
             compare,
+            len: 0,
         }
     }
 
@@ -130,10 +134,12 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
     fn push(&mut self, value: T) -> i32{
         return if self.nodes.len() == 0 {
             self.root = self.nodes.push(value);
+            self.len += 1;
             self.root
         } else {
             let balanced = self.add_from_root(value, self.root);
             self.root = balanced.0;
+            self.len += 1;
             balanced.1
         }
     }
@@ -156,10 +162,17 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
         if self.nodes.len() == 0 {
             return None;
         } else if self.nodes.len() == 1 {
-            self.nodes.remove(0);
-            self.root = -1;
-            return None;
+            let item = self.nodes.remove(0);
+            self.len -= 1;
+            match item {
+                Some(item) => {
+                    self.root = -1;
+                    return Some(item.value)
+                },
+                None => return None
+            }
         }
+        self.len -= 1;
         self.root = self.remove_from_root(value, self.root);
         Some(value)
     }
@@ -169,7 +182,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
     }
 
     fn len(&self) -> usize {
-        return self.nodes.len();
+        self.len
     }
 }
 
@@ -548,6 +561,21 @@ mod tests {
         assert_eq!(tree.nodes.get_indexes()[1].right_index, 0);
         assert_eq!(tree.nodes[2], 3);
         assert_eq!(tree.nodes[0], 1);
+    }
+
+    #[test]
+    fn test_remove() {
+        let mut nodes = DefaultTreeVec::<u64>::new();
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        tree.push(1);
+        tree.push(2);
+
+        tree.remove_by_value(2);
+        assert_eq!(tree.nodes.len(), 1);
+
+        assert_eq!(tree.remove_by_value(1), Some(1));
+        assert_eq!(tree.len(), 0);
     }
 
     #[test]
