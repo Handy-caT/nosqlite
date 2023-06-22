@@ -26,7 +26,14 @@ impl <V: Copy + Default + PartialOrd, const N: u64> TreeHashVec<V, N> {
             statistics: HashVecStatistics::new(N as usize),
         };
 
-        for _ in 0..N {
+        let mut size= N;
+
+        if (N as f64).log2() != (N as f64).log2().floor() {
+            let pow= (N as f64).log2().ceil() as u64;
+            size = 2u64.pow(pow as u32);
+        }
+
+        for _ in 0..size {
             let nodes = OptimizedTreeVec::new();
             vec.data.push(BalancedTree::<V, OptimizedTreeVec<V>>::new(nodes));
         }
@@ -133,6 +140,19 @@ mod tests {
             assert_eq!(vec.data[i].len(), 0);
         }
         assert_eq!(vec.statistics.size, 0);
+    }
+
+    #[test]
+    fn test_static_hash_vec_new_sizes() {
+        let vec = TreeHashVec::<u64, 10>::new();
+
+        assert_eq!(vec.len(), 0);
+        assert_eq!(vec.data.len(), 16);
+
+        let vec = TreeHashVec::<u64, 32>::new();
+
+        assert_eq!(vec.len(), 0);
+        assert_eq!(vec.data.len(), 32);
     }
 
     #[test]

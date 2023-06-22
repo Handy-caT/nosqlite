@@ -1,3 +1,4 @@
 mod hash;
 mod hash_table;
-mod vectors;
+pub mod vectors;
+mod static_hash_table;

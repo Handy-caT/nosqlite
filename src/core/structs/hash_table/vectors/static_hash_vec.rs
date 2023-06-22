@@ -18,7 +18,14 @@ impl <V: Default + Eq, const N: u64> StaticHashVec<V, N> {
     pub fn new() -> Self {
         let mut data = Vec::new();
         let mut i = 0;
-        while i < N {
+        let mut size= N;
+
+        if (N as f64).log2() != (N as f64).log2().floor() {
+            let pow= (N as f64).log2().ceil() as u64;
+            size = 2u64.pow(pow as u32);
+        }
+
+        while i < size {
             data.push(Vec::new());
             i+=1;
         }
@@ -147,6 +154,19 @@ mod tests {
         assert_eq!(hash_vec.statistics.size, 0);
 
         assert_eq!(hash_vec.data.len(), 8);
+    }
+
+    #[test]
+    fn test_static_hash_vec_new_sizes() {
+        let hash_vec: StaticHashVec<u64, 10> = StaticHashVec::new();
+
+        assert_eq!(hash_vec.len(), 0);
+        assert_eq!(hash_vec.data.len(), 16);
+
+        let hash_vec: StaticHashVec<u64, 32> = StaticHashVec::new();
+
+        assert_eq!(hash_vec.len(), 0);
+        assert_eq!(hash_vec.data.len(), 32);
     }
 
     #[test]
