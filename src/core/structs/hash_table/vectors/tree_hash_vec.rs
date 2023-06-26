@@ -8,10 +8,10 @@ use crate::core::structs::tree::vectors::optimized_tree_vec::OptimizedTreeVec;
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
 /// * `N` - Number of buckets, must be a power of 2, if it is not, it will be rounded up to the next power of 2
-struct TreeHashVec<V: Copy + Default + Copy + Default + PartialOrd, const N: u64> {
+pub struct TreeHashVec<K: Copy + Default +  PartialOrd, V: Copy + Default +  PartialOrd, const N: u64> {
     /// The data of the hash vector as a vector of trees.
     /// OptimizedTreeVec is used as the underlying data structure for the trees.
-    data: Vec<BalancedTree<V, OptimizedTreeVec<V>>>,
+    data: Vec<BalancedTree<V, OptimizedTreeVec<(K, V)>>>,
     /// The size of the hash vector. This is the number of buckets.
     /// It is a power of 2. If N is not a power of 2, it will be rounded up to the next power of 2.
     pub size: u64,
@@ -19,11 +19,11 @@ struct TreeHashVec<V: Copy + Default + Copy + Default + PartialOrd, const N: u64
     statistics: HashVecStatistics,
 }
 
-impl <V: Copy + Default + PartialOrd, const N: u64> TreeHashVec<V, N> {
+impl <K: Copy + Default +  PartialOrd, V: Copy + Default + PartialOrd, const N: u64> TreeHashVec<K, V, N> {
     /// Creates a new TreeHashVec
     /// # Returns
     /// * `TreeHashVec<V, N>` - New TreeHashVec
-    pub fn new() -> TreeHashVec<V, N> {
+    pub fn new() -> TreeHashVec<K, V, N> {
         let mut vec = TreeHashVec {
             data: Vec::new(),
             size: N,
@@ -49,8 +49,10 @@ impl <V: Copy + Default + PartialOrd, const N: u64> TreeHashVec<V, N> {
 }
 
 /// Implementation of basic HashVec trait for TreeHashVec
-impl <V: Default + Eq + Copy + Default + PartialOrd, const N: u64> HashVec<V, N> for TreeHashVec<V, N> {
-    fn push(&mut self, index: u64, value: V) -> (u64, usize) {
+impl <K: Default + Eq + Copy, V: Default + Eq + Copy + PartialOrd, const N: u64> HashVec<K, V, N> for TreeHashVec<K, V, N> {
+    fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize) {
+
+
         let data_index = self.data[index as usize].push(value);
         statistics_add_actions(self, index);
 
@@ -92,6 +94,14 @@ impl <V: Default + Eq + Copy + Default + PartialOrd, const N: u64> HashVec<V, N>
 
     fn len(&self) -> u64 {
         self.statistics.size
+    }
+
+    fn get(&self, index: u64, key: K) -> Option<(K, V)> {
+        todo!()
+    }
+
+    fn have_key(&mut self, index: u64, key: K) -> bool {
+        todo!()
     }
 }
 

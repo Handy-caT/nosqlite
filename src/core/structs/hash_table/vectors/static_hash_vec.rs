@@ -1,4 +1,5 @@
 use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal};
+use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
 use crate::core::structs::hash_table::vectors::statistics::statistics_functions::{statistics_add_actions, statistics_remove_actions};
 
@@ -8,7 +9,7 @@ use crate::core::structs::hash_table::vectors::statistics::statistics_functions:
 /// * `N` - Number of buckets, must be a power of 2, if it is not, it will be rounded up to the next power of 2
 pub(crate) struct StaticHashVec<K, V, const N: u64> {
     /// The data of the hash vector as a vector of vectors.
-    data: Vec<Vec<(K, V)>>,
+    data: Vec<Vec<KeyValue<K, V>>>,
     /// The size of the hash vector. This is the number of buckets.
     /// It is a power of 2. If N is not a power of 2, it will be rounded up to the next power of 2.
     pub size: u64,
@@ -46,7 +47,7 @@ impl <K: Eq, V: Default + Eq, const N: u64> StaticHashVec<K, V, N> {
 /// Implementation of basic HashVec trait for StaticHashVec
 impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V, N> for StaticHashVec<K, V, N> {
     fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize) {
-        let data = (key, value);
+        let data = KeyValue::new(key, value);
 
         self.data[index as usize].push(data);
         let data_index = self.data[index as usize].len() - 1;
@@ -56,10 +57,10 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
         (index, data_index)
     }
 
-    fn get(&self, index: u64, key: K) -> Option<(K, V)> {
+    fn get(&self, index: u64, key: K) -> Option<KeyValue<K, V>> {
         let mut i = 0;
         while i < self.data[index as usize].len() {
-            if self.data[index as usize][i].0 == key {
+            if self.data[index as usize][i].key == key {
                 return Some(self.data[index as usize][i]);
             }
             i+=1;
@@ -83,7 +84,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
         }
     }
 
-    fn remove(&mut self, index: u64, key: K) -> Option<(K, V)> {
+    fn remove(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>> {
        let item_index = self.find_key(index, key);
          match item_index {
               Some(i) => {
@@ -104,7 +105,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
 
 /// Implementation of HashVecIndexes trait for StaticHashVec
 impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndexes<K, V, N> for StaticHashVec<K, V, N> {
-    fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<(K, V)> {
+    fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
         if value_index >= self.data[index as usize].len() {
             None
         } else {
@@ -113,7 +114,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
         }
     }
 
-    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<(K, V)> {
+    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
         if value_index >= self.data[index as usize].len() {
             None
         } else {
@@ -124,7 +125,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
     fn find_item(&mut self, index: u64, value: V) -> Option<usize> {
         let mut i = 0;
         while i < self.data[index as usize].len() {
-            if self.data[index as usize][i].1 == value {
+            if self.data[index as usize][i].value == value {
                 return Some(i);
             }
             i+=1;
@@ -135,7 +136,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
     fn find_key(&mut self, index: u64, key: K) -> Option<usize> {
         let mut i = 0;
         while i < self.data[index as usize].len() {
-            if self.data[index as usize][i].0 == key {
+            if self.data[index as usize][i].key == key {
                 return Some(i);
             }
             i+=1;
@@ -145,7 +146,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
 }
 
 impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V, N> for StaticHashVec<K, V, N> {
-    fn get_vec(&self, index: u64) -> Option<&Vec<(K, V)>> {
+    fn get_vec(&self, index: u64) -> Option<&Vec<KeyValue<K, V>>> {
         if  index >= N {
             None
         } else {
@@ -153,7 +154,7 @@ impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V, N> f
         }
     }
 
-    fn get_vec_mut(&mut self, index: u64) -> Option<&mut Vec<(K, V)>> {
+    fn get_vec_mut(&mut self, index: u64) -> Option<&mut Vec<KeyValue<K, V>>> {
         if  index >= N {
             None
         } else {
@@ -188,6 +189,7 @@ impl <K: Eq, V: Default + Eq, const N: u64> HashVecStatisticsInternal<K, V, N> f
 mod tests {
     use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
     use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal};
+    use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 
     #[test]
     fn test_static_hash_vec_new() {
@@ -225,8 +227,11 @@ mod tests {
         assert_eq!(hash_vec.statistics.size, 2);
 
         assert_eq!(hash_vec.data[0].len(), 2);
-        assert_eq!(hash_vec.data[0][0], (1, 1));
-        assert_eq!(hash_vec.data[0][1], (2, 2));
+
+        assert_eq!(hash_vec.data[0][0].key, 1);
+        assert_eq!(hash_vec.data[0][0].value, 1);
+        assert_eq!(hash_vec.data[0][1].key, 2);
+        assert_eq!(hash_vec.data[0][1].value, 2);
 
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 2);
@@ -266,13 +271,13 @@ mod tests {
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 2);
 
-        assert_eq!(hash_vec.remove(0, 1), Some((1, 1)));
+        assert_eq!(hash_vec.remove(0, 1), Some(KeyValue::new(1, 1)));
         assert_eq!(hash_vec.find_item(0, 1), None);
         assert_eq!(hash_vec.have_item(0, 1), false);
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 1);
 
-        assert_eq!(hash_vec.remove(0, 2), Some((2, 2)));
+        assert_eq!(hash_vec.remove(0, 2), Some(KeyValue::new(2, 2)));
         assert_eq!(hash_vec.find_item(0, 2), None);
         assert_eq!(hash_vec.have_item(0, 2), false);
         assert_eq!(hash_vec.statistics.get_count(), 0);
@@ -293,13 +298,13 @@ mod tests {
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
 
-        assert_eq!(hash_vec.remove_by_index(0, 0), Some((1, 1)));
+        assert_eq!(hash_vec.remove_by_index(0, 0), Some(KeyValue::new(1, 1)));
         assert_eq!(hash_vec.find_item(0, 1), None);
         assert_eq!(hash_vec.have_item(0, 1), false);
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 1);
 
-        assert_eq!(hash_vec.remove_by_index(0, 0), Some((2, 2)));
+        assert_eq!(hash_vec.remove_by_index(0, 0), Some(KeyValue::new(2, 2)));
         assert_eq!(hash_vec.find_item(0, 2), None);
         assert_eq!(hash_vec.have_item(0, 2), false);
         assert_eq!(hash_vec.statistics.get_count(), 0);
@@ -320,8 +325,8 @@ mod tests {
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
 
-        assert_eq!(hash_vec.get_by_index(0, 0), Some((1, 1)));
-        assert_eq!(hash_vec.get_by_index(0, 1), Some((2, 2)));
+        assert_eq!(hash_vec.get_by_index(0, 0), Some(KeyValue::new(1, 1)));
+        assert_eq!(hash_vec.get_by_index(0, 1), Some(KeyValue::new(2, 2)));
         assert_eq!(hash_vec.get_by_index(0, 2), None);
     }
 
