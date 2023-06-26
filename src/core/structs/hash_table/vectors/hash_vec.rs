@@ -34,6 +34,11 @@ pub trait HashVec<V, const N: u64> {
     /// * `Option<V>` - Value that was removed, None if value was not found
     fn remove(&mut self, index: u64, value: V) -> Option<V>;
 
+    /// Returns number of buckets in the HashVector
+    /// # Returns
+    /// * `u64` - Number of buckets in the HashVector
+    fn size(&self) -> u64;
+
     /// Returns length of the HashVector as sum of lengths of underlying vectors
     /// # Returns
     /// * `u64` - Length of the HashVector

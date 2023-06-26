@@ -12,6 +12,9 @@ struct TreeHashVec<V: Copy + Default + Copy + Default + PartialOrd, const N: u64
     /// The data of the hash vector as a vector of trees.
     /// OptimizedTreeVec is used as the underlying data structure for the trees.
     data: Vec<BalancedTree<V, OptimizedTreeVec<V>>>,
+    /// The size of the hash vector. This is the number of buckets.
+    /// It is a power of 2. If N is not a power of 2, it will be rounded up to the next power of 2.
+    pub size: u64,
     /// Statistics of the hash vector
     statistics: HashVecStatistics,
 }
@@ -23,6 +26,7 @@ impl <V: Copy + Default + PartialOrd, const N: u64> TreeHashVec<V, N> {
     pub fn new() -> TreeHashVec<V, N> {
         let mut vec = TreeHashVec {
             data: Vec::new(),
+            size: N,
             statistics: HashVecStatistics::new(N as usize),
         };
 
@@ -37,6 +41,8 @@ impl <V: Copy + Default + PartialOrd, const N: u64> TreeHashVec<V, N> {
             let nodes = OptimizedTreeVec::new();
             vec.data.push(BalancedTree::<V, OptimizedTreeVec<V>>::new(nodes));
         }
+
+        vec.size = size;
 
         vec
     }
@@ -78,6 +84,10 @@ impl <V: Default + Eq + Copy + Default + PartialOrd, const N: u64> HashVec<V, N>
             },
             None => None,
         }
+    }
+
+    fn size(&self) -> u64 {
+        self.size
     }
 
     fn len(&self) -> u64 {
@@ -148,11 +158,13 @@ mod tests {
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 16);
+        assert_eq!(vec.size, 16);
 
         let vec = TreeHashVec::<u64, 32>::new();
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 32);
+        assert_eq!(vec.size, 32);
     }
 
     #[test]

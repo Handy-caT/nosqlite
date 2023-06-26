@@ -6,8 +6,13 @@ use crate::core::structs::hash_table::vectors::statistics::statistics_functions:
 /// # Arguments
 /// * `V` - Type of the value
 /// * `N` - Number of buckets, must be a power of 2, if it is not, it will be rounded up to the next power of 2
-struct StaticHashVec<V, const N: u64> {
+pub(crate) struct StaticHashVec<V, const N: u64> {
+    /// The data of the hash vector as a vector of vectors.
     data: Vec<Vec<V>>,
+    /// The size of the hash vector. This is the number of buckets.
+    /// It is a power of 2. If N is not a power of 2, it will be rounded up to the next power of 2.
+    pub size: u64,
+    /// Statistics of the hash vector
     statistics: HashVecStatistics,
 }
 
@@ -29,8 +34,10 @@ impl <V: Default + Eq, const N: u64> StaticHashVec<V, N> {
             data.push(Vec::new());
             i+=1;
         }
+
         StaticHashVec {
             data,
+            size,
             statistics: HashVecStatistics::new(N as usize)
         }
     }
@@ -74,6 +81,10 @@ impl <V: Default + Eq + Copy, const N: u64> HashVec<V, N> for StaticHashVec<V, N
               },
               None => None,
          }
+    }
+
+    fn size(&self) -> u64 {
+        self.size
     }
 
     fn len(&self) -> u64 {
@@ -162,11 +173,13 @@ mod tests {
 
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.data.len(), 16);
+        assert_eq!(hash_vec.size, 16);
 
         let hash_vec: StaticHashVec<u64, 32> = StaticHashVec::new();
 
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.data.len(), 32);
+        assert_eq!(hash_vec.size, 32);
     }
 
     #[test]

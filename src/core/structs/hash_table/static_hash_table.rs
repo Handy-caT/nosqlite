@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
-use crate::core::structs::hash_table::hash::custom_hash;
+use crate::core::structs::hash_table::hash::custom_hash::CustomHash;
+use crate::core::structs::hash_table::hash::hash::custom_hash;
 use crate::core::structs::hash_table::hash_table::HashTable;
 use crate::core::structs::hash_table::vectors::hash_vec::HashVec;
 
@@ -58,10 +59,19 @@ impl <K, V, H, const N: u64> StaticHashTable<K, V, H, N>
 impl <K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
     where
         H: HashVec<V, N>,
-        K: Eq + Copy
+        K: Eq + Copy + CustomHash,
+        V: Eq + Copy
 {
     fn insert(&mut self, key: K, value: V) -> Option<V> {
-        let key_bytes = key.to_be_bytes();
+        let hash = key.hash(self.hash);
+
+        println!("{:#066b}", hash);
+
+        let index = hash & (self.table.size() - 1);
+        self.table.push(index, value);
+        self.size += 1;
+
+        Some(value)
     }
 
     fn remove(&mut self, key: K) -> Option<V> {
@@ -73,6 +83,31 @@ impl <K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
     }
 
     fn len(&self) -> usize {
-        todo!()
+        self.size
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::structs::hash_table::hash_table::HashTable;
+    use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
+    use crate::core::structs::hash_table::static_hash_table::StaticHashTable;
+
+    #[test]
+    fn test_static_hash_table_new() {
+        let hash_table: StaticHashTable<u64, u64, StaticHashVec<u64, 8>, 8> = StaticHashTable::new(StaticHashVec::new());
+
+        assert_eq!(hash_table.len(), 0);
+    }
+
+    #[test]
+    fn test_static_hash_table_insert() {
+        let mut hash_table: StaticHashTable<u64, u64, StaticHashVec<u64, 8>, 8> = StaticHashTable::new(StaticHashVec::new());
+
+        for i in 0..128 {
+            hash_table.insert(i, i);
+        }
+
+        assert_eq!(hash_table.len(), 128);
     }
 }
