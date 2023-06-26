@@ -1,30 +1,39 @@
 use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
 
 /// Common trait for HashTable data
-pub trait HashVec<V, const N: u64> {
+pub trait HashVec<K, V, const N: u64> {
     /// Adds value to the HashVector by underlying vector index and value itself
     /// # Arguments
     /// * `index` - Index of the underlying vector
+    /// * `key` - Key to add
     /// * `value` - Value to add
     /// # Returns
     /// * `(u64, usize)` - Index of the underlying vector and index of the value in the vector
-    fn push(&mut self, index: u64, value: V) -> (u64, usize);
+    fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize);
+
+    /// Gets value from the HashVector by underlying vector index and key
+    /// # Arguments
+    /// * `index` - Index of the underlying vector
+    /// * `key` - Key to get
+    /// # Returns
+    /// * `Option<V>` - Value if it was found, None otherwise
+    fn get(&self, index: u64, key: K) -> Option<(K, V)>;
 
     /// Checks if the HashVector has value by underlying vector index and value itself
     /// # Arguments
     /// * `index` - Index of the underlying vector
     /// * `value` - Value to check
     /// # Returns
-    /// * `(bool, usize)` - True if the HashVector has value, false otherwise and index of the value in the vector
+    /// * `bool` - True if the HashVector has value, false otherwise
     fn have_item(&mut self, index: u64, value: V) -> bool;
 
-    /// Finds value in the HashVector by underlying vector index and value itself
+    /// Checks if the HashVector has key by underlying vector index
     /// # Arguments
     /// * `index` - Index of the underlying vector
-    /// * `value` - Value to find
+    /// * `key` - Key to check
     /// # Returns
-    /// * `Option<usize>` - Index of the value in the vector if it was found, None otherwise
-    fn find_item(&mut self, index: u64, value: V) -> Option<usize>;
+    /// * `bool` - True if the HashVector has key, false otherwise
+    fn have_key(&mut self, index: u64, key: K) -> bool;
 
     /// Removes value from the HashVector by underlying vector index and value itself
     /// # Arguments
@@ -32,7 +41,7 @@ pub trait HashVec<V, const N: u64> {
     /// * `value` - Value to remove
     /// # Returns
     /// * `Option<V>` - Value that was removed, None if value was not found
-    fn remove(&mut self, index: u64, value: V) -> Option<V>;
+    fn remove(&mut self, index: u64, key: K) -> Option<(K, V)>;
 
     /// Returns number of buckets in the HashVector
     /// # Returns
@@ -46,14 +55,14 @@ pub trait HashVec<V, const N: u64> {
 }
 
 /// Common trait for HashTable to get values by underlying vector index
-pub trait HashVecIndexes<V, const N: u64> {
+pub trait HashVecIndexes<K, V, const N: u64> {
     /// Removes value from the HashVector by underlying vector index and value index
     /// # Arguments
     /// * `index` - Index of the underlying vector
     /// * `value_index` - Index of the value in the vector
     /// # Returns
     /// * `Option<V>` - Value that was removed, None if value index was out of bounds
-    fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<V>;
+    fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<(K, V)>;
 
     /// Returns reference to the value from the HashVector by underlying vector index and value index
     /// # Arguments
@@ -61,28 +70,44 @@ pub trait HashVecIndexes<V, const N: u64> {
     /// * `value_index` - Index of the value in the vector
     /// # Returns
     /// * 'Option<&V>' - Reference to the value, None if value index was out of bounds
-    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<V>;
+    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<(K, V)>;
+
+    /// Finds value in the HashVector by underlying vector index and value itself
+    /// # Arguments
+    /// * `index` - Index of the underlying vector
+    /// * `value` - Value to find
+    /// # Returns
+    /// * `Option<usize>` - Index of the value in the vector if it was found, None otherwise
+    fn find_item(&mut self, index: u64, value: V) -> Option<usize>;
+
+    /// Finds key in the HashVector by underlying vector index and key itself
+    /// # Arguments
+    /// * `index` - Index of the underlying vector
+    /// * `key` - Key to find
+    /// # Returns
+    /// * `Option<usize>` - Index of the key in the vector if it was found, None otherwise
+    fn find_key(&mut self, index: u64, key: K) -> Option<usize>;
 }
 
 /// Internal trait for HashTable to get underlying vectors by underlying vector index
-pub(in crate::core::structs::hash_table) trait HashVecInternal<V, const N: u64> {
+pub(in crate::core::structs::hash_table) trait HashVecInternal<K, V, const N: u64> {
     /// Returns reference to the underlying vector from the HashVector by underlying vector index
     /// # Arguments
     /// * `index` - Index of the underlying vector
     /// # Returns
     /// * 'Option<&Vec<V>>' - Reference to the underlying vector, None if index was out of bounds
-    fn get_vec(&self, index: u64) -> Option<&Vec<V>>;
+    fn get_vec(&self, index: u64) -> Option<&Vec<(K, V)>>;
 
     /// Returns mutable reference to the underlying vector from the HashVector by underlying vector index
     /// # Arguments
     /// * `index` - Index of the underlying vector
     /// # Returns
     /// * 'Option<&mut Vec<V>>' - Mutable reference to the underlying vector, None if index was out of bounds
-    fn get_vec_mut(&mut self, index: u64) -> Option<&mut Vec<V>>;
+    fn get_vec_mut(&mut self, index: u64) -> Option<&mut Vec<(K, V)>>;
 }
 
 /// Common trait for HashTable to get statistics about underlying vectors
-pub(in crate::core::structs::hash_table) trait HashVecStatisticsInternal<V, const N: u64> {
+pub(in crate::core::structs::hash_table) trait HashVecStatisticsInternal<K, V, const N: u64> {
     /// Returns max length of the underlying vectors
     /// # Returns
     /// * `usize` - Max length of the underlying vectors
