@@ -18,15 +18,7 @@ pub trait HashVec<K, V, const N: u64> {
     /// * `key` - Key to get
     /// # Returns
     /// * 'Option<KeyValue<K, V>>' - Value that was found, None if value was not found
-    fn get(&self, index: u64, key: K) -> Option<KeyValue<K, V>>;
-
-    /// Checks if the HashVector has value by underlying vector index and value itself
-    /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `value` - Value to check
-    /// # Returns
-    /// * `bool` - True if the HashVector has value, false otherwise
-    fn have_item(&mut self, index: u64, value: V) -> bool;
+    fn get(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>>;
 
     /// Checks if the HashVector has key by underlying vector index
     /// # Arguments
@@ -72,14 +64,6 @@ pub trait HashVecIndexes<K, V, const N: u64> {
     /// # Returns
     /// * 'Option<KeyValue<K, V>>' - Value that was found, None if value index was out of bounds
     fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>>;
-
-    /// Finds value in the HashVector by underlying vector index and value itself
-    /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `value` - Value to find
-    /// # Returns
-    /// * `Option<usize>` - Index of the value in the vector if it was found, None otherwise
-    fn find_item(&mut self, index: u64, value: V) -> Option<usize>;
 
     /// Finds key in the HashVector by underlying vector index and key itself
     /// # Arguments

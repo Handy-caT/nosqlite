@@ -127,16 +127,16 @@ impl <T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
 }
 
 impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
-    }
-
     fn push(&mut self, value: T) -> i32 {
         push(self, value)
     }
 
     fn get(&self, index: i32) -> Option<TreeNode<T>> {
         get(self, index)
+    }
+
+    fn get_value_mut(&mut self, index: i32) -> &mut T {
+        &mut self.data[index as usize]
     }
 
     fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {

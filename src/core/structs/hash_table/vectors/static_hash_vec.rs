@@ -57,7 +57,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
         (index, data_index)
     }
 
-    fn get(&self, index: u64, key: K) -> Option<KeyValue<K, V>> {
+    fn get(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>> {
         let mut i = 0;
         while i < self.data[index as usize].len() {
             if self.data[index as usize][i].key == key {
@@ -66,14 +66,6 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
             i+=1;
         }
         None
-    }
-
-    fn have_item(&mut self, index: u64, value: V) -> bool {
-        let item_index = self.find_item(index, value);
-        match item_index {
-            Some(_) => true,
-            None => false,
-        }
     }
 
     fn have_key(&mut self, index: u64, key: K) -> bool {
@@ -120,17 +112,6 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
         } else {
             Some(self.data[index as usize][value_index])
         }
-    }
-
-    fn find_item(&mut self, index: u64, value: V) -> Option<usize> {
-        let mut i = 0;
-        while i < self.data[index as usize].len() {
-            if self.data[index as usize][i].value == value {
-                return Some(i);
-            }
-            i+=1;
-        }
-        None
     }
 
     fn find_key(&mut self, index: u64, key: K) -> Option<usize> {
@@ -238,27 +219,27 @@ mod tests {
     }
 
     #[test]
-    fn test_static_hash_vec_have_item() {
+    fn test_static_hash_vec_have_key() {
         let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
 
-        assert_eq!(hash_vec.have_item(0, 1), true);
-        assert_eq!(hash_vec.have_item(0, 2), true);
-        assert_eq!(hash_vec.have_item(0, 3), false);
+        assert_eq!(hash_vec.have_key(0, 1), true);
+        assert_eq!(hash_vec.have_key(0, 2), true);
+        assert_eq!(hash_vec.have_key(0, 3), false);
     }
 
     #[test]
-    fn test_static_hash_vec_find_item() {
+    fn test_static_hash_vec_find_key() {
         let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
 
-        assert_eq!(hash_vec.find_item(0, 1), Some(0));
-        assert_eq!(hash_vec.find_item(0, 2), Some(1));
-        assert_eq!(hash_vec.find_item(0, 3), None);
+        assert_eq!(hash_vec.find_key(0, 1), Some(0));
+        assert_eq!(hash_vec.find_key(0, 2), Some(1));
+        assert_eq!(hash_vec.find_key(0, 3), None);
     }
 
     #[test]
@@ -272,14 +253,14 @@ mod tests {
         assert_eq!(hash_vec.statistics.max_length, 2);
 
         assert_eq!(hash_vec.remove(0, 1), Some(KeyValue::new(1, 1)));
-        assert_eq!(hash_vec.find_item(0, 1), None);
-        assert_eq!(hash_vec.have_item(0, 1), false);
+        assert_eq!(hash_vec.find_key(0, 1), None);
+        assert_eq!(hash_vec.have_key(0, 1), false);
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 1);
 
         assert_eq!(hash_vec.remove(0, 2), Some(KeyValue::new(2, 2)));
-        assert_eq!(hash_vec.find_item(0, 2), None);
-        assert_eq!(hash_vec.have_item(0, 2), false);
+        assert_eq!(hash_vec.find_key(0, 2), None);
+        assert_eq!(hash_vec.have_key(0, 2), false);
         assert_eq!(hash_vec.statistics.get_count(), 0);
         assert_eq!(hash_vec.statistics.max_length, 0);
 
@@ -299,14 +280,14 @@ mod tests {
         hash_vec.push(0, 2, 2);
 
         assert_eq!(hash_vec.remove_by_index(0, 0), Some(KeyValue::new(1, 1)));
-        assert_eq!(hash_vec.find_item(0, 1), None);
-        assert_eq!(hash_vec.have_item(0, 1), false);
+        assert_eq!(hash_vec.find_key(0, 1), None);
+        assert_eq!(hash_vec.have_key(0, 1), false);
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 1);
 
         assert_eq!(hash_vec.remove_by_index(0, 0), Some(KeyValue::new(2, 2)));
-        assert_eq!(hash_vec.find_item(0, 2), None);
-        assert_eq!(hash_vec.have_item(0, 2), false);
+        assert_eq!(hash_vec.find_key(0, 2), None);
+        assert_eq!(hash_vec.have_key(0, 2), false);
         assert_eq!(hash_vec.statistics.get_count(), 0);
         assert_eq!(hash_vec.statistics.max_length, 0);
 

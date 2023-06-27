@@ -10,9 +10,9 @@ pub struct KeyValue<K, V> {
     pub value: V
 }
 
-impl<K: Eq, V: Eq> PartialEq<Self> for KeyValue<K, V> {
+impl<K: PartialEq, V: PartialEq> PartialEq<Self> for KeyValue<K, V> {
     fn eq(&self, other: &Self) -> bool {
-        self.key == other.key && self.value == other.value
+        self.key == other.key
     }
 }
 
@@ -29,7 +29,7 @@ impl<K: Eq + Copy, V: Eq + Copy> KeyValue<K, V> {
     }
 }
 
-impl<K: Eq + PartialOrd, V: Eq + PartialOrd> PartialOrd for KeyValue<K, V> {
+impl<K: PartialOrd, V: PartialOrd> PartialOrd for KeyValue<K, V> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.key.partial_cmp(&other.key)
     }
@@ -52,5 +52,14 @@ impl<K: Debug, V: Debug> Debug for KeyValue<K, V> {
             .field("key", &self.key)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl<K: Default, V: Default> Default for KeyValue<K, V> {
+    fn default() -> Self {
+        KeyValue {
+            key: K::default(),
+            value: V::default()
+        }
     }
 }
