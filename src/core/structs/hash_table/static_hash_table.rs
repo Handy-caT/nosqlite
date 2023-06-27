@@ -65,8 +65,6 @@ impl <K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
     fn insert(&mut self, key: K, value: V) -> Option<V> {
         let hash = key.hash(self.hash);
 
-        println!("{:#066b}", hash);
-
         let index = hash & (self.table.size() - 1);
         self.table.push(index, key, value);
         self.size += 1;
@@ -76,12 +74,27 @@ impl <K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
 
     fn remove(&mut self, key: K) -> Option<V> {
         let hash = key.hash(self.hash);
+        let index = hash & (self.table.size() - 1);
 
-        None
+        let item = self.table.remove(index, key);
+        match item {
+            Some(item) => {
+                self.size -= 1;
+                Some(item.value)
+            },
+            None => None
+        }
     }
 
-    fn get(&self, key: K) -> Option<V> {
-        todo!()
+    fn get(&mut self, key: K) -> Option<V> {
+        let hash = key.hash(self.hash);
+        let index = hash & (self.table.size() - 1);
+
+        let item = self.table.get(index, key);
+        match item {
+            Some(item) => Some(item.value),
+            None => None
+        }
     }
 
     fn len(&self) -> usize {
@@ -111,5 +124,42 @@ mod tests {
         }
 
         assert_eq!(hash_table.len(), 8);
+    }
+
+    #[test]
+    fn test_static_hash_table_remove() {
+        let mut hash_table: StaticHashTable<u64, u64, StaticHashVec<u64, u64,  8>, 8> = StaticHashTable::new(StaticHashVec::new());
+
+        for i in 0..8 {
+            hash_table.insert(i, i);
+        }
+
+        let item = hash_table.remove(0);
+        assert_eq!(item, Some(0));
+        assert_eq!(hash_table.len(), 7);
+
+        for i in 1..8 {
+            hash_table.remove(i);
+        }
+
+        assert_eq!(hash_table.len(), 0);
+
+        let item = hash_table.remove(0);
+        assert_eq!(item, None);
+    }
+
+    #[test]
+    fn test_static_hash_table_get() {
+        let mut hash_table: StaticHashTable<u64, u64, StaticHashVec<u64, u64,  8>, 8> = StaticHashTable::new(StaticHashVec::new());
+
+        for i in 0..8 {
+            hash_table.insert(i, i);
+        }
+
+        let item = hash_table.get(0);
+        assert_eq!(item, Some(0));
+
+        let item = hash_table.get(8);
+        assert_eq!(item, None);
     }
 }

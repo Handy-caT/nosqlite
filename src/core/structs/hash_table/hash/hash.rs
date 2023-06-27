@@ -51,20 +51,8 @@ fn transformation(a: &[u8], b: &[u8]) -> [u8; 4] {
 /// * u64 - Result of the hash
 pub fn custom_hash(data: &[u8]) -> u64 {
     let len = data.len();
-
-    println!("len {}", len);
-
     let mut appendix = len.to_be_bytes();
-
-    println!("appendix {:?}", appendix);
-
     let real_data = [data, &appendix].concat();
-
-    println!("real_data");
-    for i in real_data.iter() {
-        print!("{:#010b} ", i);
-    }
-    println!();
 
     let real_data = real_data.chunks_exact(2);
 
@@ -73,12 +61,6 @@ pub fn custom_hash(data: &[u8]) -> u64 {
     let mut k = 0;
     for i in real_data {
         hash = transformation(i,&hash[2..4]);
-
-        println!("hash {}", k);
-        for j in hash.iter() {
-            print!("{:#010b} ", j);
-        }
-        println!();
 
         k+=1;
     }
