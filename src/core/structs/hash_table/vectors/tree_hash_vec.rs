@@ -175,12 +175,14 @@ mod tests {
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 16);
         assert_eq!(vec.size, 16);
+        assert_eq!(vec.size(), 16);
 
         let vec = TreeHashVec::<u64, u64, 32>::new();
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 32);
         assert_eq!(vec.size, 32);
+        assert_eq!(vec.size(), 32);
     }
 
     #[test]
@@ -192,10 +194,45 @@ mod tests {
         assert_eq!(index, 0);
         assert_eq!(value_index, 0);
         assert_eq!(vec.data[0].len(), 1);
+        assert_eq!(vec.size(), 8);
 
         assert_eq!(vec.statistics.size, 1);
         assert_eq!(vec.statistics.max_length, 1);
         assert_eq!(vec.statistics.get_count(), 1);
+    }
+
+    #[test]
+    fn test_tree_hash_vec_remove_by_index() {
+        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+
+        vec.push(0, 1, 1);
+        vec.push(0, 2, 2);
+
+        let item = vec.remove_by_index(0, 0);
+
+        assert_eq!(item, Some(KeyValue::new(1, 1)));
+        assert_eq!(vec.data[0].len(), 1);
+        assert_eq!(vec.size(), 8);
+
+        assert_eq!(vec.statistics.size, 1);
+        assert_eq!(vec.statistics.max_length, 1);
+        assert_eq!(vec.statistics.get_count(), 1);
+
+        let item = vec.remove_by_index(0, 3);
+
+        assert_eq!(item, None);
+    }
+
+    #[test]
+    fn test_tree_hash_vec_get() {
+        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+
+        vec.push(0, 1, 1);
+        vec.push(0, 2, 2);
+
+        assert_eq!(vec.get(0, 1), Some(KeyValue::new(1, 1)));
+        assert_eq!(vec.get(0, 2), Some(KeyValue::new(2, 2)));
+        assert_eq!(vec.get(0, 3), None);
     }
 
     #[test]
@@ -211,7 +248,19 @@ mod tests {
     }
 
     #[test]
-    fn test_tree_hash_vec_find_item() {
+    fn test_tree_hash_vec_get_by_index() {
+        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+
+        vec.push(0, 1, 1);
+        vec.push(0, 2, 2);
+
+        assert_eq!(vec.get_by_index(0, 0), Some(KeyValue::new(1, 1)));
+        assert_eq!(vec.get_by_index(0, 1), Some(KeyValue::new(2, 2)));
+        assert_eq!(vec.get_by_index(0, 2), None);
+    }
+
+    #[test]
+    fn test_tree_hash_vec_find_key() {
         let mut vec = TreeHashVec::<u64, u64, 8>::new();
 
         vec.push(0, 1, 1);
@@ -220,6 +269,18 @@ mod tests {
         assert_eq!(vec.find_key(0, 1), Some(0));
         assert_eq!(vec.find_key(0, 2), Some(1));
         assert_eq!(vec.find_key(0, 3), None);
+    }
+
+    #[test]
+    fn test_tree_hash_get_bucket_len() {
+        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+
+        vec.push(0, 1, 1);
+        vec.push(0, 2, 2);
+
+        assert_eq!(vec.get_bucket_len(0), Some(2));
+        assert_eq!(vec.get_bucket_len(1), Some(0));
+        assert_eq!(vec.get_bucket_len(9), None);
     }
 
     #[test]

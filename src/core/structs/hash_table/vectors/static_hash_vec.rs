@@ -189,12 +189,14 @@ mod tests {
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.data.len(), 16);
         assert_eq!(hash_vec.size, 16);
+        assert_eq!(hash_vec.size(), 16);
 
         let hash_vec: StaticHashVec<u64, u64, 32> = StaticHashVec::new();
 
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.data.len(), 32);
         assert_eq!(hash_vec.size, 32);
+        assert_eq!(hash_vec.size(), 32);
     }
 
     #[test]
@@ -309,6 +311,18 @@ mod tests {
         assert_eq!(hash_vec.get_by_index(0, 0), Some(KeyValue::new(1, 1)));
         assert_eq!(hash_vec.get_by_index(0, 1), Some(KeyValue::new(2, 2)));
         assert_eq!(hash_vec.get_by_index(0, 2), None);
+    }
+
+    #[test]
+    fn test_static_hash_vec_get_bucket_len() {
+        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+
+        hash_vec.push(0, 1, 1);
+        hash_vec.push(0, 2, 2);
+
+        assert_eq!(hash_vec.get_bucket_len(0), Some(2));
+        assert_eq!(hash_vec.get_bucket_len(1), Some(0));
+        assert_eq!(hash_vec.get_bucket_len(9), None);
     }
 
     #[test]
