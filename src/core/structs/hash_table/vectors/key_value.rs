@@ -10,6 +10,7 @@ pub struct KeyValue<K, V> {
     pub value: V
 }
 
+/// Equality is based on the key
 impl<K: PartialEq, V: PartialEq> PartialEq<Self> for KeyValue<K, V> {
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
@@ -17,6 +18,12 @@ impl<K: PartialEq, V: PartialEq> PartialEq<Self> for KeyValue<K, V> {
 }
 
 impl<K: Eq + Copy, V: Eq + Copy> KeyValue<K, V> {
+    /// Creates a new KeyValue
+    /// # Arguments
+    /// * `key` - key
+    /// * `value` - value
+    /// # Returns
+    /// * `Self` - KeyValue
     pub fn new(key: K, value: V) -> Self {
         KeyValue {
             key,
@@ -24,6 +31,9 @@ impl<K: Eq + Copy, V: Eq + Copy> KeyValue<K, V> {
         }
     }
 
+    /// Returns a tuple of (key, value)
+    /// # Returns
+    /// * `(K, V)` - Tuple of (key, value)
     pub fn as_tuple(&self) -> (K, V) {
         (self.key, self.value)
     }

@@ -1,3 +1,4 @@
+use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 
 /// Trait for hash table
 pub trait HashTable<K, V> {
@@ -27,4 +28,23 @@ pub trait HashTable<K, V> {
     /// # Returns
     /// * `usize` - Number of elements in the hash table
     fn len(&self) -> usize;
+}
+
+
+/// Trait for HashTable to get keys, values and key-value pairs
+pub trait HashTableVectors<K, V> {
+    /// Returns vector of keys in the HashTable
+    /// # Returns
+    /// * `Vec<K>` - Vector of keys in the HashTable
+    fn get_keys(&mut self) -> Vec<K>;
+
+    /// Returns vector of values in the HashTable
+    /// # Returns
+    /// * `Vec<V>` - Vector of values in the HashTable
+    fn get_values(&mut self) -> Vec<V>;
+
+    /// Returns vector of key-value pairs in the HashTable
+    /// # Returns
+    /// * `Vec<KeyValue<K, V>>` - Vector of key-value pairs in the HashTable
+    fn get_key_values(&mut self) -> Vec<KeyValue<K, V>>;
 }

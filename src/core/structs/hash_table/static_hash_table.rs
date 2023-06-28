@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 use crate::core::structs::hash_table::hash::custom_hash::CustomHash;
 use crate::core::structs::hash_table::hash::hash::custom_hash;
-use crate::core::structs::hash_table::hash_table::HashTable;
-use crate::core::structs::hash_table::vectors::hash_vec::HashVec;
+use crate::core::structs::hash_table::hash_table::{HashTable, HashTableVectors};
+use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal};
+use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 
 /// StaticHashTable is a hash table with a fixed size. It is using HashVec as a storage.
 /// * `K` - key type
@@ -102,9 +103,55 @@ impl <K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
     }
 }
 
+impl <K, V, H, const N: u64> HashTableVectors<K, V> for StaticHashTable<K, V, H, N>
+    where
+        H: HashVec<K, V, N> + HashVecStatisticsInternal<K, V, N> + HashVecIndexes<K, V, N>,
+        K: Eq + Copy + CustomHash,
+        V: Eq + Copy
+{
+    fn get_keys(&mut self) -> Vec<K> {
+        let mut keys = Vec::<K>::new();
+
+        for i in 0..self.table.size() {
+            let len = self.table.get_bucket_len(i).unwrap();
+            for j in 0..len {
+                keys.push(self.table.get_by_index(i, j).unwrap().key);
+            }
+        }
+
+        keys
+    }
+
+    fn get_values(&mut self) -> Vec<V> {
+        let mut values = Vec::<V>::new();
+
+        for i in 0..self.table.size() {
+            let len = self.table.get_bucket_len(i).unwrap();
+            for j in 0..len {
+                values.push(self.table.get_by_index(i, j).unwrap().value);
+            }
+        }
+
+        values
+    }
+
+    fn get_key_values(&mut self) -> Vec<KeyValue<K, V>> {
+        let mut values = Vec::<KeyValue<K, V>>::new();
+
+        for i in 0..self.table.size() {
+            let len = self.table.get_bucket_len(i).unwrap();
+            for j in 0..len {
+                values.push(self.table.get_by_index(i, j).unwrap());
+            }
+        }
+
+        values
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::hash_table::HashTable;
+    use crate::core::structs::hash_table::hash_table::{HashTable, HashTableVectors};
     use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
     use crate::core::structs::hash_table::static_hash_table::StaticHashTable;
 
@@ -161,5 +208,41 @@ mod tests {
 
         let item = hash_table.get(8);
         assert_eq!(item, None);
+    }
+
+    #[test]
+    fn test_static_hash_table_get_keys() {
+        let mut hash_table: StaticHashTable<u64, u64, StaticHashVec<u64, u64,  8>, 8> = StaticHashTable::new(StaticHashVec::new());
+
+        for i in 0..8 {
+            hash_table.insert(i, i);
+        }
+
+        let keys = hash_table.get_keys();
+        assert_eq!(keys.len(), 8);
+    }
+
+    #[test]
+    fn test_static_hash_table_get_values() {
+        let mut hash_table: StaticHashTable<u64, u64, StaticHashVec<u64, u64,  8>, 8> = StaticHashTable::new(StaticHashVec::new());
+
+        for i in 0..8 {
+            hash_table.insert(i, i);
+        }
+
+        let values = hash_table.get_values();
+        assert_eq!(values.len(), 8);
+    }
+
+    #[test]
+    fn test_static_hash_table_get_key_values() {
+        let mut hash_table: StaticHashTable<u64, u64, StaticHashVec<u64, u64,  8>, 8> = StaticHashTable::new(StaticHashVec::new());
+
+        for i in 0..8 {
+            hash_table.insert(i, i);
+        }
+
+        let key_values = hash_table.get_key_values();
+        assert_eq!(key_values.len(), 8);
     }
 }
