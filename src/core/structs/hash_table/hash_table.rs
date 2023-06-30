@@ -30,6 +30,23 @@ pub trait HashTable<K, V> {
     fn len(&self) -> usize;
 }
 
+/// Some additional methods for HashTable
+pub trait HashTableExtended<K, V> {
+    /// Pushes key-value pair into the HashTable
+    /// # Arguments
+    /// * `key_value` - Key-value pair to push
+    /// # Returns
+    /// * `Option<V>` - Value that was inserted
+    fn insert_key_value(&mut self, key_value: KeyValue<K, V>) -> Option<V>;
+
+    /// Pushes tuple into the HashTable
+    /// # Arguments
+    /// * `tuple` - Tuple to push (key, value)
+    /// # Returns
+    /// * `Option<V>` - Value that was inserted
+    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<V>;
+}
+
 
 /// Trait for HashTable to get keys, values and key-value pairs
 pub trait HashTableVectors<K, V> {

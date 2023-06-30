@@ -68,6 +68,18 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
         None
     }
 
+    fn update(&mut self, index: u64, key: K, value: V) -> Option<KeyValue<K, V>> {
+        let item_index = self.find_key(index, key);
+        match item_index {
+            Some(i) => {
+                let old_value = self.data[index as usize][i].value;
+                self.data[index as usize][i].value = value;
+                Some(KeyValue::new(key, old_value))
+            },
+            None => None,
+        }
+    }
+
     fn have_key(&mut self, index: u64, key: K) -> bool {
         let item_index = self.find_key(index, key);
         match item_index {
@@ -197,6 +209,25 @@ mod tests {
         assert_eq!(hash_vec.data.len(), 32);
         assert_eq!(hash_vec.size, 32);
         assert_eq!(hash_vec.size(), 32);
+    }
+
+    #[test]
+    fn test_static_hash_vec_update() {
+        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+
+        hash_vec.push(0, 1, 1);
+        hash_vec.push(0, 2, 2);
+
+        assert_eq!(hash_vec.len(), 2);
+        assert_eq!(hash_vec.statistics.size, 2);
+
+        assert_eq!(hash_vec.get(0, 1), Some(KeyValue::new(1, 1)));
+        assert_eq!(hash_vec.get(0, 2), Some(KeyValue::new(2, 2)));
+
+        hash_vec.update(0, 1, 3);
+
+        assert_eq!(hash_vec.len(), 2);
+        assert_eq!(hash_vec.get(0, 1).unwrap().value, 3);
     }
 
     #[test]

@@ -70,6 +70,21 @@ impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, 
         }
     }
 
+    fn update(&mut self, index: u64, key: K, value: V) -> Option<KeyValue<K, V>> {
+        let item = KeyValue::new(key, V::default());
+        let item_index = self.data[index as usize].find(item);
+
+        match item_index {
+            Some(i) => {
+                let item = KeyValue::new(key, value);
+                self.data[index as usize].remove_by_index(i);
+                self.data[index as usize].push(item);
+                Some(item)
+            },
+            None => None,
+        }
+    }
+
     fn have_key(&mut self, index: u64, key: K) -> bool {
         let item_index = self.find_key(index, key);
         match item_index {
@@ -199,6 +214,26 @@ mod tests {
         assert_eq!(vec.statistics.size, 1);
         assert_eq!(vec.statistics.max_length, 1);
         assert_eq!(vec.statistics.get_count(), 1);
+    }
+
+    #[test]
+    fn test_tree_hash_vec_update() {
+        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+
+        vec.push(0, 1, 1);
+        vec.push(0, 2, 2);
+
+        assert_eq!(vec.len(), 2);
+        assert_eq!(vec.statistics.size, 2);
+
+        assert_eq!(vec.get(0, 1), Some(KeyValue::new(1, 1)));
+        assert_eq!(vec.get(0, 2), Some(KeyValue::new(2, 2)));
+
+        vec.update(0, 1, 2);
+
+        assert_eq!(vec.len(), 2);
+        assert_eq!(vec.statistics.size, 2);
+        assert_eq!(vec.get(0, 1), Some(KeyValue::new(1, 2)));
     }
 
     #[test]

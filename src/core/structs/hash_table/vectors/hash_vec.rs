@@ -20,6 +20,15 @@ pub trait HashVec<K, V, const N: u64> {
     /// * 'Option<KeyValue<K, V>>' - Value that was found, None if value was not found
     fn get(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>>;
 
+    /// Updates value in the HashVector by underlying vector index and key
+    /// # Arguments
+    /// * `index` - Index of the underlying vector
+    /// * `key` - Key to update
+    /// * `value` - Value to update
+    /// # Returns
+    /// * 'Option<KeyValue<K, V>>' - Value that was updated, None if value was not found
+    fn update(&mut self, index: u64, key: K, value: V) -> Option<KeyValue<K, V>>;
+
     /// Checks if the HashVector has key by underlying vector index
     /// # Arguments
     /// * `index` - Index of the underlying vector
