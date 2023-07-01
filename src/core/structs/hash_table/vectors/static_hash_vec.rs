@@ -119,10 +119,14 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
     }
 
     fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
-        if value_index >= self.data[index as usize].len() {
+        if index >= N {
             None
         } else {
-            Some(self.data[index as usize][value_index])
+            if value_index >= self.data[index as usize].len() {
+                None
+            } else {
+                Some(self.data[index as usize][value_index])
+            }
         }
     }
 
