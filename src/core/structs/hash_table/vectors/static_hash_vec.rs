@@ -45,7 +45,7 @@ impl <K: Eq, V: Default + Eq, const N: u64> StaticHashVec<K, V, N> {
 }
 
 /// Implementation of basic HashVec trait for StaticHashVec
-impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V, N> for StaticHashVec<K, V, N> {
+impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V> for StaticHashVec<K, V, N> {
     fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize) {
         let data = KeyValue::new(key, value);
 
@@ -108,7 +108,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
 }
 
 /// Implementation of HashVecIndexes trait for StaticHashVec
-impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndexes<K, V, N> for StaticHashVec<K, V, N> {
+impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndexes<K, V> for StaticHashVec<K, V, N> {
     fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
         if value_index >= self.data[index as usize].len() {
             None
@@ -142,7 +142,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
     }
 }
 
-impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V, N> for StaticHashVec<K, V, N> {
+impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V> for StaticHashVec<K, V, N> {
     fn get_vec(&self, index: u64) -> Option<&Vec<KeyValue<K, V>>> {
         if  index >= N {
             None
@@ -160,7 +160,7 @@ impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V, N> f
     }
 }
 
-impl <K: Eq, V: Default + Eq, const N: u64> HashVecStatisticsInternal<K, V, N> for StaticHashVec<K, V, N> {
+impl <K: Eq, V: Default + Eq, const N: u64> HashVecStatisticsInternal<K, V> for StaticHashVec<K, V, N> {
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
     }

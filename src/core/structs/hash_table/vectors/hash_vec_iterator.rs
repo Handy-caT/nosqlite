@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::vec::IntoIter;
 use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal};
 use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 
@@ -7,8 +8,8 @@ use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 /// * `V` - value type
 /// * `H` - HashVec implementation
 /// * `N` - size of the hash table
-struct HashVecIterator<'a, K, V, H, const N: u64>
-where H: HashVec<K, V, N>
+pub struct HashVecIterator<'a, K, V, H>
+where H: HashVec<K, V>
 {
     table: &'a mut H,
     index: usize,
@@ -19,15 +20,15 @@ where H: HashVec<K, V, N>
 }
 
 
-impl<'a, K, V, H, const N: u64> HashVecIterator<'a, K, V, H, N>
-where H: HashVec<K, V, N>
+impl<'a, K, V, H> HashVecIterator<'a, K, V, H>
+where H: HashVec<K, V>
 {
     /// Creates a new HashVecIterator
     /// # Arguments
     /// * `table` - HashVec implementation
     /// # Returns
     /// * `Self` - HashVecIterator
-    fn new(table: &'a mut  H, size: u64) -> Self {
+    pub fn new(table: &'a mut  H, size: u64) -> Self {
         HashVecIterator {
             table,
             index: 0,
@@ -39,9 +40,9 @@ where H: HashVec<K, V, N>
     }
 }
 
-impl<'a, K, V, H, const N: u64> Iterator for HashVecIterator<'a, K, V, H, N>
+impl<'a, K, V, H> Iterator for HashVecIterator<'a, K, V, H>
 where
-    H: HashVec<K, V, N> + HashVecIndexes<K, V, N> + HashVecStatisticsInternal<K, V, N>,
+    H: HashVec<K, V> + HashVecIndexes<K, V> + HashVecStatisticsInternal<K, V>,
     K: Copy,
     V: Copy,
 {

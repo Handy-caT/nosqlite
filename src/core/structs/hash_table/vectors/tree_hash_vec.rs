@@ -50,7 +50,7 @@ impl <K: Copy + Default +  PartialOrd, V: Copy + Default + PartialOrd, const N: 
 }
 
 /// Implementation of basic HashVec trait for TreeHashVec
-impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, const N: u64> HashVec<K, V, N> for TreeHashVec<K, V, N> {
+impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, const N: u64> HashVec<K, V> for TreeHashVec<K, V, N> {
     fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize) {
         let data = KeyValue::new(key, value);
 
@@ -117,7 +117,7 @@ impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, 
 }
 
 /// Implementation of HashVecStatisticsInternal trait for TreeHashVec
-impl <K: Default + Eq + Copy+ PartialOrd, V: Default + Eq + Copy+ PartialOrd, const N: u64> HashVecStatisticsInternal<K, V, N> for TreeHashVec<K, V, N> {
+impl <K: Default + Eq + Copy+ PartialOrd, V: Default + Eq + Copy+ PartialOrd, const N: u64> HashVecStatisticsInternal<K, V> for TreeHashVec<K, V, N> {
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
     }
@@ -140,7 +140,7 @@ impl <K: Default + Eq + Copy+ PartialOrd, V: Default + Eq + Copy+ PartialOrd, co
 }
 
 /// Implementation of HashVecIndexes trait for TreeHashVec
-impl <K: Default + Eq + Copy+ PartialOrd, V: Eq + Copy + Default + PartialOrd, const N: u64> HashVecIndexes<K, V, N> for TreeHashVec<K, V, N> {
+impl <K: Default + Eq + Copy+ PartialOrd, V: Eq + Copy + Default + PartialOrd, const N: u64> HashVecIndexes<K, V> for TreeHashVec<K, V, N> {
     fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
         let has_item = self.data[index as usize].get(value_index as i32);
         match has_item {

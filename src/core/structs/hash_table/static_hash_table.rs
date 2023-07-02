@@ -12,7 +12,7 @@ use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 /// * `H` - HashVec implementation
 struct StaticHashTable<K, V, H, const N: u64>
     where
-        H: HashVec<K, V, N>
+        H: HashVec<K, V>
 {
     table: H,
     size: usize,
@@ -23,7 +23,7 @@ struct StaticHashTable<K, V, H, const N: u64>
 
 impl <K, V, H, const N: u64> StaticHashTable<K, V, H, N>
     where
-        H: HashVec<K, V, N>
+        H: HashVec<K, V>
 {
     /// Creates a new StaticHashTable
     /// # Arguments
@@ -59,7 +59,7 @@ impl <K, V, H, const N: u64> StaticHashTable<K, V, H, N>
 
 impl <K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
     where
-        H: HashVec<K, V, N>,
+        H: HashVec<K, V>,
         K: Eq + Copy + CustomHash,
         V: Eq + Copy
 {
@@ -111,7 +111,7 @@ impl <K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
 
 impl <K, V, H, const N: u64> HashTableVectors<K, V> for StaticHashTable<K, V, H, N>
     where
-        H: HashVec<K, V, N> + HashVecStatisticsInternal<K, V, N> + HashVecIndexes<K, V, N>,
+        H: HashVec<K, V> + HashVecStatisticsInternal<K, V> + HashVecIndexes<K, V>,
         K: Eq + Copy + CustomHash,
         V: Eq + Copy
 {
@@ -157,7 +157,7 @@ impl <K, V, H, const N: u64> HashTableVectors<K, V> for StaticHashTable<K, V, H,
 
 impl <K, V, H, const N: u64> HashTableExtended<K, V> for StaticHashTable<K, V, H, N>
     where
-        H: HashVec<K, V, N>,
+        H: HashVec<K, V>,
         K: Eq + Copy + CustomHash,
         V: Eq + Copy
 {

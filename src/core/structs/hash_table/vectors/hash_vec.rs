@@ -2,7 +2,7 @@ use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
 
 /// Common trait for HashTable data
-pub trait HashVec<K, V, const N: u64> {
+pub trait HashVec<K, V> {
     /// Adds value to the HashVector by underlying vector index and value itself
     /// # Arguments
     /// * `index` - Index of the underlying vector
@@ -57,7 +57,7 @@ pub trait HashVec<K, V, const N: u64> {
 }
 
 /// Common trait for HashTable to get values by underlying vector index
-pub trait HashVecIndexes<K, V, const N: u64> {
+pub trait HashVecIndexes<K, V> {
     /// Removes value from the HashVector by underlying vector index and value index
     /// # Arguments
     /// * `index` - Index of the underlying vector
@@ -84,7 +84,7 @@ pub trait HashVecIndexes<K, V, const N: u64> {
 }
 
 /// Internal trait for HashTable to get underlying vectors by underlying vector index
-pub(in crate::core::structs::hash_table) trait HashVecInternal<K, V, const N: u64> {
+pub(in crate::core::structs::hash_table) trait HashVecInternal<K, V> {
     /// Returns reference to the underlying vector from the HashVector by underlying vector index
     /// # Arguments
     /// * `index` - Index of the underlying vector
@@ -101,7 +101,7 @@ pub(in crate::core::structs::hash_table) trait HashVecInternal<K, V, const N: u6
 }
 
 /// Common trait for HashTable to get statistics about underlying vectors
-pub(in crate::core::structs::hash_table) trait HashVecStatisticsInternal<K, V, const N: u64> {
+pub(in crate::core::structs::hash_table) trait HashVecStatisticsInternal<K, V> {
     /// Returns max length of the underlying vectors
     /// # Returns
     /// * `usize` - Max length of the underlying vectors
