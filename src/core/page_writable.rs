@@ -20,7 +20,7 @@ impl PageWritable for PageLink {
         let first_free = page.get_first_free();
 
         page.update_data(&bytes, link).unwrap();
-        let res_link = PageLink::new(link.get_page_index(), first_free as u32, 16);
+        let res_link = PageLink::new(link.page_index, first_free as u32, 16);
         return Ok(res_link);
     }
 

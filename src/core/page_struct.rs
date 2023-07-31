@@ -96,30 +96,30 @@ impl Page {
     }
 
     pub fn update_data(&mut self, data: &[u8], link: &PageLink) -> Result<PageLink, String> {
-        if link.get_len() as usize != data.len() {
+        if link.len as usize != data.len() {
             return Err("Data length does not match link length".to_string());
         }
         let mut i = 0;
 
         while i < data.len() {
-            self.data[link.get_start() as usize + i] = data[i];
+            self.data[link.start as usize + i] = data[i];
             i += 1;
         }
-        let res_link = PageLink::new(self.info.index, link.get_start(), link.get_len());
+        let res_link = PageLink::new(self.info.index, link.start, link.len);
         return Ok(res_link);
     }
 
     pub fn erase_data(&mut self, link: &PageLink) {
         let mut i: usize = 0;
 
-        while i < link.get_len() as usize {
-            self.data[link.get_start() as usize + i] = 0;
+        while i < link.len as usize {
+            self.data[link.start as usize + i] = 0;
             i += 1;
         }
     }
 
     pub fn get_data_from_link(&self, link: &PageLink) -> &[u8] {
-        &self.data[link.get_start() as usize..link.get_start() as usize + link.get_len() as usize]
+        &self.data[link.start as usize..link.start as usize + link.len as usize]
     }
 }
 

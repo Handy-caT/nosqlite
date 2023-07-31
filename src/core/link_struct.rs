@@ -4,11 +4,11 @@ use std::fmt::{Debug, Display, Formatter};
 /// A struct that represents a link to a page.
 pub struct PageLink {
     /// The index of the page.
-    page_index: u64,
+    pub page_index: u64,
     /// The start index of the link on a page.
-    start: u32,
+    pub start: u32,
     /// The length of the link.
-    len: u32,
+    pub len: u32,
 }
 
 impl PageLink {
@@ -25,27 +25,6 @@ impl PageLink {
             start,
             len,
         }
-    }
-
-    /// Returns the index of the page.
-    /// # Returns
-    /// u64 - The index of the page.
-    pub fn get_page_index(&self) -> u64 {
-        self.page_index
-    }
-
-    /// Returns the start index of the link on a page.
-    /// # Returns
-    /// u32 - The start index of the link on a page.
-    pub fn get_start(&self) -> u32 {
-        self.start
-    }
-
-    /// Returns the length of the link.
-    /// # Returns
-    /// u32 - The length of the link.
-    pub fn get_len(&self) -> u32 {
-        self.len
     }
 
     /// Returns the raw index of the link.
@@ -71,9 +50,9 @@ impl PageLink {
     /// # Returns
     /// Ordering - The ordering of the two `PageLink`s.
     pub fn compare_by_len(a: &PageLink, b: &PageLink) -> Ordering {
-        if a.get_len() < b.get_len() {
+        if a.len < b.len {
             Ordering::Less
-        } else if a.get_len() > b.get_len() {
+        } else if a.len > b.len {
             Ordering::Greater
         } else {
             Ordering::Equal
