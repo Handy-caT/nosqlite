@@ -4,13 +4,22 @@ use crate::core::link_struct::PageLink;
 use crate::core::structs::tree::object::bin_heap::bin_heap::BinHeap;
 use crate::core::structs::tree::vectors::normalized_tree_vec::NormalizedTreeVector;
 
+
+/// WorstFitAdvisor is a strategy that provides the worst fit for a given size.
+/// It uses EmptyLinkRegistry with BinHeap as a base structure. So the getting the biggest length is O(1).
 pub struct WorstFitAdvisor<'a>
 {
+    /// Link to the EmptyLinkRegistry
     empty_link_registry: &'a mut EmptyLinkRegistry<NormalizedTreeVector<PageLink>, BinHeap<PageLink>>
 }
 
 impl <'a> WorstFitAdvisor<'a>
 {
+    /// Creates a new WorstFitAdvisor
+    /// # Arguments
+    /// * `empty_link_registry` - Link to the EmptyLinkRegistry
+    /// # Returns
+    /// * `WorstFitAdvisor` - New WorstFitAdvisor
     pub fn new(empty_link_registry: &'a mut EmptyLinkRegistry<NormalizedTreeVector<PageLink>, BinHeap<PageLink>>) -> Self {
         WorstFitAdvisor {
             empty_link_registry
