@@ -1,13 +1,24 @@
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
 
+/// A struct that represents a link to a page.
 pub struct PageLink {
+    /// The index of the page.
     page_index: u64,
+    /// The start index of the link on a page.
     start: u32,
+    /// The length of the link.
     len: u32,
 }
 
 impl PageLink {
+    /// Creates a new `PageLink` with the given parameters.
+    /// # Arguments
+    /// * `page` - The index of the page.
+    /// * `start` - The start index of the link on a page.
+    /// * `len` - The length of the link.
+    /// # Returns
+    /// A new `PageLink` with the given parameters.
     pub fn new(page: u64, start: u32, len: u32) -> PageLink {
         PageLink {
             page_index: page,
@@ -16,26 +27,49 @@ impl PageLink {
         }
     }
 
+    /// Returns the index of the page.
+    /// # Returns
+    /// u64 - The index of the page.
     pub fn get_page_index(&self) -> u64 {
         self.page_index
     }
 
+    /// Returns the start index of the link on a page.
+    /// # Returns
+    /// u32 - The start index of the link on a page.
     pub fn get_start(&self) -> u32 {
         self.start
     }
 
+    /// Returns the length of the link.
+    /// # Returns
+    /// u32 - The length of the link.
     pub fn get_len(&self) -> u32 {
         self.len
     }
 
+    /// Returns the raw index of the link.
+    /// Raw index is the index from the start of the file.
+    /// # Returns
+    /// u64 - The raw index of the link.
     pub fn get_raw_index(&self) -> u64 {
         self.page_index * 4096 + self.start as u64
     }
 
+    /// Returns the raw end of the link.
+    /// Raw end is the index from the start of the file plus the length of the link.
+    /// # Returns
+    /// u64 - The raw end of the link.
     pub fn get_raw_end(&self) -> u64 {
         self.page_index * 4096 + self.start as u64 + self.len as u64 - 1
     }
 
+    /// Compares two `PageLink`s by their length.
+    /// # Arguments
+    /// * `a` - The first `PageLink` to compare.
+    /// * `b` - The second `PageLink` to compare.
+    /// # Returns
+    /// Ordering - The ordering of the two `PageLink`s.
     pub fn compare_by_len(a: &PageLink, b: &PageLink) -> Ordering {
         if a.get_len() < b.get_len() {
             Ordering::Less
@@ -46,6 +80,12 @@ impl PageLink {
         }
     }
 
+    /// Compares two `PageLink`s by their index.
+    /// # Arguments
+    /// * `a` - The first `PageLink` to compare.
+    /// * `b` - The second `PageLink` to compare.
+    /// # Returns
+    /// Ordering - The ordering of the two `PageLink`s.
     pub fn compare_by_index(a: &PageLink, b: &PageLink) -> Ordering {
         if a.get_raw_index() < b.get_raw_index() {
             Ordering::Less
@@ -99,14 +139,14 @@ impl Default for PageLink {
     }
 }
 
-impl Eq for PageLink {}
 
-
-impl PartialEq<Self> for PageLink {
-    fn eq(&self, other: &Self) -> bool {
-        self.page_index == other.page_index && self.start == other.start && self.len == other.len
+impl PartialEq for PageLink {
+    fn eq(&self, other: &PageLink) -> bool {
+        self.page_index == other.page_index && self.start == other.start
     }
 }
+
+impl Eq for PageLink {}
 
 impl Debug for PageLink {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -204,6 +244,19 @@ mod tests {
         assert_eq!(super::PageLink::compare_by_index(&link1, &link2), std::cmp::Ordering::Less);
         assert_eq!(super::PageLink::compare_by_index(&link2, &link1), std::cmp::Ordering::Greater);
         assert_eq!(super::PageLink::compare_by_index(&link1, &link1), std::cmp::Ordering::Equal);
+    }
+
+    #[test]
+    fn test_page_link_eq() {
+        let link1 = super::PageLink::new(0, 0, 10);
+        let link2 = super::PageLink::new(0, 0, 20);
+        let link3 = super::PageLink::new(0, 10, 20);
+
+        assert_eq!(link1.eq(&link1), true);
+        assert_eq!(link1.eq(&link2), true);
+
+        assert_eq!(link1.eq(&link3), false);
+        assert_eq!(link2.eq(&link3), false);
     }
 
 }
