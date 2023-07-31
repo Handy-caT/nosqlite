@@ -3,7 +3,7 @@ use crate::core::structs::tree::object::balanced_tree::decoratable_balanced_tree
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
 use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
 
-struct EmptyLinkRegistry<V, M>
+pub struct EmptyLinkRegistry<V, M>
     where
         V: TreeVec<PageLink> + Sized,
         M: TreeObject<PageLink> + Sized + TreeObjectVec<PageLink, V>
@@ -13,7 +13,7 @@ struct EmptyLinkRegistry<V, M>
 
 impl <V, M> EmptyLinkRegistry<V, M>
     where
-        V: TreeVec<PageLink> + TreeVecLevels + Sized + TreeVecIndexes<PageLink>,
+        V: TreeVec<PageLink> + TreeVecLevels + Sized,
         M: TreeObject<PageLink> + Sized + TreeObjectVec<PageLink, V>
 {
     pub fn new(data: DecoratableBalancedTree<PageLink, V, M>) -> Self {
@@ -31,7 +31,15 @@ impl <V, M> EmptyLinkRegistry<V, M>
     }
 
     pub fn pop(&mut self) -> Option<PageLink> {
-        self.data.remove_by_index(0)
+        todo!()
+    }
+
+    pub(in crate::core::advisors) fn get_data(&self) -> &DecoratableBalancedTree<PageLink, V, M> {
+        &self.data
+    }
+
+    pub(in crate::core::advisors) fn get_data_mut(&mut self) -> &mut DecoratableBalancedTree<PageLink, V, M> {
+        &mut self.data
     }
 }
 

@@ -43,6 +43,20 @@ impl <T: Default + Copy, V: TreeVec<T> + TreeVecLevels + Sized, M: TreeObject<T>
 
         dec_tree
     }
+    
+    /// Returns the link to the base TreeObject
+    /// # Returns
+    /// * `&M` - link to the base TreeObject
+    pub fn get_base(&self) -> &M {
+        &self.base
+    }
+    
+    /// Returns the mutable link to the base TreeObject
+    /// # Returns
+    /// * `&mut M` - mutable link to the base TreeObject
+    pub fn get_base_mut(&mut self) -> &mut M {
+        &mut self.base
+    }
 
     /// Function that add value index from root index
     /// # Arguments
