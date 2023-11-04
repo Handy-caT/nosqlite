@@ -99,7 +99,6 @@ impl Into<[u8; 16]> for PageLink {
     }
 }
 
-
 impl Clone for PageLink {
     fn clone(&self) -> Self {
         PageLink {
@@ -114,10 +113,9 @@ impl Copy for PageLink {}
 
 impl Default for PageLink {
     fn default() -> Self {
-        return PageLink::new(0,0,0)
+        return PageLink::new(0, 0, 0);
     }
 }
-
 
 impl PartialEq for PageLink {
     fn eq(&self, other: &PageLink) -> bool {
@@ -151,10 +149,13 @@ impl PartialOrd for PageLink {
 
 impl Display for PageLink {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "PageLink {{ page_index: {}, start: {}, len: {} }}", self.page_index, self.start, self.len)
+        write!(
+            f,
+            "PageLink {{ page_index: {}, start: {}, len: {} }}",
+            self.page_index, self.start, self.len
+        )
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -202,7 +203,10 @@ mod tests {
     #[test]
     fn test_page_link_display() {
         let link = super::PageLink::new(0, 0, 10);
-        assert_eq!(format!("{}", link), "PageLink { page_index: 0, start: 0, len: 10 }");
+        assert_eq!(
+            format!("{}", link),
+            "PageLink { page_index: 0, start: 0, len: 10 }"
+        );
     }
 
     #[test]
@@ -210,9 +214,18 @@ mod tests {
         let link1 = super::PageLink::new(0, 0, 10);
         let link2 = super::PageLink::new(0, 0, 20);
 
-        assert_eq!(super::PageLink::compare_by_len(&link1, &link2), std::cmp::Ordering::Less);
-        assert_eq!(super::PageLink::compare_by_len(&link2, &link1), std::cmp::Ordering::Greater);
-        assert_eq!(super::PageLink::compare_by_len(&link1, &link1), std::cmp::Ordering::Equal);
+        assert_eq!(
+            super::PageLink::compare_by_len(&link1, &link2),
+            std::cmp::Ordering::Less
+        );
+        assert_eq!(
+            super::PageLink::compare_by_len(&link2, &link1),
+            std::cmp::Ordering::Greater
+        );
+        assert_eq!(
+            super::PageLink::compare_by_len(&link1, &link1),
+            std::cmp::Ordering::Equal
+        );
     }
 
     #[test]
@@ -220,9 +233,18 @@ mod tests {
         let link1 = super::PageLink::new(0, 0, 10);
         let link2 = super::PageLink::new(0, 10, 20);
 
-        assert_eq!(super::PageLink::compare_by_index(&link1, &link2), std::cmp::Ordering::Less);
-        assert_eq!(super::PageLink::compare_by_index(&link2, &link1), std::cmp::Ordering::Greater);
-        assert_eq!(super::PageLink::compare_by_index(&link1, &link1), std::cmp::Ordering::Equal);
+        assert_eq!(
+            super::PageLink::compare_by_index(&link1, &link2),
+            std::cmp::Ordering::Less
+        );
+        assert_eq!(
+            super::PageLink::compare_by_index(&link2, &link1),
+            std::cmp::Ordering::Greater
+        );
+        assert_eq!(
+            super::PageLink::compare_by_index(&link1, &link1),
+            std::cmp::Ordering::Equal
+        );
     }
 
     #[test]
@@ -237,5 +259,4 @@ mod tests {
         assert_eq!(link1.eq(&link3), false);
         assert_eq!(link2.eq(&link3), false);
     }
-
 }

@@ -8,4 +8,3 @@ impl CustomHash for u64 {
         hash(&bytes)
     }
 }
-

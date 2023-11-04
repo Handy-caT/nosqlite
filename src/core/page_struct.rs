@@ -7,10 +7,7 @@ pub struct PageInfo {
 
 impl PageInfo {
     pub fn new(index: u64) -> PageInfo {
-        PageInfo {
-            index,
-            free: 4096,
-        }
+        PageInfo { index, free: 4096 }
     }
 
     pub fn get_index(&self) -> u64 {
@@ -26,10 +23,7 @@ impl From<[u8; 10]> for PageInfo {
     fn from(bytes: [u8; 10]) -> Self {
         let index = u64::from_be_bytes(bytes[0..8].try_into().unwrap());
         let free = u16::from_be_bytes(bytes[8..10].try_into().unwrap());
-        PageInfo {
-            index,
-            free,
-        }
+        PageInfo { index, free }
     }
 }
 
@@ -50,7 +44,6 @@ impl Clone for PageInfo {
         }
     }
 }
-
 
 pub struct Page {
     info: PageInfo,
@@ -132,7 +125,6 @@ impl Clone for Page {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     #[test]
@@ -201,7 +193,10 @@ mod tests {
         page.attach_data(&info);
         let info2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
         page.attach_data(&info2);
-        assert_eq!(page.info.free, 4096 - info.len() as u16 - info2.len() as u16);
+        assert_eq!(
+            page.info.free,
+            4096 - info.len() as u16 - info2.len() as u16
+        );
         let mut expected: [u8; 20] = [0; 20];
         expected[0..10].copy_from_slice(&info);
         expected[10..20].copy_from_slice(&info2);
@@ -215,7 +210,7 @@ mod tests {
         page.attach_data(&info);
         let data = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
-        let link = super::PageLink::new(0,0, 10);
+        let link = super::PageLink::new(0, 0, 10);
 
         page.update_data(&data, &link).unwrap();
         assert_eq!(page.info.free, 4096 - info.len() as u16);
@@ -228,7 +223,7 @@ mod tests {
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         page.attach_data(&info);
 
-        let link = super::PageLink::new(0,0, 5);
+        let link = super::PageLink::new(0, 0, 5);
 
         page.erase_data(&link);
         assert_eq!(page.info.free, 4096 - info.len() as u16);
@@ -241,7 +236,7 @@ mod tests {
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         page.attach_data(&info);
 
-        let link = super::PageLink::new(0,0, 5);
+        let link = super::PageLink::new(0, 0, 5);
 
         assert_eq!(page.get_data_from_link(&link), &[1, 2, 3, 4, 5]);
     }

@@ -12,34 +12,31 @@ const SECOND_PART_XOR: u16 = 0b1010_1101_1000_0101;
 const SECOND_PART_MULTIPLY: u16 = 0b1011_1011_0110_0101;
 const SECOND_PART_RIGHT_SHIFT: u8 = 9;
 
-
- /// Hash function that uses a custom algorithm
- /// # Arguments
- /// * a - First part of the data 16 bits
- /// * b - Second part of the data 16 bits
- /// # Returns
- /// * [u8; 4] - Result of the transformation
+/// Hash function that uses a custom algorithm
+/// # Arguments
+/// * a - First part of the data 16 bits
+/// * b - Second part of the data 16 bits
+/// # Returns
+/// * [u8; 4] - Result of the transformation
 fn transformation(a: &[u8], b: &[u8]) -> [u8; 4] {
+    let mut first_part = (a[0] as u16) << 8 | b[0] as u16;
+    first_part = first_part.wrapping_mul(FIRST_PART_MULTIPLY);
+    first_part = first_part.rotate_left(FIRST_PART_LEFT_SHIFT as u32);
+    first_part = first_part ^ FIRST_PART_XOR;
 
-     let mut first_part = (a[0] as u16) << 8 | b[0] as u16;
-     first_part = first_part.wrapping_mul(FIRST_PART_MULTIPLY);
-     first_part = first_part.rotate_left(FIRST_PART_LEFT_SHIFT as u32);
-     first_part = first_part ^ FIRST_PART_XOR;
+    let mut second_part = (a[1] as u16) << 8 | b[1] as u16;
+    second_part = second_part.wrapping_mul(SECOND_PART_MULTIPLY);
+    second_part = second_part.rotate_right(SECOND_PART_RIGHT_SHIFT as u32);
+    second_part = second_part ^ SECOND_PART_XOR;
 
-     let mut second_part = (a[1] as u16) << 8 | b[1] as u16;
-     second_part = second_part.wrapping_mul(SECOND_PART_MULTIPLY);
-     second_part = second_part.rotate_right(SECOND_PART_RIGHT_SHIFT as u32);
-     second_part = second_part ^ SECOND_PART_XOR;
+    let mut data: u32 = (first_part as u32) << 16 | second_part as u32;
 
-     let mut data: u32 = (first_part as u32) << 16 | second_part as u32;
+    data = data.wrapping_add(ADD_VARIABLE);
+    //data = data.wrapping_mul(MULTIPLY_VARIABLE as u32);
+    data = data.rotate_right(RIGHT_SHIFT_VARIABLE as u32);
+    data = data ^ XOR_VARIABLE;
 
-     data = data.wrapping_add(ADD_VARIABLE);
-     //data = data.wrapping_mul(MULTIPLY_VARIABLE as u32);
-     data = data.rotate_right(RIGHT_SHIFT_VARIABLE as u32);
-     data = data ^ XOR_VARIABLE;
-
-
-     data.to_be_bytes()
+    data.to_be_bytes()
 }
 
 /// Hash function that uses a custom algorithm
@@ -60,9 +57,9 @@ pub fn custom_hash(data: &[u8]) -> u64 {
 
     let mut k = 0;
     for i in real_data {
-        hash = transformation(i,&hash[2..4]);
+        hash = transformation(i, &hash[2..4]);
 
-        k+=1;
+        k += 1;
     }
 
     let mut i = 0;
@@ -72,16 +69,15 @@ pub fn custom_hash(data: &[u8]) -> u64 {
         hash = transformation(&hash[0..2], &hash[2..4]);
         temp = (hash[0] as u16) << 8 | hash[1] as u16;
         result = result | (temp as u64) << (i * 16);
-        i+=1;
+        i += 1;
     }
     result
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use super::*;
+    use std::collections::HashMap;
 
     // #[test]
     // fn test_custom_hash() {

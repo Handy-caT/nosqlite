@@ -1,4 +1,3 @@
-
 /// Struct that stores statistics about a hash vector.
 /// Now implemented only for the maximum length of the buckets.
 pub struct HashVecStatistics {
@@ -14,7 +13,6 @@ pub struct HashVecStatistics {
 }
 
 impl HashVecStatistics {
-
     /// Creates a new HashVecStatistics.
     /// # Arguments
     /// * `pool_size` - Size of the bucket pool.
@@ -51,7 +49,7 @@ impl HashVecStatistics {
     /// # Arguments
     /// * `bucket` - Bucket to mark.
     pub fn add_bucket(&mut self, bucket: usize) {
-        if !self.max_length_buckets[bucket] && self.max_length > 0{
+        if !self.max_length_buckets[bucket] && self.max_length > 0 {
             self.max_length_buckets[bucket] = true;
             self.count += 1;
         }
@@ -62,12 +60,12 @@ impl HashVecStatistics {
     /// * `bucket` - Bucket to remove.
     /// # Returns
     /// * `Option<usize>` - Bucket removed. None if the bucket is out of range.
-    pub fn remove_bucket(&mut self, bucket: usize) -> Option<usize>{
+    pub fn remove_bucket(&mut self, bucket: usize) -> Option<usize> {
         if bucket < self.max_length_buckets.len() {
             if self.max_length_buckets[bucket] {
                 self.max_length_buckets[bucket] = false;
                 self.count -= 1;
-                return Some(bucket)
+                return Some(bucket);
             }
         }
         None
@@ -80,7 +78,7 @@ impl HashVecStatistics {
     /// * `Option<bool>` - True if the bucket is a bucket with the maximum length. None if the bucket is out of range.
     pub fn is_max_length_bucket(&self, bucket: usize) -> Option<bool> {
         if bucket < self.max_length_buckets.len() {
-            return Some(self.max_length_buckets[bucket])
+            return Some(self.max_length_buckets[bucket]);
         }
         None
     }
@@ -135,7 +133,6 @@ mod tests {
         hash_vec_statistics.add_bucket(5);
         assert_eq!(hash_vec_statistics.max_length, 0);
         assert_eq!(hash_vec_statistics.count, 0);
-
 
         hash_vec_statistics.update(5);
         hash_vec_statistics.add_bucket(5);

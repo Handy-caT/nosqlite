@@ -1,15 +1,14 @@
-use std::marker::PhantomData;
 use crate::core::structs::hash_table::hash::hash::custom_hash;
 use crate::core::structs::hash_table::vectors::hash_vec::HashVec;
-
+use std::marker::PhantomData;
 
 /// ScalableHashTable is a hash table with a scalable size. It is using HashVec as a storage.
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - HashVec implementation
 struct ScalableHashTable<K, V, H>
-    where
-        H: HashVec<K, V>
+where
+    H: HashVec<K, V>,
 {
     table: H,
     size: usize,
@@ -18,9 +17,9 @@ struct ScalableHashTable<K, V, H>
     hash: fn(&[u8]) -> u64,
 }
 
-impl <K, V, H> ScalableHashTable<K, V, H>
-    where
-        H: HashVec<K, V>
+impl<K, V, H> ScalableHashTable<K, V, H>
+where
+    H: HashVec<K, V>,
 {
     /// Creates a new ScalableHashTable
     /// # Arguments
@@ -33,7 +32,7 @@ impl <K, V, H> ScalableHashTable<K, V, H>
             size: 0,
             v: PhantomData,
             k: PhantomData,
-            hash: custom_hash
+            hash: custom_hash,
         }
     }
 
@@ -49,7 +48,7 @@ impl <K, V, H> ScalableHashTable<K, V, H>
             size: 0,
             v: PhantomData,
             k: PhantomData,
-            hash
+            hash,
         }
     }
 }
@@ -66,6 +65,5 @@ mod tests {
 
         assert_eq!(hash_table.size, 0);
         assert_eq!(hash_table.table.size, 8);
-
     }
 }

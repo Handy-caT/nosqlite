@@ -69,14 +69,20 @@ impl Default for TreeIndex {
 
 impl PartialEq for TreeIndex {
     fn eq(&self, other: &Self) -> bool {
-        return self.height == other.height && self.index == other.index &&
-            self.right_index == other.right_index && self.left_index == other.left_index
+        return self.height == other.height
+            && self.index == other.index
+            && self.right_index == other.right_index
+            && self.left_index == other.left_index;
     }
 }
 
 impl Debug for TreeIndex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "TreeIndex {{ index: {}, left_index: {}, right_index: {}, height: {} }}", self.index, self.left_index, self.right_index, self.height)
+        write!(
+            f,
+            "TreeIndex {{ index: {}, left_index: {}, right_index: {}, height: {} }}",
+            self.index, self.left_index, self.right_index, self.height
+        )
     }
 }
 
@@ -101,7 +107,6 @@ mod tests {
         assert_eq!(tree_index.right_index, -1);
         assert_eq!(tree_index.height, 1);
     }
-
 
     #[test]
     fn test_tree_index_default() {

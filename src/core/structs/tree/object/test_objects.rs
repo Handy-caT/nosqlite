@@ -13,7 +13,10 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(heap, |a, b| b.cmp(a));
+        let tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(
+            heap,
+            |a, b| b.cmp(a),
+        );
 
         assert_eq!(tree.len(), 3);
     }
@@ -26,7 +29,10 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let mut tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(heap, |a, b| b.cmp(a));
+        let mut tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(
+            heap,
+            |a, b| b.cmp(a),
+        );
 
         tree.push(4);
 
@@ -41,7 +47,10 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let mut tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(heap, |a, b| b.cmp(a));
+        let mut tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(
+            heap,
+            |a, b| b.cmp(a),
+        );
 
         tree.remove_by_value(2);
 

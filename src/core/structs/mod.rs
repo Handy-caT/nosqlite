@@ -1,2 +1,2 @@
-pub mod tree;
 mod hash_table;
+pub mod tree;

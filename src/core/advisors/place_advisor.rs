@@ -12,7 +12,4 @@ pub enum PlaceAdvisorStrategyName {
     WorstFit,
 }
 
-struct PlaceAdvisor
-{
-
-}
+struct PlaceAdvisor {}

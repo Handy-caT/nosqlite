@@ -1,7 +1,11 @@
-use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal};
+use crate::core::structs::hash_table::vectors::hash_vec::{
+    HashVec, HashVecIndexes, HashVecStatisticsInternal,
+};
 use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
-use crate::core::structs::hash_table::vectors::statistics::statistics_functions::{statistics_add_actions, statistics_remove_actions};
+use crate::core::structs::hash_table::vectors::statistics::statistics_functions::{
+    statistics_add_actions, statistics_remove_actions,
+};
 use crate::core::structs::tree::object::balanced_tree::balanced_tree::BalancedTree;
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
 use crate::core::structs::tree::vectors::optimized_tree_vec::OptimizedTreeVec;
@@ -9,10 +13,11 @@ use crate::core::structs::tree::vectors::optimized_tree_vec::OptimizedTreeVec;
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
 /// * `N` - Number of buckets, must be a power of 2, if it is not, it will be rounded up to the next power of 2
-pub struct TreeHashVec<K: Copy + Default + PartialOrd, V: Copy + Default +  PartialOrd, const N: u64> {
+pub struct TreeHashVec<K: Copy + Default + PartialOrd, V: Copy + Default + PartialOrd, const N: u64>
+{
     /// The data of the hash vector as a vector of trees.
     /// OptimizedTreeVec is used as the underlying data structure for the trees.
-    data: Vec< BalancedTree< KeyValue<K, V>, OptimizedTreeVec< KeyValue<K, V> > > >,
+    data: Vec<BalancedTree<KeyValue<K, V>, OptimizedTreeVec<KeyValue<K, V>>>>,
     /// The size of the hash vector. This is the number of buckets.
     /// It is a power of 2. If N is not a power of 2, it will be rounded up to the next power of 2.
     pub size: u64,
@@ -20,7 +25,9 @@ pub struct TreeHashVec<K: Copy + Default + PartialOrd, V: Copy + Default +  Part
     statistics: HashVecStatistics,
 }
 
-impl <K: Copy + Default +  PartialOrd, V: Copy + Default + PartialOrd, const N: u64> TreeHashVec<K, V, N> {
+impl<K: Copy + Default + PartialOrd, V: Copy + Default + PartialOrd, const N: u64>
+    TreeHashVec<K, V, N>
+{
     /// Creates a new TreeHashVec
     /// # Returns
     /// * `TreeHashVec<V, N>` - New TreeHashVec
@@ -31,16 +38,19 @@ impl <K: Copy + Default +  PartialOrd, V: Copy + Default + PartialOrd, const N: 
             statistics: HashVecStatistics::new(N as usize),
         };
 
-        let mut size= N;
+        let mut size = N;
 
         if (N as f64).log2() != (N as f64).log2().floor() {
-            let pow= (N as f64).log2().ceil() as u64;
+            let pow = (N as f64).log2().ceil() as u64;
             size = 2u64.pow(pow as u32);
         }
 
         for _ in 0..size {
             let nodes = OptimizedTreeVec::new();
-            vec.data.push(BalancedTree::< KeyValue<K, V>, OptimizedTreeVec< KeyValue<K, V> > >::new(nodes));
+            vec.data.push(BalancedTree::<
+                KeyValue<K, V>,
+                OptimizedTreeVec<KeyValue<K, V>>,
+            >::new(nodes));
         }
 
         vec.size = size;
@@ -50,7 +60,9 @@ impl <K: Copy + Default +  PartialOrd, V: Copy + Default + PartialOrd, const N: 
 }
 
 /// Implementation of basic HashVec trait for TreeHashVec
-impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, const N: u64> HashVec<K, V> for TreeHashVec<K, V, N> {
+impl<K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, const N: u64>
+    HashVec<K, V> for TreeHashVec<K, V, N>
+{
     fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize) {
         let data = KeyValue::new(key, value);
 
@@ -80,7 +92,7 @@ impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, 
                 self.data[index as usize].remove_by_index(i);
                 self.data[index as usize].push(item);
                 Some(item)
-            },
+            }
             None => None,
         }
     }
@@ -102,7 +114,7 @@ impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, 
                 statistics_remove_actions(self, index);
                 let item = self.data[index as usize].remove_by_value(item);
                 Some(item.unwrap())
-            },
+            }
             None => None,
         }
     }
@@ -117,7 +129,9 @@ impl <K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, 
 }
 
 /// Implementation of HashVecStatisticsInternal trait for TreeHashVec
-impl <K: Default + Eq + Copy+ PartialOrd, V: Default + Eq + Copy+ PartialOrd, const N: u64> HashVecStatisticsInternal<K, V> for TreeHashVec<K, V, N> {
+impl<K: Default + Eq + Copy + PartialOrd, V: Default + Eq + Copy + PartialOrd, const N: u64>
+    HashVecStatisticsInternal<K, V> for TreeHashVec<K, V, N>
+{
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
     }
@@ -140,7 +154,9 @@ impl <K: Default + Eq + Copy+ PartialOrd, V: Default + Eq + Copy+ PartialOrd, co
 }
 
 /// Implementation of HashVecIndexes trait for TreeHashVec
-impl <K: Default + Eq + Copy+ PartialOrd, V: Eq + Copy + Default + PartialOrd, const N: u64> HashVecIndexes<K, V> for TreeHashVec<K, V, N> {
+impl<K: Default + Eq + Copy + PartialOrd, V: Eq + Copy + Default + PartialOrd, const N: u64>
+    HashVecIndexes<K, V> for TreeHashVec<K, V, N>
+{
     fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
         let has_item = self.data[index as usize].get(value_index as i32);
         match has_item {
@@ -148,7 +164,7 @@ impl <K: Default + Eq + Copy+ PartialOrd, V: Eq + Copy + Default + PartialOrd, c
                 statistics_remove_actions(self, index);
                 let item = self.data[index as usize].remove_by_index(value_index as i32);
                 Some(item.unwrap())
-            },
+            }
             None => None,
         }
     }

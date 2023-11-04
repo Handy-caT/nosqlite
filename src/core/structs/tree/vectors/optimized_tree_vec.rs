@@ -1,8 +1,10 @@
-use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecIndexes, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{
+    DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecIndexes, TreeVecLevels,
+};
 use crate::core::structs::tree::vectors::vec_functions::{allocate_level, get, push, remove};
+use std::ops::{Index, IndexMut};
 
 pub const INITIAL_LEVELS: u8 = 6;
 
@@ -27,7 +29,7 @@ pub struct OptimizedTreeVec<T> {
     empty: Vec<u64>,
 }
 
-impl <T: Default + Copy> OptimizedTreeVec<T> {
+impl<T: Default + Copy> OptimizedTreeVec<T> {
     /// Creates a new `OptimizedTreeVec<T>`.
     /// # Returns
     /// * `OptimizedTreeVec<T>`: New `OptimizedTreeVec<T>`.
@@ -53,7 +55,7 @@ impl <T: Default + Copy> OptimizedTreeVec<T> {
     }
 }
 
-impl <T> TreeVecLevels for OptimizedTreeVec<T> {
+impl<T> TreeVecLevels for OptimizedTreeVec<T> {
     fn get_allocated_levels(&self) -> u8 {
         self.allocated_levels
     }
@@ -63,7 +65,7 @@ impl <T> TreeVecLevels for OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
+impl<T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }
@@ -89,8 +91,7 @@ impl <T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
-
+impl<T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8 {
         &mut self.allocated_levels
     }
@@ -112,11 +113,11 @@ impl <T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
+impl<T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
     fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
         &mut self.indexes[index as usize]
     }
-    
+
     fn get_index(&self, index: i32) -> &TreeIndex {
         &self.indexes[index as usize]
     }
@@ -126,7 +127,7 @@ impl <T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
+impl<T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
     fn push(&mut self, value: T) -> i32 {
         push(self, value)
     }
@@ -148,7 +149,7 @@ impl <T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> Index<i32> for OptimizedTreeVec<T> {
+impl<T: Default + Copy> Index<i32> for OptimizedTreeVec<T> {
     type Output = T;
 
     fn index(&self, index: i32) -> &Self::Output {
@@ -156,7 +157,7 @@ impl <T: Default + Copy> Index<i32> for OptimizedTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> IndexMut<i32> for OptimizedTreeVec<T> {
+impl<T: Default + Copy> IndexMut<i32> for OptimizedTreeVec<T> {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         &mut self.data[index as usize]
     }
@@ -195,7 +196,6 @@ mod tests {
         assert_eq!(node.is_some(), true);
         assert_eq!(node.unwrap().value, 1);
     }
-
 
     #[test]
     fn test_optimized_vec_add_remove() {
@@ -243,7 +243,10 @@ mod tests {
         let mut vec = OptimizedTreeVec::<i32>::new();
         let index = vec.push(1);
         assert_eq!(vec.get_value_mut(index), &mut 1);
-        assert_eq!(vec.get_index_mut(index), &mut TreeIndex::new_with_index(index));
+        assert_eq!(
+            vec.get_index_mut(index),
+            &mut TreeIndex::new_with_index(index)
+        );
         assert_eq!(vec.get_indexes().len(), 1);
         assert_eq!(vec.get_index(index), &TreeIndex::new_with_index(index));
         assert_eq!(vec.len(), 1);

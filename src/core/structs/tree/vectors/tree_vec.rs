@@ -1,7 +1,7 @@
-use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::nodes::normalized_tree_index::NormalizedTreeIndex;
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
+use std::ops::{Index, IndexMut};
 
 /// The `TreeVec` trait is used to define the basic functions of a tree vector.
 pub trait TreeVec<T>: Index<i32, Output = T> + IndexMut<i32> {

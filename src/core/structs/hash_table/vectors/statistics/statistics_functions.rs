@@ -6,11 +6,13 @@ use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecStatis
 /// # Arguments
 /// * `hash_vec` - hash_vec to update
 /// * `index` - index of bucket
-pub(in crate::core::structs::hash_table) fn statistics_add_actions<K, V, M>(hash_vec: &mut M, index: u64)
-where
+pub(in crate::core::structs::hash_table) fn statistics_add_actions<K, V, M>(
+    hash_vec: &mut M,
+    index: u64,
+) where
     V: Default + Eq,
     K: Default + Eq,
-    M: HashVec<K, V> + HashVecStatisticsInternal<K, V>
+    M: HashVec<K, V> + HashVecStatisticsInternal<K, V>,
 {
     let bucket_len = hash_vec.get_bucket_len(index);
     match bucket_len {
@@ -21,7 +23,7 @@ where
             } else if len == hash_vec.get_statistics().max_length {
                 hash_vec.get_statistics_mut().add_bucket(index as usize);
             }
-        },
+        }
         None => {}
     }
     hash_vec.get_statistics_mut().size += 1;
@@ -33,13 +35,18 @@ where
 /// # Arguments
 /// * `hash_vec` - hash_vec to update
 /// * `index` - index of bucket
-pub(in crate::core::structs::hash_table) fn statistics_remove_actions<K, V, M>(hash_vec: &mut M, index: u64)
-where V: Default + Eq,
-      K: Default + Eq,
-      M: HashVec<K, V> + HashVecStatisticsInternal<K, V>
+pub(in crate::core::structs::hash_table) fn statistics_remove_actions<K, V, M>(
+    hash_vec: &mut M,
+    index: u64,
+) where
+    V: Default + Eq,
+    K: Default + Eq,
+    M: HashVec<K, V> + HashVecStatisticsInternal<K, V>,
 {
     hash_vec.get_statistics_mut().size -= 1;
-    let is_max = hash_vec.get_statistics().is_max_length_bucket(index as usize);
+    let is_max = hash_vec
+        .get_statistics()
+        .is_max_length_bucket(index as usize);
     match is_max {
         Some(true) => {
             hash_vec.get_statistics_mut().remove_bucket(index as usize);
@@ -49,11 +56,11 @@ where V: Default + Eq,
                     Some(len) => {
                         hash_vec.get_statistics_mut().update(len - 1);
                         hash_vec.get_statistics_mut().add_bucket(index as usize);
-                    },
+                    }
                     None => {}
                 }
             }
-        },
+        }
         _ => {}
     }
 }

@@ -1,16 +1,17 @@
-use std::cmp::Ordering;
-use queues::{IsQueue, Queue, queue};
-use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::{balance, find_min, remove_min};
+use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::{
+    balance, find_min, remove_min,
+};
 use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectFind, TreeObjectVec};
 use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
+use queues::{queue, IsQueue, Queue};
+use std::cmp::Ordering;
 
 /// Balanced tree object
 /// This structure represents balanced tree that is stored in vector
 /// Vector must implement TreeVec trait
 /// In balanced tree all nodes have no more than 2 children
 /// It also can be customized with compare function
-pub struct BalancedTree<T, M: TreeVec<T> + Sized>
-{
+pub struct BalancedTree<T, M: TreeVec<T> + Sized> {
     /// Index of the root node
     root: i32,
     /// Vector of nodes
@@ -33,7 +34,8 @@ fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
 }
 
 /// Functions for the balanced tree
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecIndexes<T> + Sized> BalancedTree<T, M>
+impl<T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecIndexes<T> + Sized>
+    BalancedTree<T, M>
 {
     /// Creates new balanced tree using specified vector
     /// Vector must implement TreeVec trait
@@ -79,7 +81,8 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
                 self.nodes.get_index_mut(root_index).left_index = self.nodes.push(value);
                 pushed_index = self.nodes.get_index_mut(root_index).left_index;
             } else {
-                let balanced = self.add_from_root(value, self.nodes.get_index(root_index).left_index);
+                let balanced =
+                    self.add_from_root(value, self.nodes.get_index(root_index).left_index);
                 self.nodes.get_index_mut(root_index).left_index = balanced.0;
                 pushed_index = balanced.1;
             }
@@ -88,7 +91,8 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
                 self.nodes.get_index_mut(root_index).right_index = self.nodes.push(value);
                 pushed_index = self.nodes.get_index_mut(root_index).right_index;
             } else {
-                let balanced = self.add_from_root(value, self.nodes.get_index(root_index).right_index);
+                let balanced =
+                    self.add_from_root(value, self.nodes.get_index(root_index).right_index);
                 self.nodes.get_index_mut(root_index).right_index = balanced.0;
                 pushed_index = balanced.1;
             }
@@ -105,9 +109,12 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
     /// * `i32` - Index of the new root
     fn remove_from_root(&mut self, value: T, root_index: i32) -> i32 {
         if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Less {
-            self.nodes.get_index_mut(root_index).left_index = self.remove_from_root(value, self.nodes.get_index(root_index).left_index);
-        } else if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Greater {
-            self.nodes.get_index_mut(root_index).right_index = self.remove_from_root(value, self.nodes.get_index(root_index).right_index);
+            self.nodes.get_index_mut(root_index).left_index =
+                self.remove_from_root(value, self.nodes.get_index(root_index).left_index);
+        } else if (self.compare)(&value, self.nodes.get_value_mut(root_index)) == Ordering::Greater
+        {
+            self.nodes.get_index_mut(root_index).right_index =
+                self.remove_from_root(value, self.nodes.get_index(root_index).right_index);
         } else {
             let left_index = self.nodes.get_index_mut(root_index).left_index;
             let right_index = self.nodes.get_index_mut(root_index).right_index;
@@ -118,20 +125,23 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecLevels + TreeVecInd
                 return left_index;
             }
 
-            let min_index = find_min(self.nodes.get_indexes(),right_index);
-            self.nodes.get_index_mut(min_index).right_index = remove_min(self.nodes.get_indexes(),right_index);
+            let min_index = find_min(self.nodes.get_indexes(), right_index);
+            self.nodes.get_index_mut(min_index).right_index =
+                remove_min(self.nodes.get_indexes(), right_index);
             self.nodes.get_index_mut(min_index).left_index = left_index;
 
-            return balance(self.nodes.get_indexes(),min_index);
+            return balance(self.nodes.get_indexes(), min_index);
         }
-        balance(self.nodes.get_indexes(),root_index)
+        balance(self.nodes.get_indexes(), root_index)
     }
 }
 
 /// TreeObject trait implementation for the balanced tree
 /// It implemented to use BalancedTree as TreeObject and to use in in DecoratableTree
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized> TreeObject<T> for BalancedTree<T,M> {
-    fn push(&mut self, value: T) -> i32{
+impl<T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized>
+    TreeObject<T> for BalancedTree<T, M>
+{
+    fn push(&mut self, value: T) -> i32 {
         return if self.nodes.len() == 0 {
             self.root = self.nodes.push(value);
             self.len += 1;
@@ -141,7 +151,7 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
             self.root = balanced.0;
             self.len += 1;
             balanced.1
-        }
+        };
     }
 
     fn find(&mut self, value: T) -> Option<i32> {
@@ -149,7 +159,9 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
         while current_index != -1 {
             if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Less {
                 current_index = self.nodes.get_index_mut(current_index).left_index;
-            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Greater {
+            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index))
+                == Ordering::Greater
+            {
                 current_index = self.nodes.get_index_mut(current_index).right_index;
             } else {
                 return Some(self.nodes.get_index_mut(current_index).index);
@@ -167,9 +179,9 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
             match item {
                 Some(item) => {
                     self.root = -1;
-                    return Some(item.value)
-                },
-                None => return None
+                    return Some(item.value);
+                }
+                None => return None,
             }
         }
         self.len -= 1;
@@ -186,15 +198,16 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
     }
 }
 
-
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized> TreeObjectVec<T, M> for BalancedTree<T,M> {
+impl<T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized>
+    TreeObjectVec<T, M> for BalancedTree<T, M>
+{
     fn get(&mut self, index: i32) -> Option<T> {
         let item = self.nodes.get(index);
         return if item.is_none() {
             None
         } else {
             Some(item.unwrap().value)
-        }
+        };
     }
 
     fn get_nodes_mut(&mut self) -> &mut M {
@@ -215,12 +228,14 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + TreeVe
             None
         } else {
             self.remove_by_value(item.unwrap().value)
-        }
+        };
     }
 }
 
-impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized> TreeObjectFind<T> for BalancedTree<T,M> {
-    fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)> {
+impl<T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized> TreeObjectFind<T>
+    for BalancedTree<T, M>
+{
+    fn find_greater_equal(&mut self, value: T) -> Option<(i32, T)> {
         let mut queue: Queue<(i32, String)> = queue![];
         let mut current_index = self.root;
         let mut last = (-1, "".to_string());
@@ -243,7 +258,9 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized>
 
                 queue.add(last.clone());
                 current_index = self.nodes.get_index_mut(current_index).left_index;
-            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Greater {
+            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index))
+                == Ordering::Greater
+            {
                 if last.1 == "left" {
                     turn_count += 1;
                 }
@@ -264,7 +281,10 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized>
         }
 
         return if ind {
-            Some((self.nodes.get_index_mut(current_index).index,self.nodes[current_index]))
+            Some((
+                self.nodes.get_index_mut(current_index).index,
+                self.nodes[current_index],
+            ))
         } else {
             if last.1 == "right" {
                 if queue.peek().unwrap().1 == "right" {
@@ -275,16 +295,15 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized>
                         turn = queue.remove().unwrap();
                     }
 
-                    Some((self.nodes.get_index_mut(turn.0).index,self.nodes[turn.0]))
+                    Some((self.nodes.get_index_mut(turn.0).index, self.nodes[turn.0]))
                 }
             } else {
-                Some((self.nodes.get_index_mut(last.0).index,self.nodes[last.0]))
+                Some((self.nodes.get_index_mut(last.0).index, self.nodes[last.0]))
             }
-        }
-
+        };
     }
 
-    fn find_less_equal(&mut self, value: T) -> Option<(i32,T)> {
+    fn find_less_equal(&mut self, value: T) -> Option<(i32, T)> {
         let mut queue: Queue<(i32, String)> = queue![];
         let mut current_index = self.root;
         let mut last = (-1, "".to_string());
@@ -307,7 +326,9 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized>
 
                 queue.add(last.clone());
                 current_index = self.nodes.get_index_mut(current_index).left_index;
-            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index)) == Ordering::Greater {
+            } else if (self.compare)(&value, self.nodes.get_value_mut(current_index))
+                == Ordering::Greater
+            {
                 if last.1 == "left" {
                     turn_count += 1;
                 }
@@ -328,7 +349,10 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized>
         }
 
         return if ind {
-            Some((self.nodes.get_index_mut(current_index).index, self.nodes[current_index]))
+            Some((
+                self.nodes.get_index_mut(current_index).index,
+                self.nodes[current_index],
+            ))
         } else {
             if last.1 == "left" {
                 if queue.peek().unwrap().1 == "left" {
@@ -344,15 +368,14 @@ impl <T: Default + PartialOrd + Copy, M: TreeVec<T> + TreeVecIndexes<T> + Sized>
             } else {
                 Some((self.nodes.get_index_mut(last.0).index, self.nodes[last.0]))
             }
-        }
-
+        };
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::tree::vectors::default_tree_vec::DefaultTreeVec;
     use super::*;
+    use crate::core::structs::tree::vectors::default_tree_vec::DefaultTreeVec;
 
     #[test]
     fn test_new() {
@@ -548,7 +571,8 @@ mod tests {
         }
 
         let mut nodes = DefaultTreeVec::<u64>::new();
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new_with_compare(nodes, compare_reversed);
+        let mut tree =
+            BalancedTree::<u64, DefaultTreeVec<u64>>::new_with_compare(nodes, compare_reversed);
 
         tree.push(1);
         tree.push(2);
@@ -616,7 +640,9 @@ mod tests {
         assert_eq!(tree.find(4).unwrap(), 3);
         let res = tree.find(8);
         match res {
-            None => { assert!(true) }
+            None => {
+                assert!(true)
+            }
             Some(..) => {
                 panic!("Should not have found 8");
             }
@@ -638,17 +664,19 @@ mod tests {
         tree.push(350);
         tree.push(70);
 
-        assert_eq!(tree.find_greater_equal(50).unwrap(), (2,50));
-        assert_eq!(tree.find_greater_equal(73).unwrap(), (6,75));
-        assert_eq!(tree.find_greater_equal(325).unwrap(), (7,350));
+        assert_eq!(tree.find_greater_equal(50).unwrap(), (2, 50));
+        assert_eq!(tree.find_greater_equal(73).unwrap(), (6, 75));
+        assert_eq!(tree.find_greater_equal(325).unwrap(), (7, 350));
 
-        assert_eq!(tree.find_greater_equal(68).unwrap(), (8,70));
-        assert_eq!(tree.find_greater_equal(98).unwrap(), (0,100));
-        assert_eq!(tree.find_greater_equal(10).unwrap(), (5,20));
+        assert_eq!(tree.find_greater_equal(68).unwrap(), (8, 70));
+        assert_eq!(tree.find_greater_equal(98).unwrap(), (0, 100));
+        assert_eq!(tree.find_greater_equal(10).unwrap(), (5, 20));
 
         let res = tree.find_greater_equal(801);
         match res {
-            None => {assert!(true)}
+            None => {
+                assert!(true)
+            }
             Some(..) => {
                 panic!("Should not have found 801");
             }
@@ -670,18 +698,19 @@ mod tests {
         tree.push(350);
         tree.push(70);
 
-        assert_eq!(tree.find_less_equal(50).unwrap(), (2,50));
-        assert_eq!(tree.find_less_equal(73).unwrap(), (8,70));
-        assert_eq!(tree.find_less_equal(325).unwrap(), (4,300));
+        assert_eq!(tree.find_less_equal(50).unwrap(), (2, 50));
+        assert_eq!(tree.find_less_equal(73).unwrap(), (8, 70));
+        assert_eq!(tree.find_less_equal(325).unwrap(), (4, 300));
 
-        assert_eq!(tree.find_less_equal(68).unwrap(), (2,50));
-        assert_eq!(tree.find_less_equal(98).unwrap(), (6,75));
-        assert_eq!(tree.find_less_equal(30).unwrap(), (5,20));
-
+        assert_eq!(tree.find_less_equal(68).unwrap(), (2, 50));
+        assert_eq!(tree.find_less_equal(98).unwrap(), (6, 75));
+        assert_eq!(tree.find_less_equal(30).unwrap(), (5, 20));
 
         let res = tree.find_less_equal(0);
         match res {
-            None => {assert!(true)}
+            None => {
+                assert!(true)
+            }
             Some(..) => {
                 panic!("Should not have found 0");
             }

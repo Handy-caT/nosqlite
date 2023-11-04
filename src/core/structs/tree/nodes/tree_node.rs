@@ -1,5 +1,5 @@
-use std::fmt::{Debug, Formatter};
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
+use std::fmt::{Debug, Formatter};
 
 /// Struct that represents a node in a tree
 pub struct TreeNode<T> {
@@ -9,7 +9,7 @@ pub struct TreeNode<T> {
     pub indexes: TreeIndex,
 }
 
-impl <T> TreeNode<T> {
+impl<T> TreeNode<T> {
     /// Creates a new node with the given value and indexes
     /// # Arguments
     /// * `value` - Value of the node
@@ -36,9 +36,9 @@ impl <T> TreeNode<T> {
     }
 }
 
-impl <T: Copy> Copy for TreeNode<T> {}
+impl<T: Copy> Copy for TreeNode<T> {}
 
-impl <T: Clone + Copy> Clone for TreeNode<T> {
+impl<T: Clone + Copy> Clone for TreeNode<T> {
     fn clone(&self) -> Self {
         TreeNode {
             value: self.value.clone(),
@@ -47,8 +47,7 @@ impl <T: Clone + Copy> Clone for TreeNode<T> {
     }
 }
 
-
-impl <T: Default> Default for TreeNode<T> {
+impl<T: Default> Default for TreeNode<T> {
     fn default() -> Self {
         TreeNode {
             value: T::default(),
@@ -57,13 +56,13 @@ impl <T: Default> Default for TreeNode<T> {
     }
 }
 
-impl <T: PartialEq> PartialEq for TreeNode<T> {
+impl<T: PartialEq> PartialEq for TreeNode<T> {
     fn eq(&self, other: &Self) -> bool {
-        return self.value == other.value && self.indexes == other.indexes
+        return self.value == other.value && self.indexes == other.indexes;
     }
 }
 
-impl <T: Debug> Debug for TreeNode<T> {
+impl<T: Debug> Debug for TreeNode<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TreeNode")
             .field("value", &self.value)

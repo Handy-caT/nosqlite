@@ -1,14 +1,13 @@
-
 pub struct IdGenerator {
     empty: Vec<u128>,
-    counter: u128
+    counter: u128,
 }
 
 impl IdGenerator {
     pub fn new() -> IdGenerator {
         IdGenerator {
             empty: Vec::<u128>::new(),
-            counter: 0
+            counter: 0,
         }
     }
 

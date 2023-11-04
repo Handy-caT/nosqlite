@@ -7,7 +7,7 @@ use std::fmt::Debug;
 /// * `V` - value type
 pub struct KeyValue<K, V> {
     pub key: K,
-    pub value: V
+    pub value: V,
 }
 
 /// Equality is based on the key
@@ -25,10 +25,7 @@ impl<K: Eq + Copy, V: Eq + Copy> KeyValue<K, V> {
     /// # Returns
     /// * `Self` - KeyValue
     pub fn new(key: K, value: V) -> Self {
-        KeyValue {
-            key,
-            value
-        }
+        KeyValue { key, value }
     }
 
     /// Returns a tuple of (key, value)
@@ -49,7 +46,7 @@ impl<K: Copy, V: Copy> Clone for KeyValue<K, V> {
     fn clone(&self) -> Self {
         KeyValue {
             key: self.key,
-            value: self.value
+            value: self.value,
         }
     }
 }
@@ -69,7 +66,7 @@ impl<K: Default, V: Default> Default for KeyValue<K, V> {
     fn default() -> Self {
         KeyValue {
             key: K::default(),
-            value: V::default()
+            value: V::default(),
         }
     }
 }

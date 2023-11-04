@@ -1,6 +1,6 @@
-use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+use std::ops::{Index, IndexMut};
 
 pub struct AdditionalIndexVec {
     pub indexes: Vec<TreeIndex>,
@@ -9,7 +9,9 @@ pub struct AdditionalIndexVec {
 }
 
 impl AdditionalIndexVec {
-    pub fn new<T: Default + Copy, M: TreeVec<T> + TreeVecLevels + Sized>(tree_vec: &M) -> AdditionalIndexVec {
+    pub fn new<T: Default + Copy, M: TreeVec<T> + TreeVecLevels + Sized>(
+        tree_vec: &M,
+    ) -> AdditionalIndexVec {
         let mut vec = AdditionalIndexVec {
             indexes: Vec::new(),
             allocated_levels: tree_vec.get_allocated_levels(),
@@ -34,7 +36,6 @@ impl AdditionalIndexVec {
         self.max_length = new_length;
         self.allocated_levels += 1;
     }
-
 
     pub fn push(&mut self, index: TreeIndex) {
         self.indexes.push(index);
@@ -84,7 +85,10 @@ mod tests {
         let vec = AdditionalIndexVec::new(&optimized_tree_vec);
 
         assert_eq!(vec.len(), 0);
-        assert_eq!(vec.allocated_levels, optimized_tree_vec.get_allocated_levels());
+        assert_eq!(
+            vec.allocated_levels,
+            optimized_tree_vec.get_allocated_levels()
+        );
         assert_eq!(vec.max_length, optimized_tree_vec.get_max_length());
     }
 }

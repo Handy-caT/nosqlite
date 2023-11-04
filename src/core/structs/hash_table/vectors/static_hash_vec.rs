@@ -1,7 +1,11 @@
-use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal};
+use crate::core::structs::hash_table::vectors::hash_vec::{
+    HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
+};
 use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
-use crate::core::structs::hash_table::vectors::statistics::statistics_functions::{statistics_add_actions, statistics_remove_actions};
+use crate::core::structs::hash_table::vectors::statistics::statistics_functions::{
+    statistics_add_actions, statistics_remove_actions,
+};
 
 /// A static hash table that uses vectors as buckets.
 /// # Arguments
@@ -17,35 +21,37 @@ pub(crate) struct StaticHashVec<K, V, const N: u64> {
     statistics: HashVecStatistics,
 }
 
-impl <K: Eq, V: Default + Eq, const N: u64> StaticHashVec<K, V, N> {
+impl<K: Eq, V: Default + Eq, const N: u64> StaticHashVec<K, V, N> {
     /// Creates a new StaticHashVec
     /// # Returns
     /// * `StaticHashVec<V, N>` - New StaticHashVec
     pub fn new() -> Self {
         let mut data = Vec::new();
         let mut i = 0;
-        let mut size= N;
+        let mut size = N;
 
         if (N as f64).log2() != (N as f64).log2().floor() {
-            let pow= (N as f64).log2().ceil() as u64;
+            let pow = (N as f64).log2().ceil() as u64;
             size = 2u64.pow(pow as u32);
         }
 
         while i < size {
             data.push(Vec::new());
-            i+=1;
+            i += 1;
         }
 
         StaticHashVec {
             data,
             size,
-            statistics: HashVecStatistics::new(N as usize)
+            statistics: HashVecStatistics::new(N as usize),
         }
     }
 }
 
 /// Implementation of basic HashVec trait for StaticHashVec
-impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V> for StaticHashVec<K, V, N> {
+impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V>
+    for StaticHashVec<K, V, N>
+{
     fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize) {
         let data = KeyValue::new(key, value);
 
@@ -63,7 +69,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
             if self.data[index as usize][i].key == key {
                 return Some(self.data[index as usize][i]);
             }
-            i+=1;
+            i += 1;
         }
         None
     }
@@ -75,7 +81,7 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
                 let old_value = self.data[index as usize][i].value;
                 self.data[index as usize][i].value = value;
                 Some(KeyValue::new(key, old_value))
-            },
+            }
             None => None,
         }
     }
@@ -89,13 +95,13 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
     }
 
     fn remove(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>> {
-       let item_index = self.find_key(index, key);
-         match item_index {
-              Some(i) => {
-                  return self.remove_by_index(index, i);
-              },
-              None => None,
-         }
+        let item_index = self.find_key(index, key);
+        match item_index {
+            Some(i) => {
+                return self.remove_by_index(index, i);
+            }
+            None => None,
+        }
     }
 
     fn size(&self) -> u64 {
@@ -108,7 +114,9 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V
 }
 
 /// Implementation of HashVecIndexes trait for StaticHashVec
-impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndexes<K, V> for StaticHashVec<K, V, N> {
+impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndexes<K, V>
+    for StaticHashVec<K, V, N>
+{
     fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
         if value_index >= self.data[index as usize].len() {
             None
@@ -136,15 +144,17 @@ impl <K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndex
             if self.data[index as usize][i].key == key {
                 return Some(i);
             }
-            i+=1;
+            i += 1;
         }
         None
     }
 }
 
-impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V> for StaticHashVec<K, V, N> {
+impl<K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V>
+    for StaticHashVec<K, V, N>
+{
     fn get_vec(&self, index: u64) -> Option<&Vec<KeyValue<K, V>>> {
-        if  index >= N {
+        if index >= N {
             None
         } else {
             Some(&self.data[index as usize])
@@ -152,7 +162,7 @@ impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V> for 
     }
 
     fn get_vec_mut(&mut self, index: u64) -> Option<&mut Vec<KeyValue<K, V>>> {
-        if  index >= N {
+        if index >= N {
             None
         } else {
             Some(&mut self.data[index as usize])
@@ -160,7 +170,9 @@ impl <K: Eq + Default, V: Default + Eq, const N: u64> HashVecInternal<K, V> for 
     }
 }
 
-impl <K: Eq, V: Default + Eq, const N: u64> HashVecStatisticsInternal<K, V> for StaticHashVec<K, V, N> {
+impl<K: Eq, V: Default + Eq, const N: u64> HashVecStatisticsInternal<K, V>
+    for StaticHashVec<K, V, N>
+{
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
     }
@@ -184,9 +196,11 @@ impl <K: Eq, V: Default + Eq, const N: u64> HashVecStatisticsInternal<K, V> for 
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
-    use crate::core::structs::hash_table::vectors::hash_vec::{HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal};
+    use crate::core::structs::hash_table::vectors::hash_vec::{
+        HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
+    };
     use crate::core::structs::hash_table::vectors::key_value::KeyValue;
+    use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
 
     #[test]
     fn test_static_hash_vec_new() {

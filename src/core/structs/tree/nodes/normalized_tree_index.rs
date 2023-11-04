@@ -1,5 +1,5 @@
-use std::io;
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
+use std::io;
 
 /// Struct that represents a normalized index in a tree
 /// A normalized index is a index where left_index = index * 2 + 1 and right_index = index * 2 + 2
@@ -18,10 +18,7 @@ impl NormalizedTreeIndex {
     /// # Returns
     /// * `NormalizedTreeIndex` - New node
     pub fn new(index: i32) -> NormalizedTreeIndex {
-        NormalizedTreeIndex {
-            index,
-            height: 1,
-        }
+        NormalizedTreeIndex { index, height: 1 }
     }
 
     /// Returns the index of the right child
@@ -76,10 +73,13 @@ impl Into<TreeIndex> for NormalizedTreeIndex {
     }
 }
 
-impl  From<TreeIndex> for Result<NormalizedTreeIndex,io::Error>  {
+impl From<TreeIndex> for Result<NormalizedTreeIndex, io::Error> {
     fn from(node: TreeIndex) -> Result<NormalizedTreeIndex, io::Error> {
         if !NormalizedTreeIndex::can_be_normalized(&node) {
-            return Err(io::Error::new(io::ErrorKind::Other, "Node is not normalized"));
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Node is not normalized",
+            ));
         }
         Ok(NormalizedTreeIndex {
             index: node.index,
@@ -88,7 +88,7 @@ impl  From<TreeIndex> for Result<NormalizedTreeIndex,io::Error>  {
     }
 }
 
-impl  Default for NormalizedTreeIndex {
+impl Default for NormalizedTreeIndex {
     fn default() -> Self {
         NormalizedTreeIndex {
             height: 1,
@@ -97,33 +97,32 @@ impl  Default for NormalizedTreeIndex {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_normalized_tree_index_new() {
-        let node = NormalizedTreeIndex::new( 0);
+        let node = NormalizedTreeIndex::new(0);
         assert_eq!(node.index, 0);
         assert_eq!(node.height, 1);
     }
 
     #[test]
     fn test_normalized_tree_index_get_right_index() {
-        let node = NormalizedTreeIndex::new( 0);
+        let node = NormalizedTreeIndex::new(0);
         assert_eq!(node.get_right_index(), 2);
     }
 
     #[test]
     fn test_normalized_tree_index_get_left_index() {
-        let node = NormalizedTreeIndex::new( 0);
+        let node = NormalizedTreeIndex::new(0);
         assert_eq!(node.get_left_index(), 1);
     }
 
     #[test]
     fn test_normalized_tree_index_into() {
-        let node = NormalizedTreeIndex::new( 0);
+        let node = NormalizedTreeIndex::new(0);
         let tree_node: TreeIndex = node.into();
 
         assert_eq!(tree_node.index, 0);
@@ -134,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_normalized_tree_index_from() {
-        let mut tree_node =  TreeIndex::new_with_index( 0);
+        let mut tree_node = TreeIndex::new_with_index(0);
         tree_node.right_index = 2;
         tree_node.left_index = 1;
 

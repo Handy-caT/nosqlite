@@ -1,9 +1,11 @@
-use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::nodes::normalized_tree_index::NormalizedTreeIndex;
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-use crate::core::structs::tree::vectors::tree_vec::{NormalizedTreeVecIndexes, OptimizedFunctions, TreeVec, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{
+    NormalizedTreeVecIndexes, OptimizedFunctions, TreeVec, TreeVecLevels,
+};
+use std::ops::{Index, IndexMut};
 
 /// Struct that represents normalized tree vector.
 /// In this vector child indexes are 2i+1 and 2i+2.
@@ -29,7 +31,7 @@ pub struct NormalizedTreeVector<T> {
 }
 
 /// NormalizedTreeVector implementation.
-impl <T: Default + Copy> NormalizedTreeVector<T> {
+impl<T: Default + Copy> NormalizedTreeVector<T> {
     /// Creates new NormalizedTreeVector.
     /// # Returns
     /// New NormalizedTreeVector.
@@ -84,7 +86,7 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
 }
 
 /// TreeVecLevels implementation for NormalizedTreeVector.
-impl <T> TreeVecLevels for NormalizedTreeVector<T> {
+impl<T> TreeVecLevels for NormalizedTreeVector<T> {
     fn get_allocated_levels(&self) -> u8 {
         self.allocated_levels
     }
@@ -94,7 +96,7 @@ impl <T> TreeVecLevels for NormalizedTreeVector<T> {
     }
 }
 
-impl <T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
+impl<T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8 {
         &mut self.allocated_levels
     }
@@ -122,7 +124,7 @@ impl <T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
+impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     fn push(&mut self, value: T) -> i32 {
         let index = self.length;
 
@@ -182,7 +184,7 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
             None
         } else {
             if index == (self.length - 1) as i32 {
-                let item  = self.indexes.pop().unwrap();
+                let item = self.indexes.pop().unwrap();
                 let data_index = item.index;
                 let height = item.height;
 
@@ -219,7 +221,7 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     }
 }
 
-impl <T: Default + Copy> NormalizedTreeVecIndexes<T> for NormalizedTreeVector<T> {
+impl<T: Default + Copy> NormalizedTreeVecIndexes<T> for NormalizedTreeVector<T> {
     fn get_index_mut(&mut self, index: i32) -> &mut NormalizedTreeIndex {
         &mut self.indexes[index as usize]
     }
@@ -233,7 +235,7 @@ impl <T: Default + Copy> NormalizedTreeVecIndexes<T> for NormalizedTreeVector<T>
     }
 }
 
-impl <T: Default + Copy> Index<i32> for NormalizedTreeVector<T> {
+impl<T: Default + Copy> Index<i32> for NormalizedTreeVector<T> {
     type Output = T;
 
     fn index(&self, index: i32) -> &Self::Output {
@@ -241,7 +243,7 @@ impl <T: Default + Copy> Index<i32> for NormalizedTreeVector<T> {
     }
 }
 
-impl <T: Default + Copy> IndexMut<i32> for NormalizedTreeVector<T> {
+impl<T: Default + Copy> IndexMut<i32> for NormalizedTreeVector<T> {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         &mut self.data[index as usize]
     }
@@ -368,4 +370,3 @@ mod tests {
         assert_eq!(vec.empty.len(), 0);
     }
 }
-

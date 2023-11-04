@@ -31,9 +31,7 @@ impl PageController {
     pub fn get_last_page(&mut self) -> &mut Page {
         &mut self.pages[self.page_count as usize - 1]
     }
-
 }
-
 
 #[cfg(test)]
 mod test {

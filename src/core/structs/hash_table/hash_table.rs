@@ -9,14 +9,14 @@ pub trait HashTable<K, V> {
     /// # Returns
     /// * `Option<V>` - The value inserted
     fn insert(&mut self, key: K, value: V) -> Option<V>;
-    
+
     /// Removes a value from the hash table
     /// # Arguments
     /// * `key` - key of the value
     /// # Returns
     /// * `Option<V>` - The value removed. None if the key is not in the hash table.
     fn remove(&mut self, key: K) -> Option<V>;
-    
+
     /// Gets a value from the hash table
     /// # Arguments
     /// * `key` - key of the value
@@ -46,7 +46,6 @@ pub trait HashTableExtended<K, V> {
     /// * `Option<V>` - Value that was inserted
     fn insert_tuple(&mut self, tuple: (K, V)) -> Option<V>;
 }
-
 
 /// Trait for HashTable to get keys, values and key-value pairs
 pub trait HashTableVectors<K, V> {

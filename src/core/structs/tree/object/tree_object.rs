@@ -71,12 +71,12 @@ pub trait TreeObjectFind<T> {
     /// * `value` - The value to be found.
     /// # Returns
     /// * `Option<(i32,T)>` - The index of the value and the value itself.
-    fn find_greater_equal(&mut self, value: T) -> Option<(i32,T)>;
+    fn find_greater_equal(&mut self, value: T) -> Option<(i32, T)>;
     /// Finds the first value that is less than the given value or equal to it.
     /// Returns the index of the value and the value itself.
     /// # Arguments
     /// * `value` - The value to be found.
     /// # Returns
     /// * `Option<(i32,T)>` - The index of the value and the value itself.
-    fn find_less_equal(&mut self, value: T) -> Option<(i32,T)>;
+    fn find_less_equal(&mut self, value: T) -> Option<(i32, T)>;
 }

@@ -4,22 +4,20 @@ use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec}
 use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
 
 pub struct EmptyLinkRegistry<V, M>
-    where
-        V: TreeVec<PageLink> + Sized,
-        M: TreeObject<PageLink> + Sized + TreeObjectVec<PageLink, V>
+where
+    V: TreeVec<PageLink> + Sized,
+    M: TreeObject<PageLink> + Sized + TreeObjectVec<PageLink, V>,
 {
-    data: DecoratableBalancedTree<PageLink, V, M>
+    data: DecoratableBalancedTree<PageLink, V, M>,
 }
 
-impl <V, M> EmptyLinkRegistry<V, M>
-    where
-        V: TreeVec<PageLink> + TreeVecLevels + Sized,
-        M: TreeObject<PageLink> + Sized + TreeObjectVec<PageLink, V>
+impl<V, M> EmptyLinkRegistry<V, M>
+where
+    V: TreeVec<PageLink> + TreeVecLevels + Sized,
+    M: TreeObject<PageLink> + Sized + TreeObjectVec<PageLink, V>,
 {
     pub fn new(data: DecoratableBalancedTree<PageLink, V, M>) -> Self {
-        EmptyLinkRegistry {
-            data
-        }
+        EmptyLinkRegistry { data }
     }
 
     pub fn add_link(&mut self, link: PageLink) {
@@ -38,11 +36,12 @@ impl <V, M> EmptyLinkRegistry<V, M>
         &self.data
     }
 
-    pub(in crate::core::advisors) fn get_data_mut(&mut self) -> &mut DecoratableBalancedTree<PageLink, V, M> {
+    pub(in crate::core::advisors) fn get_data_mut(
+        &mut self,
+    ) -> &mut DecoratableBalancedTree<PageLink, V, M> {
         &mut self.data
     }
 }
-
 
 #[cfg(test)]
 mod tests {

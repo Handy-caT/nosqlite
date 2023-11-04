@@ -1,7 +1,9 @@
-use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, TreeVec, TreeVecIndexes, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{
+    DefaultFunctions, TreeVec, TreeVecIndexes, TreeVecLevels,
+};
+use std::ops::{Index, IndexMut};
 
 /// Struct that represents a vector that stores tree nodes.
 /// It has empty spaces that can be filled.
@@ -16,11 +18,11 @@ pub struct DefaultTreeVec<T: Sized> {
     data: Vec<T>,
     empty: Vec<u64>,
     indexes: Vec<TreeIndex>,
-    
+
     length: u64,
 }
 
-impl <T: Default + Copy> DefaultTreeVec<T> {
+impl<T: Default + Copy> DefaultTreeVec<T> {
     /// Creates a new instance of the vector
     pub fn new() -> DefaultTreeVec<T> {
         DefaultTreeVec {
@@ -32,7 +34,7 @@ impl <T: Default + Copy> DefaultTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
+impl<T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
     fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
         &mut self.indexes[index as usize]
     }
@@ -46,7 +48,7 @@ impl <T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
+impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     fn push(&mut self, value: T) -> i32 {
         let index = if self.empty.len() > 0 {
             self.empty.pop().unwrap()
@@ -83,7 +85,7 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
                     indexes: *item,
                 })
             }
-        }
+        };
     }
 
     fn get_value_mut(&mut self, index: i32) -> &mut T {
@@ -121,7 +123,7 @@ impl <T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> Index<i32> for DefaultTreeVec<T> {
+impl<T: Default + Copy> Index<i32> for DefaultTreeVec<T> {
     type Output = T;
 
     fn index(&self, index: i32) -> &Self::Output {
@@ -129,13 +131,13 @@ impl <T: Default + Copy> Index<i32> for DefaultTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> IndexMut<i32> for DefaultTreeVec<T> {
+impl<T: Default + Copy> IndexMut<i32> for DefaultTreeVec<T> {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         &mut self.data[index as usize]
     }
 }
 
-impl <T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
+impl<T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }
@@ -161,7 +163,7 @@ impl <T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
     }
 }
 
-impl <T> TreeVecLevels for DefaultTreeVec<T> {
+impl<T> TreeVecLevels for DefaultTreeVec<T> {
     fn get_allocated_levels(&self) -> u8 {
         let length = f64::from(self.length as u16);
         let levels = length.log2().ceil() as u8;
@@ -205,7 +207,6 @@ mod tests {
         assert_eq!(item.is_some(), true);
         assert_eq!(item.unwrap().value, 1)
     }
-
 
     #[test]
     fn test_default_vec_add_remove() {
@@ -294,5 +295,4 @@ mod tests {
         assert_eq!(vec.remove(5).is_none(), true);
         assert_eq!(vec.empty.len(), 0);
     }
-
 }

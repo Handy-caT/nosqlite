@@ -1,9 +1,11 @@
-use std::ops::{Index, IndexMut};
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use crate::core::structs::tree::nodes::tree_node::TreeNode;
 use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-use crate::core::structs::tree::vectors::tree_vec::{BackwardTreeVec, DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecLevels};
+use crate::core::structs::tree::vectors::tree_vec::{
+    BackwardTreeVec, DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecLevels,
+};
 use crate::core::structs::tree::vectors::vec_functions::{allocate_level, get, push, remove};
+use std::ops::{Index, IndexMut};
 
 pub struct BackwardsTreeVec<T> {
     allocated_levels: u8,
@@ -17,7 +19,7 @@ pub struct BackwardsTreeVec<T> {
     parents: Vec<u64>,
 }
 
-impl <T: Default + Copy> BackwardsTreeVec<T> {
+impl<T: Default + Copy> BackwardsTreeVec<T> {
     pub fn new() -> BackwardsTreeVec<T> {
         let mut vec = BackwardsTreeVec {
             allocated_levels: 0,
@@ -41,7 +43,7 @@ impl <T: Default + Copy> BackwardsTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVecLevels for BackwardsTreeVec<T> {
+impl<T: Default + Copy> TreeVecLevels for BackwardsTreeVec<T> {
     fn get_allocated_levels(&self) -> u8 {
         self.allocated_levels
     }
@@ -51,7 +53,7 @@ impl <T: Default + Copy> TreeVecLevels for BackwardsTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> DefaultFunctions<T> for BackwardsTreeVec<T> {
+impl<T: Default + Copy> DefaultFunctions<T> for BackwardsTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }
@@ -77,7 +79,7 @@ impl <T: Default + Copy> DefaultFunctions<T> for BackwardsTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
+impl<T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8 {
         &mut self.allocated_levels
     }
@@ -99,7 +101,7 @@ impl <T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
+impl<T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
     fn push(&mut self, value: T) -> i32 {
         let index = push(self, value);
         if index == (self.length - 1) as i32 {
@@ -126,7 +128,7 @@ impl <T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> Index<i32> for BackwardsTreeVec<T> {
+impl<T: Default + Copy> Index<i32> for BackwardsTreeVec<T> {
     type Output = T;
 
     fn index(&self, index: i32) -> &T {
@@ -134,13 +136,13 @@ impl <T: Default + Copy> Index<i32> for BackwardsTreeVec<T> {
     }
 }
 
-impl <T: Default + Copy> IndexMut<i32> for BackwardsTreeVec<T> {
+impl<T: Default + Copy> IndexMut<i32> for BackwardsTreeVec<T> {
     fn index_mut(&mut self, index: i32) -> &mut T {
         &mut self.data[index as usize]
     }
 }
 
-impl <T: Default + Copy> BackwardTreeVec for BackwardsTreeVec<T> {
+impl<T: Default + Copy> BackwardTreeVec for BackwardsTreeVec<T> {
     fn get_parent(&self, index: i32) -> Option<i32> {
         if index == 0 {
             return None;
@@ -217,4 +219,3 @@ mod tests {
         assert_eq!(vec.parents.len(), 3);
     }
 }
-

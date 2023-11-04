@@ -38,7 +38,6 @@ impl DataAllocator {
         request
     }
 
-
     fn allocate(&mut self, len: u64) {
         let mut request = AllocationRequest::new();
         let mut last_page = self.page_controller.get_last_page();
@@ -50,7 +49,5 @@ impl DataAllocator {
             self.page_controller.add_page();
             last_page = self.page_controller.get_last_page();
         }
-
-        
     }
 }
