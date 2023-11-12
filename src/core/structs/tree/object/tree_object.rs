@@ -6,15 +6,15 @@ pub trait TreeObject<T> {
     /// # Arguments
     /// * `value` - The value to be pushed.
     /// # Returns
-    /// * `i32` - The index of the value.
-    fn push(&mut self, value: T) -> i32;
+    /// * `usize` - The index of the value.
+    fn push(&mut self, value: T) -> usize;
     /// Finds a value in the tree. Returns the index of the value.
     /// If the value is not found, returns None.
     /// # Arguments
     /// * `value` - The value to be found.
     /// # Returns
-    /// * `Option<i32>` - The index of the value.
-    fn find(&mut self, value: T) -> Option<i32>;
+    /// * `Option<usize>` - The index of the value.
+    fn find(&mut self, value: T) -> Option<usize>;
     /// Removes a value from the tree. Returns the value.
     /// If the value is not found, returns None.
     /// # Arguments
@@ -40,7 +40,7 @@ pub trait TreeObjectVec<T, M: TreeVec<T> + Sized> {
     /// * `index` - The index of the value.
     /// # Returns
     /// * `Option<T>` - The value.
-    fn get(&mut self, index: i32) -> Option<T>;
+    fn get(&mut self, index: usize) -> Option<T>;
     /// Returns the mutable reference to the underlying vector.
     /// # Returns
     /// * `&mut M` - The mutable reference to the underlying vector.
@@ -51,15 +51,15 @@ pub trait TreeObjectVec<T, M: TreeVec<T> + Sized> {
     fn get_nodes(&self) -> &M;
     /// Returns thr root index of the tree.
     /// # Returns
-    /// * `i32` - The root index of the tree.
-    fn get_root_index(&self) -> i32;
+    /// * `Option<usize>` - The root index of the tree.
+    fn get_root_index(&self) -> Option<usize>;
     /// Removes item from the tree by index. Returns the value.
     /// If the index is wrong, returns None.
     /// # Arguments
     /// * `index` - The index of the value.
     /// # Returns
     /// * `Option<T>` - The value.
-    fn remove_by_index(&mut self, index: i32) -> Option<T>;
+    fn remove_by_index(&mut self, index: usize) -> Option<T>;
 }
 
 /// TreeObjectFind is a trait that defines the find operations that a tree object can implement.
@@ -70,13 +70,13 @@ pub trait TreeObjectFind<T> {
     /// # Arguments
     /// * `value` - The value to be found.
     /// # Returns
-    /// * `Option<(i32,T)>` - The index of the value and the value itself.
-    fn find_greater_equal(&mut self, value: T) -> Option<(i32, T)>;
+    /// * `Option<(usize,T)>` - The index of the value and the value itself.
+    fn find_greater_equal(&mut self, value: T) -> Option<(usize, T)>;
     /// Finds the first value that is less than the given value or equal to it.
     /// Returns the index of the value and the value itself.
     /// # Arguments
     /// * `value` - The value to be found.
     /// # Returns
-    /// * `Option<(i32,T)>` - The index of the value and the value itself.
-    fn find_less_equal(&mut self, value: T) -> Option<(i32, T)>;
+    /// * `Option<(usize,T)>` - The index of the value and the value itself.
+    fn find_less_equal(&mut self, value: T) -> Option<(usize, T)>;
 }

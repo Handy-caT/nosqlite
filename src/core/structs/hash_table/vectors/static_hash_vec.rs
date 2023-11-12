@@ -1,10 +1,14 @@
-use crate::core::structs::hash_table::vectors::hash_vec::{
-    HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
-};
-use crate::core::structs::hash_table::vectors::key_value::KeyValue;
-use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
-use crate::core::structs::hash_table::vectors::statistics::statistics_functions::{
-    statistics_add_actions, statistics_remove_actions,
+use crate::core::structs::hash_table::vectors::{
+    hash_vec::{
+        HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
+    },
+    key_value::KeyValue,
+    statistics::{
+        hash_vec_statistics::HashVecStatistics,
+        statistics_functions::{
+            statistics_add_actions, statistics_remove_actions,
+        },
+    },
 };
 
 /// A static hash table that uses vectors as buckets.
@@ -74,7 +78,12 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V>
         None
     }
 
-    fn update(&mut self, index: u64, key: K, value: V) -> Option<KeyValue<K, V>> {
+    fn update(
+        &mut self,
+        index: u64,
+        key: K,
+        value: V,
+    ) -> Option<KeyValue<K, V>> {
         let item_index = self.find_key(index, key);
         match item_index {
             Some(i) => {
@@ -114,10 +123,14 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V>
 }
 
 /// Implementation of HashVecIndexes trait for StaticHashVec
-impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndexes<K, V>
-    for StaticHashVec<K, V, N>
+impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64>
+    HashVecIndexes<K, V> for StaticHashVec<K, V, N>
 {
-    fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
+    fn remove_by_index(
+        &mut self,
+        index: u64,
+        value_index: usize,
+    ) -> Option<KeyValue<K, V>> {
         if value_index >= self.data[index as usize].len() {
             None
         } else {
@@ -126,7 +139,11 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVecIndexe
         }
     }
 
-    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>> {
+    fn get_by_index(
+        &mut self,
+        index: u64,
+        value_index: usize,
+    ) -> Option<KeyValue<K, V>> {
         if index >= N {
             None
         } else {
@@ -196,11 +213,13 @@ impl<K: Eq, V: Default + Eq, const N: u64> HashVecStatisticsInternal<K, V>
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::vectors::hash_vec::{
-        HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
+    use crate::core::structs::hash_table::vectors::{
+        hash_vec::{
+            HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
+        },
+        key_value::KeyValue,
+        static_hash_vec::StaticHashVec,
     };
-    use crate::core::structs::hash_table::vectors::key_value::KeyValue;
-    use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
 
     #[test]
     fn test_static_hash_vec_new() {

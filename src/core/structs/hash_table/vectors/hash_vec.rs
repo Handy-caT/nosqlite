@@ -1,5 +1,6 @@
-use crate::core::structs::hash_table::vectors::key_value::KeyValue;
-use crate::core::structs::hash_table::vectors::statistics::hash_vec_statistics::HashVecStatistics;
+use crate::core::structs::hash_table::vectors::{
+    key_value::KeyValue, statistics::hash_vec_statistics::HashVecStatistics,
+};
 
 /// Common trait for HashTable data
 pub trait HashVec<K, V> {
@@ -27,7 +28,12 @@ pub trait HashVec<K, V> {
     /// * `value` - Value to update
     /// # Returns
     /// * 'Option<KeyValue<K, V>>' - Value that was updated, None if value was not found
-    fn update(&mut self, index: u64, key: K, value: V) -> Option<KeyValue<K, V>>;
+    fn update(
+        &mut self,
+        index: u64,
+        key: K,
+        value: V,
+    ) -> Option<KeyValue<K, V>>;
 
     /// Checks if the HashVector has key by underlying vector index
     /// # Arguments
@@ -64,7 +70,11 @@ pub trait HashVecIndexes<K, V> {
     /// * `value_index` - Index of the value in the vector
     /// # Returns
     /// * `Option<KeyValue<K, V>>` - Value that was removed, None if value index was out of bounds
-    fn remove_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>>;
+    fn remove_by_index(
+        &mut self,
+        index: u64,
+        value_index: usize,
+    ) -> Option<KeyValue<K, V>>;
 
     /// Returns reference to the value from the HashVector by underlying vector index and value index
     /// # Arguments
@@ -72,7 +82,11 @@ pub trait HashVecIndexes<K, V> {
     /// * `value_index` - Index of the value in the vector
     /// # Returns
     /// * 'Option<KeyValue<K, V>>' - Value that was found, None if value index was out of bounds
-    fn get_by_index(&mut self, index: u64, value_index: usize) -> Option<KeyValue<K, V>>;
+    fn get_by_index(
+        &mut self,
+        index: u64,
+        value_index: usize,
+    ) -> Option<KeyValue<K, V>>;
 
     /// Finds key in the HashVector by underlying vector index and key itself
     /// # Arguments

@@ -88,7 +88,11 @@ impl Page {
         }
     }
 
-    pub fn update_data(&mut self, data: &[u8], link: &PageLink) -> Result<PageLink, String> {
+    pub fn update_data(
+        &mut self,
+        data: &[u8],
+        link: &PageLink,
+    ) -> Result<PageLink, String> {
         if link.len as usize != data.len() {
             return Err("Data length does not match link length".to_string());
         }

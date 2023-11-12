@@ -1,7 +1,8 @@
-use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::nodes::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::{
-    DefaultFunctions, TreeVec, TreeVecIndexes, TreeVecLevels,
+use crate::core::structs::tree::{
+    nodes::{TreeIndex, TreeNode},
+    vectors::tree_vec::{
+        DefaultFunctions, TreeVec, TreeVecIndexes, TreeVecLevels,
+    },
 };
 use std::ops::{Index, IndexMut};
 
@@ -16,10 +17,10 @@ use std::ops::{Index, IndexMut};
 /// * `length` - Length of the vector
 pub struct DefaultTreeVec<T: Sized> {
     data: Vec<T>,
-    empty: Vec<u64>,
+    empty: Vec<usize>,
     indexes: Vec<TreeIndex>,
 
-    length: u64,
+    length: usize,
 }
 
 impl<T: Default + Copy> DefaultTreeVec<T> {
@@ -49,37 +50,37 @@ impl<T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
 }
 
 impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
-    fn push(&mut self, value: T) -> i32 {
+    fn push(&mut self, value: T) -> usize {
         let index = if self.empty.len() > 0 {
             self.empty.pop().unwrap()
         } else {
             self.length += 1;
-            self.data.len() as u64
+            self.data.len()
         };
 
-        let indexes = TreeIndex::new_with_index(index as i32);
+        let indexes = TreeIndex::new_with_index(index);
 
-        if index == self.data.len() as u64 {
+        if index == self.data.len() {
             self.data.push(value);
             self.indexes.push(indexes);
         } else {
-            self.data[index as usize] = value;
-            self.indexes[index as usize] = indexes;
+            self.data[index] = value;
+            self.indexes[index] = indexes;
         }
 
-        index as i32
+        index
     }
 
-    fn get(&self, index: i32) -> Option<TreeNode<T>> {
-        let item = self.indexes.get(index as usize);
+    fn get(&self, index: usize) -> Option<TreeNode<T>> {
+        let item = self.indexes.get(index);
         return if item.is_none() {
             None
         } else {
             let item = item.unwrap();
-            if item.index == -1 {
+            if item.index.is_none() {
                 None
             } else {
-                let value = self.data.get(index as usize);
+                let value = self.data.get(index);
                 Some(TreeNode {
                     value: *value.unwrap(),
                     indexes: *item,
@@ -88,29 +89,34 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
         };
     }
 
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
+    fn get_value_mut(&mut self, index: usize) -> Option<&mut T> {
+        if index < self.length {
+            Some(&mut self.data[index])
+        } else {
+            None
+        }
+
     }
 
-    fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
-        let mut item = self.indexes.get(index as usize);
+    fn remove(&mut self, index: usize) -> Option<TreeNode<T>> {
+        let mut item = self.indexes.get(index);
         if item.is_none() {
             return None;
         }
 
         let item = *item.unwrap();
-        if item.index == -1 {
+        if item.index.is_none() {
             return None;
         }
 
-        self.indexes[index as usize] = TreeIndex::default();
-        self.empty.push(index as u64);
+        self.indexes[index] = TreeIndex::default();
+        self.empty.push(index);
 
-        if index as u64 == self.length - 1 {
+        if index == self.length - 1 {
             self.length -= 1;
         }
 
-        let value = self.data.get(index as usize);
+        let value = self.data.get(index);
 
         Some(TreeNode {
             value: *value.unwrap(),
@@ -119,21 +125,21 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     }
 
     fn len(&self) -> usize {
-        self.length as usize
+        self.length
     }
 }
 
-impl<T: Default + Copy> Index<i32> for DefaultTreeVec<T> {
+impl<T: Default + Copy> Index<usize> for DefaultTreeVec<T> {
     type Output = T;
 
-    fn index(&self, index: i32) -> &Self::Output {
-        &self.data[index as usize]
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
     }
 }
 
-impl<T: Default + Copy> IndexMut<i32> for DefaultTreeVec<T> {
-    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
-        &mut self.data[index as usize]
+impl<T: Default + Copy> IndexMut<usize> for DefaultTreeVec<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.data[index]
     }
 }
 
@@ -146,11 +152,11 @@ impl<T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
         &mut self.data
     }
 
-    fn get_empty(&self) -> &Vec<u64> {
+    fn get_empty(&self) -> &Vec<usize> {
         &self.empty
     }
 
-    fn get_empty_mut(&mut self) -> &mut Vec<u64> {
+    fn get_empty_mut(&mut self) -> &mut Vec<usize> {
         &mut self.empty
     }
 

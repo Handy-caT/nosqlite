@@ -1,9 +1,12 @@
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::tree::object::balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree;
-    use crate::core::structs::tree::object::bin_heap::bin_heap::BinHeap;
-    use crate::core::structs::tree::object::tree_object::TreeObject;
-    use crate::core::structs::tree::vectors::normalized_tree_vec::NormalizedTreeVector;
+    use crate::core::structs::tree::{
+        object::{
+            balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree,
+            bin_heap::bin_heap::BinHeap, tree_object::TreeObject,
+        },
+        vectors::normalized_tree_vec::NormalizedTreeVector,
+    };
 
     #[test]
     fn test_bin_heap_in_tree() {
@@ -13,10 +16,11 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(
-            heap,
-            |a, b| b.cmp(a),
-        );
+        let tree = DecoratableBalancedTree::<
+            u64,
+            NormalizedTreeVector<u64>,
+            BinHeap<u64>,
+        >::new(heap, |a, b| b.cmp(a));
 
         assert_eq!(tree.len(), 3);
     }
@@ -29,10 +33,11 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let mut tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(
-            heap,
-            |a, b| b.cmp(a),
-        );
+        let mut tree = DecoratableBalancedTree::<
+            u64,
+            NormalizedTreeVector<u64>,
+            BinHeap<u64>,
+        >::new(heap, |a, b| b.cmp(a));
 
         tree.push(4);
 
@@ -47,10 +52,11 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let mut tree = DecoratableBalancedTree::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(
-            heap,
-            |a, b| b.cmp(a),
-        );
+        let mut tree = DecoratableBalancedTree::<
+            u64,
+            NormalizedTreeVector<u64>,
+            BinHeap<u64>,
+        >::new(heap, |a, b| b.cmp(a));
 
         tree.remove_by_value(2);
 

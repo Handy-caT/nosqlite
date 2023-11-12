@@ -1,7 +1,9 @@
-use crate::core::allocation_request::{AllocationRequest, AllocationStatus};
-use crate::core::link_struct::PageLink;
-use crate::core::page_controller::PageController;
-use crate::core::page_struct::Page;
+use crate::core::{
+    allocation_request::{AllocationRequest, AllocationStatus},
+    link_struct::PageLink,
+    page_controller::PageController,
+    page_struct::Page,
+};
 
 pub struct DataAllocator {
     allocated: Vec<AllocationRequest>,

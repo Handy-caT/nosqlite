@@ -1,10 +1,16 @@
-use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::object::balanced_tree::balanced_tree_functions::{
-    balance, find_min, remove_min,
+use crate::core::structs::tree::{
+    nodes::tree_index::TreeIndex,
+    object::{
+        balanced_tree::balanced_tree_functions::{
+            balance, find_min, remove_min,
+        },
+        tree_object::{TreeObject, TreeObjectVec},
+    },
+    vectors::{
+        additional_indexes::additional_index_vec::AdditionalIndexVec,
+        tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels},
+    },
 };
-use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
-use crate::core::structs::tree::vectors::additional_indexes::additional_index_vec::AdditionalIndexVec;
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
 use std::cmp::Ordering;
 
 /// DecoratableBalancedTree is a tree that can be decorated with additional indexes.
@@ -39,7 +45,10 @@ impl<
     /// * `compare` - compare function
     /// # Returns
     /// * `DecoratableBalancedTree` - new DecoratableBalancedTree
-    pub fn new(tree: M, compare: fn(&T, &T) -> Ordering) -> DecoratableBalancedTree<T, V, M> {
+    pub fn new(
+        tree: M,
+        compare: fn(&T, &T) -> Ordering,
+    ) -> DecoratableBalancedTree<T, V, M> {
         let additional_index_vec = AdditionalIndexVec::new(tree.get_nodes());
 
         let mut dec_tree = DecoratableBalancedTree {
@@ -76,29 +85,35 @@ impl<
     /// * `value_index` - value index
     /// # Returns
     /// * `i32` - new root index
-    fn add_from_root(&mut self, value: T, root_index: i32, value_index: i32) -> i32 {
-        if (self.compare)(&value, self.base.get_nodes_mut().get_value_mut(root_index))
-            == Ordering::Less
+    fn add_from_root(
+        &mut self,
+        value: T,
+        root_index: i32,
+        value_index: i32,
+    ) -> i32 {
+        if (self.compare)(
+            &value,
+            self.base.get_nodes_mut().get_value_mut(root_index),
+        ) == Ordering::Less
         {
             if self.indexes[root_index as usize].left_index == -1 {
                 self.indexes[root_index as usize].left_index = value_index;
             } else {
-                self.indexes[root_index as usize].left_index = self.add_from_root(
-                    value,
-                    self.indexes[root_index as usize].left_index,
-                    value_index,
-                );
+                self.indexes[root_index as usize].left_index = self
+                    .add_from_root(
+                        value,
+                        self.indexes[root_index as usize].left_index,
+                        value_index,
+                    );
             }
+        } else if self.indexes[root_index as usize].right_index == -1 {
+            self.indexes[root_index as usize].right_index = value_index;
         } else {
-            if self.indexes[root_index as usize].right_index == -1 {
-                self.indexes[root_index as usize].right_index = value_index;
-            } else {
-                self.indexes[root_index as usize].right_index = self.add_from_root(
-                    value,
-                    self.indexes[root_index as usize].right_index,
-                    value_index,
-                );
-            }
+            self.indexes[root_index as usize].right_index = self.add_from_root(
+                value,
+                self.indexes[root_index as usize].right_index,
+                value_index,
+            );
         }
         balance(self.indexes.get_indexes_mut(), root_index)
     }
@@ -110,16 +125,26 @@ impl<
     /// # Returns
     /// * `i32` - new root index
     fn remove_from_root(&mut self, value: T, root_index: i32) -> i32 {
-        if (self.compare)(&value, self.base.get_nodes_mut().get_value_mut(root_index))
-            == Ordering::Less
+        if (self.compare)(
+            &value,
+            self.base.get_nodes_mut().get_value_mut(root_index),
+        ) == Ordering::Less
         {
-            self.indexes[root_index as usize].left_index =
-                self.remove_from_root(value, self.indexes[root_index as usize].left_index);
-        } else if (self.compare)(&value, self.base.get_nodes_mut().get_value_mut(root_index))
-            == Ordering::Greater
+            self.indexes[root_index as usize].left_index = self
+                .remove_from_root(
+                    value,
+                    self.indexes[root_index as usize].left_index,
+                );
+        } else if (self.compare)(
+            &value,
+            self.base.get_nodes_mut().get_value_mut(root_index),
+        ) == Ordering::Greater
         {
-            self.indexes[root_index as usize].right_index =
-                self.remove_from_root(value, self.indexes[root_index as usize].right_index);
+            self.indexes[root_index as usize].right_index = self
+                .remove_from_root(
+                    value,
+                    self.indexes[root_index as usize].right_index,
+                );
         } else {
             let left_index = self.indexes[root_index as usize].left_index;
             let right_index = self.indexes[root_index as usize].right_index;
@@ -128,7 +153,8 @@ impl<
                 return left_index;
             }
 
-            let min_index = find_min(self.indexes.get_indexes_mut(), right_index);
+            let min_index =
+                find_min(self.indexes.get_indexes_mut(), right_index);
             self.indexes[root_index as usize].right_index =
                 remove_min(self.indexes.get_indexes_mut(), right_index);
             self.indexes[root_index as usize].left_index = left_index;
@@ -149,12 +175,16 @@ impl<
 
         for i in 1..length {
             let item = self.base.get_nodes().get(i as i32);
-            if item.is_none() {
-                self.indexes.push(TreeIndex::default());
-            } else {
+            if let Some(node) = item {
                 self.indexes.push(TreeIndex::new_with_index(i as i32));
-                let value = self.base.get_nodes().get(item.unwrap().indexes.index);
-                self.root = self.add_from_root(value.unwrap().value, self.root, i as i32);
+                let value = self.base.get_nodes().get(node.indexes.index);
+                self.root = self.add_from_root(
+                    value.unwrap().value,
+                    self.root,
+                    i as i32,
+                );
+            } else {
+                self.indexes.push(TreeIndex::default());
             }
         }
     }
@@ -200,7 +230,8 @@ impl<
                 self.base.get_nodes_mut().get_value_mut(current_index),
             ) == Ordering::Greater
             {
-                current_index = self.indexes[current_index as usize].right_index;
+                current_index =
+                    self.indexes[current_index as usize].right_index;
             } else {
                 return Some(self.indexes[current_index as usize].index);
             }
@@ -275,8 +306,10 @@ impl<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::structs::tree::object::balanced_tree::balanced_tree::BalancedTree;
-    use crate::core::structs::tree::vectors::default_tree_vec::DefaultTreeVec;
+    use crate::core::structs::tree::{
+        object::balanced_tree::balanced_tree::BalancedTree,
+        vectors::default_tree_vec::DefaultTreeVec,
+    };
 
     #[test]
     fn test_decoratable_balanced_tree_new() {
@@ -304,7 +337,7 @@ mod tests {
     #[test]
     fn test_decoratable_tree_new_empty() {
         let nodes = DefaultTreeVec::<u64>::new();
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
 
         let dec_tree = DecoratableBalancedTree::<
             u64,

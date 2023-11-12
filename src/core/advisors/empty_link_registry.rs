@@ -1,7 +1,13 @@
-use crate::core::link_struct::PageLink;
-use crate::core::structs::tree::object::balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree;
-use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
+use crate::core::{
+    link_struct::PageLink,
+    structs::tree::{
+        object::{
+            balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree,
+            tree_object::{TreeObject, TreeObjectVec},
+        },
+        vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels},
+    },
+};
 
 pub struct EmptyLinkRegistry<V, M>
 where
@@ -32,7 +38,9 @@ where
         todo!()
     }
 
-    pub(in crate::core::advisors) fn get_data(&self) -> &DecoratableBalancedTree<PageLink, V, M> {
+    pub(in crate::core::advisors) fn get_data(
+        &self,
+    ) -> &DecoratableBalancedTree<PageLink, V, M> {
         &self.data
     }
 
@@ -45,19 +53,29 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::core::advisors::empty_link_registry::EmptyLinkRegistry;
-    use crate::core::link_struct::PageLink;
-    use crate::core::structs::tree::object::balanced_tree::balanced_tree::BalancedTree;
-    use crate::core::structs::tree::object::balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree;
-    use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
-    use crate::core::structs::tree::vectors::default_tree_vec::DefaultTreeVec;
+    use crate::core::{
+        advisors::empty_link_registry::EmptyLinkRegistry,
+        link_struct::PageLink,
+        structs::tree::{
+            object::{
+                balanced_tree::{
+                    balanced_tree::BalancedTree,
+                    decoratable_balanced_tree::DecoratableBalancedTree,
+                },
+                tree_object::{TreeObject, TreeObjectVec},
+            },
+            vectors::default_tree_vec::DefaultTreeVec,
+        },
+    };
 
     #[test]
     fn test_empty_link_registry_new() {
         let nodes = DefaultTreeVec::<PageLink>::new();
-        let tree = BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
+        let tree =
+            BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
 
-        let decoratable_tree = DecoratableBalancedTree::new(tree, PageLink::compare_by_len);
+        let decoratable_tree =
+            DecoratableBalancedTree::new(tree, PageLink::compare_by_len);
 
         let empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 
@@ -67,9 +85,11 @@ mod tests {
     #[test]
     fn test_empty_link_registry_add_link() {
         let nodes = DefaultTreeVec::<PageLink>::new();
-        let tree = BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
+        let tree =
+            BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
 
-        let decoratable_tree = DecoratableBalancedTree::new(tree, PageLink::compare_by_len);
+        let decoratable_tree =
+            DecoratableBalancedTree::new(tree, PageLink::compare_by_len);
 
         let mut empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 

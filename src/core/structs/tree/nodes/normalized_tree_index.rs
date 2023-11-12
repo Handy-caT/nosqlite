@@ -1,12 +1,16 @@
 use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use std::io;
+use smart_default::SmartDefault;
 
 /// Struct that represents a normalized index in a tree
-/// A normalized index is a index where left_index = index * 2 + 1 and right_index = index * 2 + 2
+/// A normalized index is a index where left_index = index * 2 + 1 and
+/// right_index = index * 2 + 2
+#[derive(Copy, Clone, Debug, SmartDefault)]
 pub struct NormalizedTreeIndex {
     /// Index of the node
-    pub index: i32,
+    #[default(None)]
+    pub index: Option<usize>,
     /// Height of the node
+    #[default = 1]
     pub height: u8,
 }
 
@@ -17,31 +21,30 @@ impl NormalizedTreeIndex {
     /// * `index` - Index of the node
     /// # Returns
     /// * `NormalizedTreeIndex` - New node
-    pub fn new(index: i32) -> NormalizedTreeIndex {
-        NormalizedTreeIndex { index, height: 1 }
+    pub fn new(index: usize) -> NormalizedTreeIndex {
+        NormalizedTreeIndex { index: Some(index), height: 1 }
     }
 
     /// Returns the index of the right child
     /// # Returns
-    /// * `i32` - Index of the right child
-    pub fn get_right_index(&self) -> i32 {
-        self.index * 2 + 2
+    /// * `Option<usize>` - Index of the right child
+    pub fn get_right_index(&self) -> Option<usize> {
+        if let Some(index) = self.index {
+            Some(index * 2 + 2)
+        } else {
+            None
+        }
     }
 
     /// Returns the index of the left child
     /// # Returns
     /// * `i32` - Index of the left child
-    pub fn get_left_index(&self) -> i32 {
-        self.index * 2 + 1
-    }
-
-    /// Checks if the given node can be normalized
-    /// # Arguments
-    /// * `node` - TreeIndex to check
-    /// # Returns
-    /// * `bool` - True if the node can be normalized, false otherwise
-    fn can_be_normalized(node: &TreeIndex) -> bool {
-        node.left_index == node.index * 2 + 1 && node.right_index == node.index * 2 + 2
+    pub fn get_left_index(&self) -> Option<usize> {
+        if let Some(index) = self.index {
+            Some(index * 2 + 1)
+        } else {
+            None
+        }
     }
 
     /// Returns the height of the node at the given index
@@ -49,50 +52,22 @@ impl NormalizedTreeIndex {
     /// * `index` - Index of the node
     /// # Returns
     /// * `u8` - Height of the node
-    pub fn find_height(index: i32) -> u8 {
+    pub fn find_height(index: usize) -> u8 {
         (index as f32 + 1.).log2().floor() as u8 + 1
     }
 }
 
-impl Copy for NormalizedTreeIndex {}
-
-impl Clone for NormalizedTreeIndex {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-
-impl Into<TreeIndex> for NormalizedTreeIndex {
-    fn into(self) -> TreeIndex {
-        TreeIndex {
-            index: self.index,
-            left_index: self.get_left_index(),
-            right_index: self.get_right_index(),
-            height: self.height,
-        }
-    }
-}
-
-impl From<TreeIndex> for Result<NormalizedTreeIndex, io::Error> {
-    fn from(node: TreeIndex) -> Result<NormalizedTreeIndex, io::Error> {
-        if !NormalizedTreeIndex::can_be_normalized(&node) {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Node is not normalized",
-            ));
-        }
-        Ok(NormalizedTreeIndex {
-            index: node.index,
-            height: node.height,
-        })
-    }
-}
-
-impl Default for NormalizedTreeIndex {
-    fn default() -> Self {
-        NormalizedTreeIndex {
-            height: 1,
-            index: -1,
+impl From<NormalizedTreeIndex> for Option<TreeIndex> {
+    fn from(value: NormalizedTreeIndex) -> Self {
+        if let Some(index) = value.index {
+            Some(TreeIndex {
+                index: Some(index),
+                left_index: value.get_left_index(),
+                right_index: value.get_right_index(),
+                height: value.height,
+            })
+        } else {
+            None
         }
     }
 }
@@ -104,44 +79,34 @@ mod tests {
     #[test]
     fn test_normalized_tree_index_new() {
         let node = NormalizedTreeIndex::new(0);
-        assert_eq!(node.index, 0);
+        assert_eq!(node.index, Some(0));
         assert_eq!(node.height, 1);
     }
 
     #[test]
     fn test_normalized_tree_index_get_right_index() {
         let node = NormalizedTreeIndex::new(0);
-        assert_eq!(node.get_right_index(), 2);
+        assert_eq!(node.get_right_index(), Some(2));
     }
 
     #[test]
     fn test_normalized_tree_index_get_left_index() {
         let node = NormalizedTreeIndex::new(0);
-        assert_eq!(node.get_left_index(), 1);
+        assert_eq!(node.get_left_index(), Some(1));
     }
 
     #[test]
     fn test_normalized_tree_index_into() {
         let node = NormalizedTreeIndex::new(0);
-        let tree_node: TreeIndex = node.into();
+        let tree_node: Option<TreeIndex> = node.into();
 
-        assert_eq!(tree_node.index, 0);
+        assert_eq!(tree_node.is_some());
+        let tree_node = tree_node.unwrap();
+
+        assert_eq!(tree_node.index, Some(0));
         assert_eq!(tree_node.height, 1);
-        assert_eq!(tree_node.left_index, 1);
-        assert_eq!(tree_node.right_index, 2);
-    }
-
-    #[test]
-    fn test_normalized_tree_index_from() {
-        let mut tree_node = TreeIndex::new_with_index(0);
-        tree_node.right_index = 2;
-        tree_node.left_index = 1;
-
-        let node: Result<NormalizedTreeIndex, io::Error> = tree_node.into();
-        let unwrapped = node.unwrap();
-
-        assert_eq!(unwrapped.index, 0);
-        assert_eq!(unwrapped.height, 1);
+        assert_eq!(tree_node.left_index, Some(1));
+        assert_eq!(tree_node.right_index, Some(2));
     }
 
     #[test]

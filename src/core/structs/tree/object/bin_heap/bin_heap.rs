@@ -1,13 +1,16 @@
-use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
-use crate::core::structs::tree::vectors::normalized_tree_vec::NormalizedTreeVector;
-use crate::core::structs::tree::vectors::tree_vec::TreeVec;
+use crate::core::structs::tree::{
+    object::tree_object::{TreeObject, TreeObjectVec},
+    vectors::{normalized_tree_vec::NormalizedTreeVector, tree_vec::TreeVec},
+};
 use std::cmp::Ordering;
 
 /// Struct that represents a binary heap.
 /// It is a tree-based data structure that satisfies the heap property:
-/// It compares the parent node with its children and the parent node is always greater than its children.
+/// It compares the parent node with its children and the parent node is always greater
+/// than its children.
 /// It is implemented using a vector.
-/// It is using custom NormalizedTreeVector struct that represents the tree, where childrens are on 2*i + 1 and 2*i + 2 positions.
+/// It is using custom NormalizedTreeVector struct that represents the tree,
+/// where childrens are on 2*i + 1 and 2*i + 2 positions.
 pub struct BinHeap<T> {
     /// NormalizedTreeVector that represents the tree
     /// It is used to store the data
@@ -45,13 +48,13 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
     /// It is used when we remove the root node
     /// # Arguments
     /// * `index` - Index of the node that we will start heapifying
-    fn heapify(&mut self, index: i32) {
+    fn heapify(&mut self, index: usize) {
         let left_index = index * 2 + 1;
         let right_index = index * 2 + 2;
 
         let mut largest_index = index;
 
-        if left_index < self.data.len() as i32
+        if left_index < self.data.len()
             && (self.compare)(
                 &self.data.get(left_index).unwrap().value,
                 &self.data.get(index).unwrap().value,
@@ -60,7 +63,7 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
             largest_index = left_index;
         }
 
-        if right_index < self.data.len() as i32
+        if right_index < self.data.len()
             && (self.compare)(
                 &self.data.get(right_index).unwrap().value,
                 &self.data.get(largest_index).unwrap().value,
@@ -81,11 +84,11 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
     /// # Returns
     /// * `Option<T>` - Value of the root item
     pub fn peek_max(&mut self) -> Option<T> {
-        return if self.data.len() == 0 {
+        if self.data.len() == 0 {
             None
         } else {
             Some(self.data.get(0).unwrap().value)
-        };
+        }
     }
 
     /// Function that removes the root item and returns it
@@ -93,23 +96,23 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
     /// # Returns
     /// * `Option<T>` - Value of the root item
     pub fn get_max(&mut self) -> Option<T> {
-        return if self.data.len() == 0 {
+        if self.data.len() == 0 {
             None
         } else {
             let max = self.peek_max();
-            self.data.swap_indexes(0, self.data.len() as i32 - 1);
-            self.data.remove(self.data.len() as i32 - 1);
+            self.data.swap_indexes(0, self.data.len() - 1);
+            self.data.remove(self.data.len() - 1);
             self.heapify(0);
 
             max
-        };
+        }
     }
 }
 
 /// Implementation of TreeObject trait for BinHeap struct
 /// It is used for tree operations and to use as part of TreeDecorator
 impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
-    fn push(&mut self, value: T) -> i32 {
+    fn push(&mut self, value: T) -> usize {
         if self.data.len() == 0 {
             let index = self.data.push(value);
             return index;
@@ -117,7 +120,9 @@ impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
 
         let mut index = self.data.push(value);
         let result_index = index;
-        let mut parent_index = NormalizedTreeVector::<T>::get_parent_index(index);
+        // We can unwrap because index is never 0
+        let mut parent_index =
+            NormalizedTreeVector::<T>::get_parent_index(index).unwrap();
 
         while index > 0
             && (self.compare)(
@@ -127,19 +132,20 @@ impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
         {
             self.data.swap_indexes(index, parent_index);
             index = parent_index;
-            parent_index = NormalizedTreeVector::<T>::get_parent_index(index);
+            // We can unwrap because index is never 0
+            parent_index = NormalizedTreeVector::<T>::get_parent_index(index).unwrap();
         }
         result_index
     }
 
-    fn find(&mut self, value: T) -> Option<i32> {
+    fn find(&mut self, value: T) -> Option<usize> {
         if self.data.len() == 0 {
-            return None;
+            None
         } else {
             let mut index = 0;
             let mut found = false;
 
-            while index < self.data.len() as i32 && !found {
+            while index < self.data.len() && !found {
                 if self.data.get(index).unwrap().value == value {
                     found = true;
                 } else {
@@ -157,7 +163,7 @@ impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
 
     fn remove_by_value(&mut self, value: T) -> Option<T> {
         if self.data.len() == 0 {
-            return None;
+            None
         } else {
             let index = self.find(value);
             if index.is_none() {
@@ -179,9 +185,11 @@ impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
 }
 
 /// Implementation of TreeObjectVec trait for BinHeap struct
-impl<T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>> for BinHeap<T> {
-    fn get(&mut self, index: i32) -> Option<T> {
-        if index < self.data.len() as i32 && index >= 0 {
+impl<T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>>
+    for BinHeap<T>
+{
+    fn get(&mut self, index: usize) -> Option<T> {
+        if index < self.data.len() {
             Some(self.data.get(index).unwrap().value)
         } else {
             None
@@ -196,15 +204,15 @@ impl<T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>> f
         &self.data
     }
 
-    fn get_root_index(&self) -> i32 {
-        0
+    fn get_root_index(&self) -> Option<usize> {
+        Some(0)
     }
 
-    fn remove_by_index(&mut self, index: i32) -> Option<T> {
-        if index < self.data.len() as i32 || index >= 0 {
+    fn remove_by_index(&mut self, index: usize) -> Option<T> {
+        if index < self.data.len() {
             let value = self.data.get(index).unwrap().value;
-            self.data.swap_indexes(index, self.data.len() as i32 - 1);
-            self.data.remove(self.data.len() as i32 - 1);
+            self.data.swap_indexes(index, self.data.len() - 1);
+            self.data.remove(self.data.len() - 1);
             self.heapify(index);
 
             Some(value)
@@ -216,10 +224,16 @@ impl<T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>> f
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::tree::object::bin_heap::bin_heap::BinHeap;
-    use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectVec};
-    use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-    use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+    use crate::core::structs::tree::{
+        object::{
+            bin_heap::bin_heap::BinHeap,
+            tree_object::{TreeObject, TreeObjectVec},
+        },
+        vectors::{
+            optimized_tree_vec::INITIAL_LEVELS,
+            tree_vec::{TreeVec, TreeVecLevels},
+        },
+    };
 
     #[test]
     fn test_bin_heap_new() {
@@ -243,9 +257,9 @@ mod tests {
         assert_eq!(heap.data[1], 2);
         assert_eq!(heap.data[2], 3);
 
-        assert_eq!(heap.data.get(0).unwrap().indexes.index, 2);
-        assert_eq!(heap.data.get(1).unwrap().indexes.index, 0);
-        assert_eq!(heap.data.get(2).unwrap().indexes.index, 1);
+        assert_eq!(heap.data.get(0).unwrap().indexes.index, Some(2));
+        assert_eq!(heap.data.get(1).unwrap().indexes.index, Some(0));
+        assert_eq!(heap.data.get(2).unwrap().indexes.index, Some(1));
     }
 
     #[test]
@@ -339,7 +353,6 @@ mod tests {
         assert_eq!(heap.get(2).unwrap(), 2);
         assert_eq!(heap.get(3).unwrap(), 1);
         assert_eq!(heap.get(4), None);
-        assert_eq!(heap.get(-1), None);
     }
 
     #[test]

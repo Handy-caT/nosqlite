@@ -1,9 +1,8 @@
-use crate::core::structs::hash_table::vectors::hash_vec::{
-    HashVec, HashVecIndexes, HashVecStatisticsInternal,
+use crate::core::structs::hash_table::vectors::{
+    hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal},
+    key_value::KeyValue,
 };
-use crate::core::structs::hash_table::vectors::key_value::KeyValue;
-use std::marker::PhantomData;
-use std::vec::IntoIter;
+use std::{marker::PhantomData, vec::IntoIter};
 
 /// HashVecIterator is an iterator for HashVec
 /// * `K` - key type
@@ -73,9 +72,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::vectors::hash_vec::HashVec;
-    use crate::core::structs::hash_table::vectors::hash_vec_iterator::HashVecIterator;
-    use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
+    use crate::core::structs::hash_table::vectors::{
+        hash_vec::HashVec, hash_vec_iterator::HashVecIterator,
+        static_hash_vec::StaticHashVec,
+    };
 
     #[test]
     fn test_hash_vec_iterator_new() {

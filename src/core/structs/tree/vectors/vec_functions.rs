@@ -1,7 +1,6 @@
-use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::nodes::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::tree_vec::{
-    DefaultFunctions, OptimizedFunctions, TreeVecLevels,
+use crate::core::structs::tree::{
+    nodes::{tree_index::TreeIndex, tree_node::TreeNode},
+    vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, TreeVecLevels},
 };
 
 /// Function to push a value to a vector
@@ -19,28 +18,28 @@ pub(in crate::core::structs::tree::vectors) fn push<
 >(
     vec: &mut V,
     value: T,
-) -> i32 {
+) -> usize {
     let index = if vec.get_empty().len() > 0 {
-        vec.get_empty_mut().pop().unwrap() as u64
+        vec.get_empty_mut().pop().unwrap()
     } else {
         *vec.get_length_mut() += 1;
-        vec.get_data().len() as u64
+        vec.get_data().len()
     };
 
-    let indexes = TreeIndex::new_with_index(index as i32);
+    let indexes = TreeIndex::new_with_index(index);
 
-    if index == vec.get_data().len() as u64 {
+    if index == vec.get_data().len() {
         if index == vec.get_max_length() {
             vec.allocate_level();
         }
         vec.get_data_mut().push(value);
         vec.get_indexes_mut().push(indexes);
     } else {
-        vec.get_data_mut()[index as usize] = value;
-        vec.get_indexes_mut()[index as usize] = indexes;
+        vec.get_data_mut()[index] = value;
+        vec.get_indexes_mut()[index] = indexes;
     }
 
-    index as i32
+    index
 }
 
 /// Function to get a value from a vector
@@ -57,17 +56,17 @@ pub(in crate::core::structs::tree::vectors) fn get<
     V: DefaultFunctions<T> + OptimizedFunctions<T> + TreeVecLevels,
 >(
     vec: &V,
-    index: i32,
+    index: usize,
 ) -> Option<TreeNode<T>> {
-    let item = vec.get_indexes().get(index as usize);
+    let item = vec.get_indexes().get(index);
     return if item.is_none() {
         None
     } else {
         let item = item.unwrap();
-        if item.index == -1 {
+        if item.index.is_none() {
             None
         } else {
-            let value = vec.get_data().get(index as usize);
+            let value = vec.get_data().get(index);
             Some(TreeNode {
                 value: *value.unwrap(),
                 indexes: *item,
@@ -90,26 +89,26 @@ pub(in crate::core::structs::tree::vectors) fn remove<
     V: DefaultFunctions<T> + OptimizedFunctions<T> + TreeVecLevels,
 >(
     vec: &mut V,
-    index: i32,
+    index: usize,
 ) -> Option<TreeNode<T>> {
-    vec.get_empty_mut().push(index as u64);
-    let item = vec.get_indexes().get(index as usize);
+    vec.get_empty_mut().push(index);
+    let item = vec.get_indexes().get(index);
     if item.is_none() {
         return None;
     }
 
     let item = *item.unwrap();
-    if item.index == -1 {
+    if item.index.is_none() {
         return None;
     }
 
-    vec.get_indexes_mut()[index as usize] = TreeIndex::default();
+    vec.get_indexes_mut()[index] = TreeIndex::default();
 
-    if index as u64 == vec.get_length() - 1 {
+    if index == vec.get_length() - 1 {
         *vec.get_length_mut() -= 1;
     }
 
-    let value = vec.get_data().get(index as usize);
+    let value = vec.get_data().get(index);
 
     Some(TreeNode {
         value: *value.unwrap(),
@@ -129,11 +128,11 @@ pub(in crate::core::structs::tree::vectors) fn allocate_level<
 >(
     vec: &mut V,
 ) {
-    let new_length = 2u64.pow(vec.get_allocated_levels() as u32 + 1) - 1;
+    let new_length = 2usize.pow(vec.get_allocated_levels() as u32 + 1) - 1;
     let additional = new_length - vec.get_max_length();
 
-    vec.get_data_mut().reserve(additional as usize);
-    vec.get_indexes_mut().reserve(additional as usize);
+    vec.get_data_mut().reserve(additional);
+    vec.get_indexes_mut().reserve(additional);
 
     *vec.get_length_mut() = new_length;
     *vec.get_allocated_levels_mut() += 1;

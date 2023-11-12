@@ -1,22 +1,26 @@
-use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::nodes::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-use crate::core::structs::tree::vectors::tree_vec::{
-    BackwardTreeVec, DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecLevels,
+use crate::core::structs::tree::{
+    nodes::{tree_index::TreeIndex, tree_node::TreeNode},
+    vectors::{
+        optimized_tree_vec::INITIAL_LEVELS,
+        tree_vec::{
+            BackwardTreeVec, DefaultFunctions, OptimizedFunctions, TreeVec,
+            TreeVecLevels,
+        },
+        vec_functions::{allocate_level, get, push, remove},
+    },
 };
-use crate::core::structs::tree::vectors::vec_functions::{allocate_level, get, push, remove};
 use std::ops::{Index, IndexMut};
 
 pub struct BackwardsTreeVec<T> {
     allocated_levels: u8,
-    max_length: u64,
-    length: u64,
+    max_length: usize,
+    length: usize,
 
     data: Vec<T>,
     indexes: Vec<TreeIndex>,
-    empty: Vec<u64>,
+    empty: Vec<usize>,
 
-    parents: Vec<u64>,
+    parents: Vec<usize>,
 }
 
 impl<T: Default + Copy> BackwardsTreeVec<T> {
@@ -31,10 +35,10 @@ impl<T: Default + Copy> BackwardsTreeVec<T> {
             parents: Vec::new(),
         };
 
-        let length = 2u64.pow(INITIAL_LEVELS as u32) - 1;
+        let length = 2usize.pow(INITIAL_LEVELS as u32) - 1;
 
-        vec.data.reserve(length as usize);
-        vec.indexes.reserve(length as usize);
+        vec.data.reserve(length);
+        vec.indexes.reserve(length);
 
         vec.max_length = length;
         vec.allocated_levels = INITIAL_LEVELS;
@@ -48,7 +52,7 @@ impl<T: Default + Copy> TreeVecLevels for BackwardsTreeVec<T> {
         self.allocated_levels
     }
 
-    fn get_max_length(&self) -> u64 {
+    fn get_max_length(&self) -> usize {
         self.max_length
     }
 }
@@ -62,11 +66,11 @@ impl<T: Default + Copy> DefaultFunctions<T> for BackwardsTreeVec<T> {
         &mut self.data
     }
 
-    fn get_empty(&self) -> &Vec<u64> {
+    fn get_empty(&self) -> &Vec<usize> {
         &self.empty
     }
 
-    fn get_empty_mut(&mut self) -> &mut Vec<u64> {
+    fn get_empty_mut(&mut self) -> &mut Vec<usize> {
         &mut self.empty
     }
 
@@ -84,15 +88,15 @@ impl<T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
         &mut self.allocated_levels
     }
 
-    fn get_max_length_mut(&mut self) -> &mut u64 {
+    fn get_max_length_mut(&mut self) -> &mut usize {
         &mut self.max_length
     }
 
-    fn get_length(&self) -> u64 {
+    fn get_length(&self) -> usize {
         self.length
     }
 
-    fn get_length_mut(&mut self) -> &mut u64 {
+    fn get_length_mut(&mut self) -> &mut usize {
         &mut self.length
     }
 
@@ -102,71 +106,79 @@ impl<T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
 }
 
 impl<T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
-    fn push(&mut self, value: T) -> i32 {
+    fn push(&mut self, value: T) -> usize {
         let index = push(self, value);
-        if index == (self.length - 1) as i32 {
+        if index == self.length - 1 {
             self.parents.push(0);
         }
 
         index
     }
 
-    fn get(&self, index: i32) -> Option<TreeNode<T>> {
+    fn get(&self, index: usize) -> Option<TreeNode<T>> {
         get(self, index)
     }
 
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
+    fn get_value_mut(&mut self, index: usize) -> &mut T {
+        &mut self.data[index]
     }
 
-    fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
+    fn remove(&mut self, index: usize) -> Option<TreeNode<T>> {
         remove(self, index)
     }
 
     fn len(&self) -> usize {
-        self.length as usize
+        self.length
     }
 }
 
-impl<T: Default + Copy> Index<i32> for BackwardsTreeVec<T> {
+impl<T: Default + Copy> Index<usize> for BackwardsTreeVec<T> {
     type Output = T;
 
-    fn index(&self, index: i32) -> &T {
-        &self.data[index as usize]
+    fn index(&self, index: usize) -> &T {
+        &self.data[index]
     }
 }
 
-impl<T: Default + Copy> IndexMut<i32> for BackwardsTreeVec<T> {
-    fn index_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
+impl<T: Default + Copy> IndexMut<usize> for BackwardsTreeVec<T> {
+    fn index_mut(&mut self, index: usize) -> &mut T {
+        &mut self.data[index]
     }
 }
 
 impl<T: Default + Copy> BackwardTreeVec for BackwardsTreeVec<T> {
-    fn get_parent(&self, index: i32) -> Option<i32> {
+    fn get_parent(&self, index: usize) -> Option<usize> {
         if index == 0 {
             return None;
         }
 
-        let parent = self.parents[index as usize];
+        let parent = self.parents[index];
 
         if parent == 0 {
             return None;
         }
 
-        Some(parent as i32)
+        Some(parent)
     }
 
-    fn add_parent(&mut self, index: i32, parent: i32) {
-        self.parents[index as usize] = parent as u64;
+    fn add_parent(&mut self, index: usize, parent: usize) -> Option<()> {
+        if index < self.length {
+            self.parents[index] = parent;
+            Some(())
+        } else {
+            None
+        }
+
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::tree::vectors::backward_tree_vec::BackwardsTreeVec;
-    use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-    use crate::core::structs::tree::vectors::tree_vec::{DefaultFunctions, TreeVec, TreeVecLevels};
+    use crate::core::structs::tree::vectors::{
+        backward_tree_vec::BackwardsTreeVec,
+        optimized_tree_vec::INITIAL_LEVELS,
+        tree_vec::{DefaultFunctions, TreeVec, TreeVecLevels},
+    };
 
     #[test]
     fn test_backwards_tree_vec_new() {
@@ -174,7 +186,7 @@ mod tests {
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.get_allocated_levels(), INITIAL_LEVELS);
-        assert_eq!(vec.get_max_length(), 2u64.pow(INITIAL_LEVELS as u32) - 1);
+        assert_eq!(vec.get_max_length(), 2usize.pow(INITIAL_LEVELS as u32) - 1);
         assert_eq!(vec.get_data().len(), 0);
         assert_eq!(vec.get_indexes().len(), 0);
         assert_eq!(vec.get_empty().len(), 0);
@@ -191,7 +203,7 @@ mod tests {
 
         assert_eq!(vec.len(), 3);
         assert_eq!(vec.get_allocated_levels(), INITIAL_LEVELS);
-        assert_eq!(vec.get_max_length(), 2u64.pow(INITIAL_LEVELS as u32) - 1);
+        assert_eq!(vec.get_max_length(), 2usize.pow(INITIAL_LEVELS as u32) - 1);
         assert_eq!(vec.get_data().len(), 3);
         assert_eq!(vec.get_indexes().len(), 3);
         assert_eq!(vec.get_empty().len(), 0);

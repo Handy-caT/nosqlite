@@ -1,31 +1,32 @@
-use crate::core::structs::tree::nodes::normalized_tree_index::NormalizedTreeIndex;
-use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::nodes::tree_node::TreeNode;
+use crate::core::structs::tree::nodes::{
+    normalized_tree_index::NormalizedTreeIndex, tree_index::TreeIndex,
+    tree_node::TreeNode,
+};
 use std::ops::{Index, IndexMut};
 
 /// The `TreeVec` trait is used to define the basic functions of a tree vector.
-pub trait TreeVec<T>: Index<i32, Output = T> + IndexMut<i32> {
+pub trait TreeVec<T>: Index<usize, Output = T> + IndexMut<usize> {
     /// Pushes a value to the vector.
     /// Returns the index of the added value.
     /// # Arguments
     /// * `value` - Value to push
     /// # Returns
-    /// * `i32` - Index of the added value
-    fn push(&mut self, value: T) -> i32;
+    /// * `usize` - Index of the added value
+    fn push(&mut self, value: T) -> usize;
     /// Returns the TreeNode at the given index.
     /// Returns `None` if the index is out of bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
     /// * `Option<TreeNode<T>>` - TreeNode at the given index
-    fn get(&self, index: i32) -> Option<TreeNode<T>>;
+    fn get(&self, index: usize) -> Option<TreeNode<T>>;
     /// Returns the mutable reference to the value at the given index.
     /// Index must be in bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
     /// * `&mut T` - Mutable reference to the value at the given index
-    fn get_value_mut(&mut self, index: i32) -> &mut T;
+    fn get_value_mut(&mut self, index: usize) -> Option<&mut T>;
 
     /// Removes the value at the given index.
     /// Returns the removed TreeNode.
@@ -34,7 +35,7 @@ pub trait TreeVec<T>: Index<i32, Output = T> + IndexMut<i32> {
     /// * `index` - Index of the value
     /// # Returns
     /// * `Option<TreeNode<T>>` - Removed TreeNode
-    fn remove(&mut self, index: i32) -> Option<TreeNode<T>>;
+    fn remove(&mut self, index: usize) -> Option<TreeNode<T>>;
     /// Returns the length of the vector.
     /// # Returns
     /// * `usize` - Length of the vector
@@ -49,14 +50,14 @@ pub trait TreeVecIndexes<T> {
     /// * `index` - Index of the value
     /// # Returns
     /// * `&mut TreeIndex` - Mutable reference to the TreeIndex at the given index
-    fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex;
+    fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex;
     /// Returns the reference to the TreeIndex at the given index.
     /// Index must be in bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
     /// * `&TreeIndex` - Reference to the TreeIndex at the given index
-    fn get_index(&self, index: i32) -> &TreeIndex;
+    fn get_index(&self, index: usize) -> &TreeIndex;
     /// Returns the mutable reference to the vector of TreeIndexes.
     /// # Returns
     /// * `&mut Vec<TreeIndex>` - Mutable reference to the vector of TreeIndexes
@@ -71,14 +72,14 @@ pub trait NormalizedTreeVecIndexes<T> {
     /// * `index` - Index of the value
     /// # Returns
     /// * `&mut NormalizedTreeIndex` - Mutable reference to the NormalizedTreeIndex at the given index
-    fn get_index_mut(&mut self, index: i32) -> &mut NormalizedTreeIndex;
+    fn get_index_mut(&mut self, index: usize) -> &mut NormalizedTreeIndex;
     /// Returns the reference to the NormalizedTreeIndex at the given index.
     /// Index must be in bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
     /// * `&NormalizedTreeIndex` - Reference to the NormalizedTreeIndex at the given index
-    fn get_index(&self, index: i32) -> &NormalizedTreeIndex;
+    fn get_index(&self, index: usize) -> &NormalizedTreeIndex;
     /// Returns the mutable reference to the vector of NormalizedTreeIndexes.
     /// # Returns
     /// * `&mut Vec<NormalizedTreeIndex>` - Mutable reference to the vector of NormalizedTreeIndexes
@@ -95,7 +96,7 @@ pub trait TreeVecLevels {
     /// Returns the max length of the vector. After this length is reached, a new level is allocated.
     /// # Returns
     /// * `u64` - Max length of the vector
-    fn get_max_length(&self) -> u64;
+    fn get_max_length(&self) -> usize;
 }
 
 /// The 'BackwardTreeVec' trait is used to define the basic functions of tree with nodes that have a parent index.
@@ -105,13 +106,13 @@ pub trait BackwardTreeVec {
     /// # Arguments
     /// * `index` - Index of the node
     /// # Returns
-    /// * `Option<i32>` - Parent index of the node at the given index
-    fn get_parent(&self, index: i32) -> Option<i32>;
+    /// * `Option<usize>` - Parent index of the node at the given index
+    fn get_parent(&self, index: usize) -> Option<usize>;
     /// Sets the parent index of the node at the given index.
     /// # Arguments
     /// * `index` - Index of the node
     /// * `parent` - Parent index of the node
-    fn add_parent(&mut self, index: i32, parent: i32);
+    fn add_parent(&mut self, index: usize, parent: usize);
 }
 
 /// The 'DefaultFunctions' trait is used to define the default functions of a tree vector.
@@ -128,12 +129,12 @@ pub(in crate::core::structs::tree::vectors) trait DefaultFunctions<T> {
 
     /// Returns the reference to the empty vector.
     /// # Returns
-    /// * `&Vec<u64>` - Reference to the empty vector
-    fn get_empty(&self) -> &Vec<u64>;
+    /// * `&Vec<usize>` - Reference to the empty vector
+    fn get_empty(&self) -> &Vec<usize>;
     /// Returns the mutable reference to the empty vector.
     /// # Returns
-    /// * `&mut Vec<u64>` - Mutable reference to the empty vector
-    fn get_empty_mut(&mut self) -> &mut Vec<u64>;
+    /// * `&mut Vec<usize>` - Mutable reference to the empty vector
+    fn get_empty_mut(&mut self) -> &mut Vec<usize>;
 
     /// Returns the reference to the indexes vector.
     /// # Returns
@@ -153,17 +154,17 @@ pub(in crate::core::structs::tree::vectors) trait OptimizedFunctions<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8;
     /// Returns the mutable reference to the max length.
     /// # Returns
-    /// * `&mut u64` - Mutable reference to the max length
-    fn get_max_length_mut(&mut self) -> &mut u64;
+    /// * `&mut usize` - Mutable reference to the max length
+    fn get_max_length_mut(&mut self) -> &mut usize;
 
     /// Returns the length of the vector.
     /// # Returns
-    /// * `u64` - Length of the vector
-    fn get_length(&self) -> u64;
+    /// * `usize` - Length of the vector
+    fn get_length(&self) -> usize;
     /// Returns the mutable reference to the length of the vector.
     /// # Returns
-    /// * `&mut u64` - Mutable reference to the length of the vector
-    fn get_length_mut(&mut self) -> &mut u64;
+    /// * `&mut usize` - Mutable reference to the length of the vector
+    fn get_length_mut(&mut self) -> &mut usize;
 
     /// Function to allocate new level.
     fn allocate_level(&mut self);

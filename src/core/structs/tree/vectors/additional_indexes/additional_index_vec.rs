@@ -1,11 +1,13 @@
-use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+use crate::core::structs::tree::{
+    nodes::tree_index::TreeIndex,
+    vectors::tree_vec::{TreeVec, TreeVecLevels},
+};
 use std::ops::{Index, IndexMut};
 
 pub struct AdditionalIndexVec {
     pub indexes: Vec<TreeIndex>,
     allocated_levels: u8,
-    max_length: u64,
+    max_length: usize,
 }
 
 impl AdditionalIndexVec {
@@ -19,7 +21,7 @@ impl AdditionalIndexVec {
         };
 
         let length = tree_vec.get_max_length();
-        vec.indexes.reserve(length as usize);
+        vec.indexes.reserve(length);
 
         // let length = tree_vec.len();
         // vec.indexes.resize(length, TreeIndex::default());
@@ -28,10 +30,10 @@ impl AdditionalIndexVec {
     }
 
     fn allocate_level(&mut self) {
-        let new_length = 2u64.pow(self.allocated_levels as u32 + 1) - 1;
+        let new_length = 2usize.pow(self.allocated_levels as u32 + 1) - 1;
         let additional = new_length - self.max_length;
 
-        self.indexes.reserve(additional as usize);
+        self.indexes.reserve(additional);
 
         self.max_length = new_length;
         self.allocated_levels += 1;
@@ -74,9 +76,10 @@ impl IndexMut<usize> for AdditionalIndexVec {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::tree::vectors::additional_indexes::additional_index_vec::AdditionalIndexVec;
-    use crate::core::structs::tree::vectors::optimized_tree_vec::OptimizedTreeVec;
-    use crate::core::structs::tree::vectors::tree_vec::TreeVecLevels;
+    use crate::core::structs::tree::vectors::{
+        additional_indexes::additional_index_vec::AdditionalIndexVec,
+        optimized_tree_vec::OptimizedTreeVec, tree_vec::TreeVecLevels,
+    };
 
     #[test]
     fn test_additional_index_vec() {

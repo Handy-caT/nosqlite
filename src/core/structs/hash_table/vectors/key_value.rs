@@ -1,5 +1,4 @@
-use std::cmp::Ordering;
-use std::fmt::Debug;
+use std::{cmp::Ordering, fmt::Debug};
 
 /// KeyValue is a struct that holds a key and a value.
 /// It is used as a value in HashVec.

@@ -1,9 +1,17 @@
-use crate::core::advisors::empty_link_registry::EmptyLinkRegistry;
-use crate::core::advisors::strategies::place_advisor_strategy::PlaceAdvisorStrategy;
-use crate::core::link_struct::PageLink;
-use crate::core::structs::tree::object::balanced_tree::balanced_tree::BalancedTree;
-use crate::core::structs::tree::object::tree_object::{TreeObject, TreeObjectFind};
-use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels};
+use crate::core::{
+    advisors::{
+        empty_link_registry::EmptyLinkRegistry,
+        strategies::place_advisor_strategy::PlaceAdvisorStrategy,
+    },
+    link_struct::PageLink,
+    structs::tree::{
+        object::{
+            balanced_tree::balanced_tree::BalancedTree,
+            tree_object::{TreeObject, TreeObjectFind},
+        },
+        vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels},
+    },
+};
 
 /// BestFitAdvisor is a strategy that finds the best fit for a given size.
 /// It uses EmptyLinkRegistry with BalancedTree as a data structure. So the getting the best fit is O(log n).
@@ -12,7 +20,8 @@ where
     V: TreeVec<PageLink> + Sized + TreeVecIndexes<PageLink> + TreeVecLevels,
 {
     /// Link to the EmptyLinkRegistry
-    empty_link_registry: &'a mut EmptyLinkRegistry<V, BalancedTree<PageLink, V>>,
+    empty_link_registry:
+        &'a mut EmptyLinkRegistry<V, BalancedTree<PageLink, V>>,
 }
 
 impl<'a, V> BestFitAdvisor<'a, V>
@@ -25,14 +34,19 @@ where
     /// # Returns
     /// * `BestFitAdvisor` - New BestFitAdvisor
     pub fn new(
-        empty_link_registry: &'a mut EmptyLinkRegistry<V, BalancedTree<PageLink, V>>,
+        empty_link_registry: &'a mut EmptyLinkRegistry<
+            V,
+            BalancedTree<PageLink, V>,
+        >,
     ) -> Self {
         BestFitAdvisor {
             empty_link_registry,
         }
     }
 
-    pub fn get_empty_link_registry(&self) -> &EmptyLinkRegistry<V, BalancedTree<PageLink, V>> {
+    pub fn get_empty_link_registry(
+        &self,
+    ) -> &EmptyLinkRegistry<V, BalancedTree<PageLink, V>> {
         &self.empty_link_registry
     }
 
@@ -54,7 +68,8 @@ where
         if base_obj.len() == 0 {
             return None;
         }
-        let link = base_obj.find_greater_equal(PageLink::new(0, 0, size as u32));
+        let link =
+            base_obj.find_greater_equal(PageLink::new(0, 0, size as u32));
 
         match link {
             Some(link) => {
@@ -85,14 +100,26 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::core::advisors::empty_link_registry::EmptyLinkRegistry;
-    use crate::core::advisors::strategies::best_fit_advisor::BestFitAdvisor;
-    use crate::core::advisors::strategies::place_advisor_strategy::PlaceAdvisorStrategy;
-    use crate::core::link_struct::PageLink;
-    use crate::core::structs::tree::object::balanced_tree::balanced_tree::BalancedTree;
-    use crate::core::structs::tree::object::balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree;
-    use crate::core::structs::tree::object::tree_object::TreeObject;
-    use crate::core::structs::tree::vectors::default_tree_vec::DefaultTreeVec;
+    use crate::core::{
+        advisors::{
+            empty_link_registry::EmptyLinkRegistry,
+            strategies::{
+                best_fit_advisor::BestFitAdvisor,
+                place_advisor_strategy::PlaceAdvisorStrategy,
+            },
+        },
+        link_struct::PageLink,
+        structs::tree::{
+            object::{
+                balanced_tree::{
+                    balanced_tree::BalancedTree,
+                    decoratable_balanced_tree::DecoratableBalancedTree,
+                },
+                tree_object::TreeObject,
+            },
+            vectors::default_tree_vec::DefaultTreeVec,
+        },
+    };
 
     #[test]
     fn test_best_fit_advisor_new() {

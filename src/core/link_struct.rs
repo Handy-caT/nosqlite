@@ -1,5 +1,7 @@
-use std::cmp::Ordering;
-use std::fmt::{Debug, Display, Formatter};
+use std::{
+    cmp::Ordering,
+    fmt::{Debug, Display, Formatter},
+};
 
 /// A struct that represents a link to a page.
 pub struct PageLink {

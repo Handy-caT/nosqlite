@@ -1,5 +1,6 @@
-use crate::core::structs::hash_table::hash::hash::custom_hash;
-use crate::core::structs::hash_table::vectors::hash_vec::HashVec;
+use crate::core::structs::hash_table::{
+    hash::hash::custom_hash, vectors::hash_vec::HashVec,
+};
 use std::marker::PhantomData;
 
 /// ScalableHashTable is a hash table with a scalable size. It is using HashVec as a storage.
@@ -55,8 +56,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::scalable_hash_table::ScalableHashTable;
-    use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
+    use crate::core::structs::hash_table::{
+        scalable_hash_table::ScalableHashTable,
+        vectors::static_hash_vec::StaticHashVec,
+    };
 
     #[test]
     fn test_scalable_hash_table_new() {
