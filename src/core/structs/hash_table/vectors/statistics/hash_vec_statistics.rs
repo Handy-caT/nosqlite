@@ -31,7 +31,8 @@ impl HashVecStatistics {
     }
 
     /// Updates the maximum length of the buckets.
-    /// If the new length is greater than the current one, the current one is updated.
+    /// If the new length is greater than the current one,
+    /// the current one is updated.
     /// Fills the `max_length_buckets` with false.
     /// # Arguments
     /// * `length` - New length.
@@ -61,12 +62,12 @@ impl HashVecStatistics {
     /// # Returns
     /// * `Option<usize>` - Bucket removed. None if the bucket is out of range.
     pub fn remove_bucket(&mut self, bucket: usize) -> Option<usize> {
-        if bucket < self.max_length_buckets.len() {
-            if self.max_length_buckets[bucket] {
-                self.max_length_buckets[bucket] = false;
-                self.count -= 1;
-                return Some(bucket);
-            }
+        if bucket < self.max_length_buckets.len()
+            && self.max_length_buckets[bucket]
+        {
+            self.max_length_buckets[bucket] = false;
+            self.count -= 1;
+            return Some(bucket);
         }
         None
     }
@@ -75,7 +76,8 @@ impl HashVecStatistics {
     /// # Arguments
     /// * `bucket` - Bucket to check.
     /// # Returns
-    /// * `Option<bool>` - True if the bucket is a bucket with the maximum length. None if the bucket is out of range.
+    /// * `Option<bool>` - True if the bucket is a bucket with the maximum length.
+    /// None if the bucket is out of range.
     pub fn is_max_length_bucket(&self, bucket: usize) -> Option<bool> {
         if bucket < self.max_length_buckets.len() {
             return Some(self.max_length_buckets[bucket]);
@@ -138,7 +140,7 @@ mod tests {
         hash_vec_statistics.add_bucket(5);
 
         assert_eq!(hash_vec_statistics.max_length, 5);
-        assert_eq!(hash_vec_statistics.max_length_buckets[5], true);
+        assert!(hash_vec_statistics.max_length_buckets[5]);
         assert_eq!(hash_vec_statistics.count, 1);
     }
 
@@ -150,13 +152,13 @@ mod tests {
         hash_vec_statistics.add_bucket(5);
 
         assert_eq!(hash_vec_statistics.max_length, 5);
-        assert_eq!(hash_vec_statistics.max_length_buckets[5], true);
+        assert!(!hash_vec_statistics.max_length_buckets[5]);
         assert_eq!(hash_vec_statistics.count, 1);
 
         hash_vec_statistics.update(6);
 
         assert_eq!(hash_vec_statistics.max_length, 6);
-        assert_eq!(hash_vec_statistics.max_length_buckets[5], false);
+        assert!(!hash_vec_statistics.max_length_buckets[5]);
         assert_eq!(hash_vec_statistics.count, 0);
     }
 
@@ -168,12 +170,12 @@ mod tests {
         hash_vec_statistics.add_bucket(5);
 
         assert_eq!(hash_vec_statistics.max_length, 5);
-        assert_eq!(hash_vec_statistics.max_length_buckets[5], true);
+        assert!(hash_vec_statistics.max_length_buckets[5]);
 
         hash_vec_statistics.remove_bucket(5);
 
         assert_eq!(hash_vec_statistics.max_length, 5);
-        assert_eq!(hash_vec_statistics.max_length_buckets[5], false);
+        assert!(!hash_vec_statistics.max_length_buckets[5]);
         assert_eq!(hash_vec_statistics.count, 0);
     }
 
@@ -185,11 +187,11 @@ mod tests {
         hash_vec_statistics.add_bucket(5);
 
         assert_eq!(hash_vec_statistics.max_length, 5);
-        assert_eq!(hash_vec_statistics.max_length_buckets[5], true);
+        assert!(hash_vec_statistics.max_length_buckets[5]);
 
         hash_vec_statistics.remove_bucket(10);
 
         assert_eq!(hash_vec_statistics.max_length, 5);
-        assert_eq!(hash_vec_statistics.max_length_buckets[5], true);
+        assert!(hash_vec_statistics.max_length_buckets[5]);
     }
 }

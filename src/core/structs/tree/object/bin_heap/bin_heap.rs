@@ -6,8 +6,8 @@ use std::cmp::Ordering;
 
 /// Struct that represents a binary heap.
 /// It is a tree-based data structure that satisfies the heap property:
-/// It compares the parent node with its children and the parent node is always greater
-/// than its children.
+/// It compares the parent node with its children and the parent
+/// node is always greater than its children.
 /// It is implemented using a vector.
 /// It is using custom NormalizedTreeVector struct that represents the tree,
 /// where childrens are on 2*i + 1 and 2*i + 2 positions.

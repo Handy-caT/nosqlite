@@ -8,7 +8,8 @@ pub trait PlaceAdvisorStrategy {
     /// # Arguments
     /// * `size` - size of data that should be placed
     /// # Returns
-    /// * `Option<PageLink>` - link to place where data should be placed, None if there is no place
+    /// * `Option<PageLink>` - link to place where data should be placed,
+    /// None if there is no place
     fn provide_place(&mut self, size: u64) -> Option<PageLink>;
 
     /// Applies place to link.

@@ -20,7 +20,8 @@ use crate::core::structs::{
 
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
-/// * `N` - Number of buckets, must be a power of 2, if it is not, it will be rounded up to the next power of 2
+/// * `N` - Number of buckets, must be a power of 2,
+/// if it is not, it will be rounded up to the next power of 2
 pub struct TreeHashVec<
     K: Copy + Default + PartialOrd,
     V: Copy + Default + PartialOrd,
@@ -30,7 +31,8 @@ pub struct TreeHashVec<
     /// OptimizedTreeVec is used as the underlying data structure for the trees.
     data: Vec<BalancedTree<KeyValue<K, V>, OptimizedTreeVec<KeyValue<K, V>>>>,
     /// The size of the hash vector. This is the number of buckets.
-    /// It is a power of 2. If N is not a power of 2, it will be rounded up to the next power of 2.
+    /// It is a power of 2. If N is not a power of 2,
+    /// it will be rounded up to the next power of 2.
     pub size: u64,
     /// Statistics of the hash vector
     statistics: HashVecStatistics,
@@ -194,8 +196,8 @@ impl<
         match has_item {
             Some(_) => {
                 statistics_remove_actions(self, index);
-                let item = self.data[index as usize]
-                    .remove_by_index(value_index);
+                let item =
+                    self.data[index as usize].remove_by_index(value_index);
                 Some(item.unwrap())
             }
             None => None,
@@ -380,13 +382,13 @@ mod tests {
 
         assert_eq!(vec.remove(0, 1), Some(KeyValue::new(1, 1)));
         assert_eq!(vec.find_key(0, 1), None);
-        assert_eq!(vec.have_key(0, 1), false);
+        assert!(vec.have_key(0, 1));
         assert_eq!(vec.statistics.get_count(), 1);
         assert_eq!(vec.statistics.max_length, 1);
 
         assert_eq!(vec.remove(0, 2), Some(KeyValue::new(2, 2)));
         assert_eq!(vec.find_key(0, 2), None);
-        assert_eq!(vec.have_key(0, 2), false);
+        assert!(vec.have_key(0, 2));
         assert_eq!(vec.statistics.get_count(), 0);
         assert_eq!(vec.statistics.max_length, 0);
 

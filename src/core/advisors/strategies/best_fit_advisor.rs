@@ -124,7 +124,8 @@ mod tests {
     #[test]
     fn test_best_fit_advisor_new() {
         let nodes = DefaultTreeVec::<PageLink>::new();
-        let tree = BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
+        let tree =
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
             nodes,
             PageLink::compare_by_len,
         );
@@ -147,7 +148,8 @@ mod tests {
     #[test]
     fn test_best_fit_advisor_provide_place() {
         let nodes = DefaultTreeVec::<PageLink>::new();
-        let tree = BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
+        let tree =
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
             nodes,
             PageLink::compare_by_len,
         );
@@ -180,7 +182,8 @@ mod tests {
     #[test]
     fn test_best_fit_advisor_provide_place_with_empty_registry() {
         let nodes = DefaultTreeVec::<PageLink>::new();
-        let tree = BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
+        let tree =
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
             nodes,
             PageLink::compare_by_len,
         );

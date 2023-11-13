@@ -3,7 +3,8 @@ use crate::core::structs::hash_table::{
 };
 use std::marker::PhantomData;
 
-/// ScalableHashTable is a hash table with a scalable size. It is using HashVec as a storage.
+/// ScalableHashTable is a hash table with a scalable size.
+/// It is using HashVec as a storage.
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - HashVec implementation

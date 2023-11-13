@@ -11,7 +11,8 @@ use crate::core::{
 };
 
 /// WorstFitAdvisor is a strategy that provides the worst fit for a given size.
-/// It uses EmptyLinkRegistry with BinHeap as a base structure. So the getting the biggest length is O(1).
+/// It uses EmptyLinkRegistry with BinHeap as a base structure.
+/// So the getting the biggest length is O(1).
 pub struct WorstFitAdvisor<'a> {
     /// Link to the EmptyLinkRegistry
     empty_link_registry: &'a mut EmptyLinkRegistry<

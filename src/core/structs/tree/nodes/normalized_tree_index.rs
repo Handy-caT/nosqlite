@@ -22,7 +22,10 @@ impl NormalizedTreeIndex {
     /// # Returns
     /// * `NormalizedTreeIndex` - New node
     pub fn new(index: usize) -> NormalizedTreeIndex {
-        NormalizedTreeIndex { index: Some(index), height: 1 }
+        NormalizedTreeIndex {
+            index: Some(index),
+            height: 1,
+        }
     }
 
     /// Returns the index of the right child

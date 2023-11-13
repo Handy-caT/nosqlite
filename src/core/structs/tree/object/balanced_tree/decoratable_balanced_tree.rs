@@ -13,9 +13,12 @@ use crate::core::structs::tree::{
 };
 use std::cmp::Ordering;
 
-/// DecoratableBalancedTree is a tree that can be decorated with additional indexes.
-/// It is a wrapper around BalancedTree. It can be used to don't duplicate data in memory.
-/// So you can create various tree indexes on the same data using custom compare functions.
+/// DecoratableBalancedTree is a tree that can be decorated
+/// with additional indexes.
+/// It is a wrapper around BalancedTree.
+/// It can be used to don't duplicate data in memory.
+/// So you can create various tree indexes on the
+/// same data using custom compare functions.
 /// You can also use BinHeap to decorate it.
 pub struct DecoratableBalancedTree<
     T,
@@ -91,21 +94,18 @@ impl<
         root_index: usize,
         value_index: usize,
     ) -> Option<usize> {
-        if let Some(node_value) = self.base.get_nodes_mut().get_value_mut(root_index) {
-            if (self.compare)(
-                &value,
-                node_value,
-            ) == Ordering::Less
-            {
+        if let Some(node_value) =
+            self.base.get_nodes_mut().get_value_mut(root_index)
+        {
+            if (self.compare)(&value, node_value) == Ordering::Less {
                 if self.indexes[root_index].left_index.is_none() {
                     self.indexes[root_index].left_index = Some(value_index);
                 } else {
-                    self.indexes[root_index].left_index = self
-                        .add_from_root(
-                            value,
-                            self.indexes[root_index].left_index.unwrap(),
-                            value_index,
-                        );
+                    self.indexes[root_index].left_index = self.add_from_root(
+                        value,
+                        self.indexes[root_index].left_index.unwrap(),
+                        value_index,
+                    );
                 }
             } else if self.indexes[root_index].right_index.is_none() {
                 self.indexes[root_index].right_index = Some(value_index);
@@ -128,28 +128,24 @@ impl<
     /// * `root_index` - root index
     /// # Returns
     /// * `i32` - new root index
-    fn remove_from_root(&mut self, value: T, root_index: usize) -> Option<usize> {
-        if let Some(node_value) = self.base.get_nodes_mut().get_value_mut(root_index) {
-            if (self.compare)(
-                &value,
-                node_value,
-            ) == Ordering::Less
-            {
-                self.indexes[root_index].left_index = self
-                    .remove_from_root(
-                        value,
-                        self.indexes[root_index].left_index.unwrap(),
-                    );
-            } else if (self.compare)(
-                &value,
-                node_value,
-            ) == Ordering::Greater
-            {
-                self.indexes[root_index].right_index = self
-                    .remove_from_root(
-                        value,
-                        self.indexes[root_index as usize].right_index.unwrap(),
-                    );
+    fn remove_from_root(
+        &mut self,
+        value: T,
+        root_index: usize,
+    ) -> Option<usize> {
+        if let Some(node_value) =
+            self.base.get_nodes_mut().get_value_mut(root_index)
+        {
+            if (self.compare)(&value, node_value) == Ordering::Less {
+                self.indexes[root_index].left_index = self.remove_from_root(
+                    value,
+                    self.indexes[root_index].left_index.unwrap(),
+                );
+            } else if (self.compare)(&value, node_value) == Ordering::Greater {
+                self.indexes[root_index].right_index = self.remove_from_root(
+                    value,
+                    self.indexes[root_index as usize].right_index.unwrap(),
+                );
             } else {
                 let left_index = self.indexes[root_index].left_index;
                 let right_index = self.indexes[root_index].right_index;
@@ -158,13 +154,20 @@ impl<
                     return left_index;
                 }
 
-                let min_index =
-                    find_min(self.indexes.get_indexes_mut(), right_index.unwrap());
-                self.indexes[root_index].right_index =
-                    remove_min(self.indexes.get_indexes_mut(), right_index.unwrap());
+                let min_index = find_min(
+                    self.indexes.get_indexes_mut(),
+                    right_index.unwrap(),
+                );
+                self.indexes[root_index].right_index = remove_min(
+                    self.indexes.get_indexes_mut(),
+                    right_index.unwrap(),
+                );
                 self.indexes[root_index].left_index = left_index;
 
-                return Some(balance(self.indexes.get_indexes_mut(), min_index));
+                return Some(balance(
+                    self.indexes.get_indexes_mut(),
+                    min_index,
+                ));
             }
             Some(balance(self.indexes.get_indexes_mut(), root_index))
         } else {
@@ -185,7 +188,8 @@ impl<
             let item = self.base.get_nodes().get(i);
             if let Some(node) = item {
                 self.indexes.push(TreeIndex::new_with_index(i));
-                let value = self.base.get_nodes().get(node.indexes.index.unwrap());
+                let value =
+                    self.base.get_nodes().get(node.indexes.index.unwrap());
                 self.root = self.add_from_root(
                     value.unwrap().value,
                     self.root.unwrap(),
@@ -227,17 +231,16 @@ impl<
     fn find(&mut self, value: T) -> Option<usize> {
         let mut current_index = self.root;
         while current_index.is_some() {
-            if let Some(node_value) = self.base.get_nodes_mut().get_value_mut(current_index.unwrap()) {
-                if (self.compare)(
-                    &value,
-                    node_value,
-                ) == Ordering::Less
-                {
-                    current_index = self.indexes[current_index.unwrap()].left_index;
-                } else if (self.compare)(
-                    &value,
-                    node_value,
-                ) == Ordering::Greater
+            if let Some(node_value) = self
+                .base
+                .get_nodes_mut()
+                .get_value_mut(current_index.unwrap())
+            {
+                if (self.compare)(&value, node_value) == Ordering::Less {
+                    current_index =
+                        self.indexes[current_index.unwrap()].left_index;
+                } else if (self.compare)(&value, node_value)
+                    == Ordering::Greater
                 {
                     current_index =
                         self.indexes[current_index.unwrap()].right_index;
@@ -245,7 +248,7 @@ impl<
                     return self.indexes[current_index.unwrap()].index;
                 }
             } else {
-                return None
+                return None;
             }
         }
         None

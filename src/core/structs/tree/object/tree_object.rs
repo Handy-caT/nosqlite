@@ -65,7 +65,8 @@ pub trait TreeObjectVec<T, M: TreeVec<T> + Sized> {
 /// TreeObjectFind is a trait that defines the find operations that a tree object can implement.
 /// It expands find features of the TreeObject trait.
 pub trait TreeObjectFind<T> {
-    /// Finds the first value that is greater than the given value or equal to it.
+    /// Finds the first value that is greater than the given value
+    /// or equals to it.
     /// Returns the index of the value and the value itself.
     /// # Arguments
     /// * `value` - The value to be found.

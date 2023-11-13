@@ -83,34 +83,51 @@ impl<
     /// * `root_index` - Index of the root
     /// # Returns
     /// * `(usize, usize)` - Index of the new root and index of the new node
-    fn add_from_root(&mut self, value: T, root_index: usize) -> Option<(usize, usize)> {
-        let mut pushed_index ;
+    fn add_from_root(
+        &mut self,
+        value: T,
+        root_index: usize,
+    ) -> Option<(usize, usize)> {
+        let mut pushed_index;
         if let Some(node_value) = self.nodes.get_value_mut(root_index) {
-            if (self.compare)(&value, node_value)
-                == Ordering::Less
-            {
+            if (self.compare)(&value, node_value) == Ordering::Less {
                 if self.nodes.get_index_mut(root_index).left_index.is_none() {
                     self.nodes.get_index_mut(root_index).left_index =
                         Some(self.nodes.push(value));
-                    pushed_index = self.nodes.get_index_mut(root_index).left_index.unwrap();
+                    pushed_index = self
+                        .nodes
+                        .get_index_mut(root_index)
+                        .left_index
+                        .unwrap();
                 } else {
-                    let balanced = self.add_from_root(
-                        value,
-                        self.nodes.get_index(root_index).left_index.unwrap(),
-                    ).unwrap();
-                    self.nodes.get_index_mut(root_index).left_index = Some(balanced.0);
+                    let balanced = self
+                        .add_from_root(
+                            value,
+                            self.nodes
+                                .get_index(root_index)
+                                .left_index
+                                .unwrap(),
+                        )
+                        .unwrap();
+                    self.nodes.get_index_mut(root_index).left_index =
+                        Some(balanced.0);
                     pushed_index = balanced.1;
                 }
-            } else if self.nodes.get_index_mut(root_index).right_index.is_none() {
+            } else if self.nodes.get_index_mut(root_index).right_index.is_none()
+            {
                 self.nodes.get_index_mut(root_index).right_index =
                     Some(self.nodes.push(value));
-                pushed_index = self.nodes.get_index_mut(root_index).right_index.unwrap();
+                pushed_index =
+                    self.nodes.get_index_mut(root_index).right_index.unwrap();
             } else {
-                let balanced = self.add_from_root(
-                    value,
-                    self.nodes.get_index(root_index).right_index.unwrap(),
-                ).unwrap();
-                self.nodes.get_index_mut(root_index).right_index = Some(balanced.0);
+                let balanced = self
+                    .add_from_root(
+                        value,
+                        self.nodes.get_index(root_index).right_index.unwrap(),
+                    )
+                    .unwrap();
+                self.nodes.get_index_mut(root_index).right_index =
+                    Some(balanced.0);
                 pushed_index = balanced.1;
             }
             Some((balance(self.nodes.get_indexes(), root_index), pushed_index))
@@ -126,27 +143,29 @@ impl<
     /// * `root_index` - Index of the root
     /// # Returns
     /// * `usize` - Index of the new root
-    fn remove_from_root(&mut self, value: T, root_index: usize) -> Option<usize> {
+    fn remove_from_root(
+        &mut self,
+        value: T,
+        root_index: usize,
+    ) -> Option<usize> {
         if let Some(node_value) = self.nodes.get_value_mut(root_index) {
-            if (self.compare)(&value, node_value)
-                == Ordering::Less
-            {
+            if (self.compare)(&value, node_value) == Ordering::Less {
                 self.nodes.get_index_mut(root_index).left_index = self
                     .remove_from_root(
                         value,
                         self.nodes.get_index(root_index).left_index.unwrap(),
                     );
-            } else if (self.compare)(&value, node_value)
-                == Ordering::Greater
-            {
+            } else if (self.compare)(&value, node_value) == Ordering::Greater {
                 self.nodes.get_index_mut(root_index).right_index = self
                     .remove_from_root(
                         value,
                         self.nodes.get_index(root_index).right_index.unwrap(),
                     );
             } else {
-                let left_index = self.nodes.get_index_mut(root_index).left_index;
-                let right_index = self.nodes.get_index_mut(root_index).right_index;
+                let left_index =
+                    self.nodes.get_index_mut(root_index).left_index;
+                let right_index =
+                    self.nodes.get_index_mut(root_index).right_index;
 
                 self.nodes.remove(root_index);
 
@@ -154,7 +173,8 @@ impl<
                     return left_index;
                 }
 
-                let min_index = find_min(self.nodes.get_indexes(), right_index.unwrap());
+                let min_index =
+                    find_min(self.nodes.get_indexes(), right_index.unwrap());
                 self.nodes.get_index_mut(min_index).right_index =
                     remove_min(self.nodes.get_indexes(), right_index.unwrap());
                 self.nodes.get_index_mut(min_index).left_index = left_index;
@@ -181,7 +201,8 @@ impl<
             self.len += 1;
             self.root.unwrap()
         } else {
-            let balanced = self.add_from_root(value, self.root.unwrap()).unwrap();
+            let balanced =
+                self.add_from_root(value, self.root.unwrap()).unwrap();
             self.root = Some(balanced.0);
             self.len += 1;
             balanced.1
@@ -191,21 +212,26 @@ impl<
     fn find(&mut self, value: T) -> Option<usize> {
         let mut current_index = self.root;
         while current_index.is_some() {
-            if let Some(node_value) = self.nodes.get_value_mut(current_index.unwrap()) {
-                if (self.compare)(&value, node_value)
-                    == Ordering::Less
+            if let Some(node_value) =
+                self.nodes.get_value_mut(current_index.unwrap())
+            {
+                if (self.compare)(&value, node_value) == Ordering::Less {
+                    current_index = self
+                        .nodes
+                        .get_index_mut(current_index.unwrap())
+                        .left_index;
+                } else if (self.compare)(&value, node_value)
+                    == Ordering::Greater
                 {
-                    current_index =
-                        self.nodes.get_index_mut(current_index.unwrap()).left_index;
-                } else if (self.compare)(
-                    &value,
-                    node_value,
-                ) == Ordering::Greater
-                {
-                    current_index =
-                        self.nodes.get_index_mut(current_index.unwrap()).right_index;
+                    current_index = self
+                        .nodes
+                        .get_index_mut(current_index.unwrap())
+                        .right_index;
                 } else {
-                    return self.nodes.get_index_mut(current_index.unwrap()).index;
+                    return self
+                        .nodes
+                        .get_index_mut(current_index.unwrap())
+                        .index;
                 }
             } else {
                 return None;
@@ -287,10 +313,10 @@ impl<
         let mut turn_count = 0;
 
         while !ind && current_index.is_some() {
-            if let Some(node_value) = self.nodes.get_value_mut(current_index.unwrap()) {
-                if (self.compare)(&value, node_value)
-                    == Ordering::Less
-                {
+            if let Some(node_value) =
+                self.nodes.get_value_mut(current_index.unwrap())
+            {
+                if (self.compare)(&value, node_value) == Ordering::Less {
                     if last.1 == "right" {
                         turn_count += 1;
                     }
@@ -304,12 +330,12 @@ impl<
                     }
 
                     let _ = queue.add(last.clone());
-                    current_index =
-                        self.nodes.get_index_mut(current_index.unwrap()).left_index;
-                } else if (self.compare)(
-                    &value,
-                    node_value,
-                ) == Ordering::Greater
+                    current_index = self
+                        .nodes
+                        .get_index_mut(current_index.unwrap())
+                        .left_index;
+                } else if (self.compare)(&value, node_value)
+                    == Ordering::Greater
                 {
                     if last.1 == "left" {
                         turn_count += 1;
@@ -324,8 +350,10 @@ impl<
                     }
 
                     let _ = queue.add(last.clone());
-                    current_index =
-                        self.nodes.get_index_mut(current_index.unwrap()).right_index;
+                    current_index = self
+                        .nodes
+                        .get_index_mut(current_index.unwrap())
+                        .right_index;
                 } else {
                     ind = true;
                 }
@@ -336,7 +364,10 @@ impl<
 
         return if ind {
             Some((
-                self.nodes.get_index_mut(current_index.unwrap()).index.unwrap(),
+                self.nodes
+                    .get_index_mut(current_index.unwrap())
+                    .index
+                    .unwrap(),
                 self.nodes[current_index.unwrap()],
             ))
         } else if last.1 == "right" {
@@ -354,7 +385,10 @@ impl<
                 ))
             }
         } else {
-            Some((self.nodes.get_index_mut(last.0.unwrap()).index.unwrap(), self.nodes[last.0.unwrap()]))
+            Some((
+                self.nodes.get_index_mut(last.0.unwrap()).index.unwrap(),
+                self.nodes[last.0.unwrap()],
+            ))
         };
     }
 
@@ -366,10 +400,10 @@ impl<
         let mut turn_count = 0;
 
         while !ind && current_index.is_some() {
-            if let Some(node_value) = self.nodes.get_value_mut(current_index.unwrap()) {
-                if (self.compare)(&value, node_value)
-                    == Ordering::Less
-                {
+            if let Some(node_value) =
+                self.nodes.get_value_mut(current_index.unwrap())
+            {
+                if (self.compare)(&value, node_value) == Ordering::Less {
                     if last.1 == "right" {
                         turn_count += 1;
                     }
@@ -383,12 +417,12 @@ impl<
                     }
 
                     let _ = queue.add(last.clone());
-                    current_index =
-                        self.nodes.get_index_mut(current_index.unwrap()).left_index;
-                } else if (self.compare)(
-                    &value,
-                    node_value,
-                ) == Ordering::Greater
+                    current_index = self
+                        .nodes
+                        .get_index_mut(current_index.unwrap())
+                        .left_index;
+                } else if (self.compare)(&value, node_value)
+                    == Ordering::Greater
                 {
                     if last.1 == "left" {
                         turn_count += 1;
@@ -403,8 +437,10 @@ impl<
                     }
 
                     let _ = queue.add(last.clone());
-                    current_index =
-                        self.nodes.get_index_mut(current_index.unwrap()).right_index;
+                    current_index = self
+                        .nodes
+                        .get_index_mut(current_index.unwrap())
+                        .right_index;
                 } else {
                     ind = true;
                 }
@@ -415,7 +451,10 @@ impl<
 
         return if ind {
             Some((
-                self.nodes.get_index_mut(current_index.unwrap()).index.unwrap(),
+                self.nodes
+                    .get_index_mut(current_index.unwrap())
+                    .index
+                    .unwrap(),
                 self.nodes[current_index.unwrap()],
             ))
         } else if last.1 == "left" {
@@ -433,7 +472,10 @@ impl<
                 ))
             }
         } else {
-            Some((self.nodes.get_index_mut(last.0.unwrap()).index.unwrap(), self.nodes[last.0.unwrap()]))
+            Some((
+                self.nodes.get_index_mut(last.0.unwrap()).index.unwrap(),
+                self.nodes[last.0.unwrap()],
+            ))
         };
     }
 }

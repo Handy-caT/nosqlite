@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use smart_default::SmartDefault;
+use std::fmt::Debug;
 
 /// Struct that represents tree node indexes
 #[derive(Copy, Clone, Debug, PartialEq, SmartDefault)]

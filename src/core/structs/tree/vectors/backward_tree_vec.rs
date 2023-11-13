@@ -172,7 +172,6 @@ impl<T: Default + Copy> BackwardTreeVec for BackwardsTreeVec<T> {
         } else {
             None
         }
-
     }
 }
 

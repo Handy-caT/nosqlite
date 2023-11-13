@@ -95,7 +95,6 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
         } else {
             None
         }
-
     }
 
     fn remove(&mut self, index: usize) -> Option<TreeNode<T>> {

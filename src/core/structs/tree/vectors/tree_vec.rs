@@ -146,7 +146,8 @@ pub(in crate::core::structs::tree::vectors) trait DefaultFunctions<T> {
     fn get_indexes_mut(&mut self) -> &mut Vec<TreeIndex>;
 }
 
-/// The 'OptimizedFunctions' trait is used to define the optimized functions of a tree vector.
+/// The 'OptimizedFunctions' trait is used to define
+/// the optimized functions of a tree vector.
 pub(in crate::core::structs::tree::vectors) trait OptimizedFunctions<T> {
     /// Returns the mutable reference to the allocated levels count.
     /// # Returns

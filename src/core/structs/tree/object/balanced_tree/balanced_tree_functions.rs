@@ -2,7 +2,10 @@ use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use queues::{queue, IsQueue, Queue};
 use std::cmp::Ordering;
 
-pub fn height_from_root(indexes: &mut Vec<TreeIndex>, root_index: Option<usize>) -> u8 {
+pub fn height_from_root(
+    indexes: &mut Vec<TreeIndex>,
+    root_index: Option<usize>,
+) -> u8 {
     if let Some(index) = root_index {
         indexes[index].height
     } else {
@@ -35,8 +38,7 @@ pub fn fix_height(indexes: &mut Vec<TreeIndex>, root_index: usize) {
 pub fn rotate_right(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
     let left_index = indexes[root_index].left_index.unwrap();
 
-    indexes[root_index].left_index =
-        indexes[left_index].right_index;
+    indexes[root_index].left_index = indexes[left_index].right_index;
     indexes[left_index].right_index = Some(root_index);
 
     fix_height(indexes, root_index);
@@ -48,8 +50,7 @@ pub fn rotate_right(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
 pub fn rotate_left(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
     let right_index = indexes[root_index].right_index.unwrap();
 
-    indexes[root_index].right_index =
-        indexes[right_index].left_index;
+    indexes[root_index].right_index = indexes[right_index].left_index;
     indexes[right_index].left_index = Some(root_index);
 
     fix_height(indexes, root_index);
@@ -64,16 +65,20 @@ pub fn balance(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
 
     if bfactor(indexes, root_index) == 2 {
         if bfactor(indexes, indexes[root_index].right_index.unwrap()) < 0 {
-            indexes[root_index].right_index =
-                Some(rotate_right(indexes, indexes[root_index].right_index.unwrap()));
+            indexes[root_index].right_index = Some(rotate_right(
+                indexes,
+                indexes[root_index].right_index.unwrap(),
+            ));
         }
         new_root_index = rotate_left(indexes, root_index);
     }
 
     if bfactor(indexes, root_index) == -2 {
         if bfactor(indexes, indexes[root_index].left_index.unwrap()) > 0 {
-            indexes[root_index].left_index =
-                Some(rotate_left(indexes, indexes[root_index].left_index.unwrap()));
+            indexes[root_index].left_index = Some(rotate_left(
+                indexes,
+                indexes[root_index].left_index.unwrap(),
+            ));
         }
         new_root_index = rotate_right(indexes, root_index);
     }
@@ -89,7 +94,10 @@ pub fn find_min(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
     }
 }
 
-pub fn remove_min(indexes: &mut Vec<TreeIndex>, root_index: usize) -> Option<usize> {
+pub fn remove_min(
+    indexes: &mut Vec<TreeIndex>,
+    root_index: usize,
+) -> Option<usize> {
     if indexes[root_index].left_index.is_none() {
         indexes[root_index].right_index
     } else {
@@ -164,9 +172,15 @@ pub fn find_greater_equal<T: Default + PartialOrd + Copy>(
                 turn = queue.remove().unwrap();
             }
 
-            Some((indexes[turn.0.unwrap()].index.unwrap(), nodes[turn.0.unwrap()]))
+            Some((
+                indexes[turn.0.unwrap()].index.unwrap(),
+                nodes[turn.0.unwrap()],
+            ))
         }
     } else {
-        Some((indexes[last.0.unwrap()].index.unwrap(), nodes[last.0.unwrap()]))
+        Some((
+            indexes[last.0.unwrap()].index.unwrap(),
+            nodes[last.0.unwrap()],
+        ))
     };
 }
