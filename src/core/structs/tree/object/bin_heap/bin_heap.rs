@@ -122,18 +122,18 @@ impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
         let result_index = index;
         // We can unwrap because index is never 0
         let mut parent_index =
-            NormalizedTreeVector::<T>::get_parent_index(index).unwrap();
+            NormalizedTreeVector::<T>::get_parent_index(index);
 
-        while index > 0
+        while parent_index.is_some()
             && (self.compare)(
                 &self.data.get(index).unwrap().value,
-                &self.data.get(parent_index).unwrap().value,
+                &self.data.get(parent_index.unwrap()).unwrap().value,
             ) == Ordering::Greater
         {
-            self.data.swap_indexes(index, parent_index);
-            index = parent_index;
+            self.data.swap_indexes(index, parent_index.unwrap());
+            index = parent_index.unwrap();
             // We can unwrap because index is never 0
-            parent_index = NormalizedTreeVector::<T>::get_parent_index(index).unwrap();
+            parent_index = NormalizedTreeVector::<T>::get_parent_index(index);
         }
         result_index
     }
@@ -241,7 +241,7 @@ mod tests {
 
         assert_eq!(heap.data.len(), 0);
         assert_eq!(heap.data.get_allocated_levels(), INITIAL_LEVELS);
-        assert_eq!(heap.is_empty(), true);
+        assert!(heap.is_empty());
     }
 
     #[test]

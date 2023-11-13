@@ -2,20 +2,25 @@ use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use queues::{queue, IsQueue, Queue};
 use std::cmp::Ordering;
 
-pub fn height_from_root(indexes: &mut Vec<TreeIndex>, root_index: usize) -> u8 {
-    indexes[root_index].height
+pub fn height_from_root(indexes: &mut Vec<TreeIndex>, root_index: Option<usize>) -> u8 {
+    if let Some(index) = root_index {
+        indexes[index].height
+    } else {
+        0
+    }
 }
 
 pub fn bfactor(indexes: &mut Vec<TreeIndex>, root_index: usize) -> i8 {
     let node_indexes = indexes[root_index];
-    height_from_root(indexes, node_indexes.right_index.unwrap()) as i8
-        - height_from_root(indexes, node_indexes.left_index.unwrap()) as i8
+    height_from_root(indexes, node_indexes.right_index) as i8
+        - height_from_root(indexes, node_indexes.left_index) as i8
 }
 
 pub fn fix_height(indexes: &mut Vec<TreeIndex>, root_index: usize) {
     let node_indexes = indexes[root_index];
-    let left_height = height_from_root(indexes, node_indexes.left_index.unwrap());
-    let right_height = height_from_root(indexes, node_indexes.right_index.unwrap());
+
+    let left_height = height_from_root(indexes, node_indexes.left_index);
+    let right_height = height_from_root(indexes, node_indexes.right_index);
 
     let height = if left_height > right_height {
         left_height + 1
@@ -84,13 +89,13 @@ pub fn find_min(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
     }
 }
 
-pub fn remove_min(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
+pub fn remove_min(indexes: &mut Vec<TreeIndex>, root_index: usize) -> Option<usize> {
     if indexes[root_index].left_index.is_none() {
-        indexes[root_index].right_index.unwrap()
+        indexes[root_index].right_index
     } else {
         indexes[root_index].left_index =
-            Some(remove_min(indexes, indexes[root_index].left_index.unwrap()));
-        balance(indexes, root_index)
+            remove_min(indexes, indexes[root_index].left_index.unwrap());
+        Some(balance(indexes, root_index))
     }
 }
 

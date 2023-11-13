@@ -112,7 +112,7 @@ pub trait BackwardTreeVec {
     /// # Arguments
     /// * `index` - Index of the node
     /// * `parent` - Parent index of the node
-    fn add_parent(&mut self, index: usize, parent: usize);
+    fn add_parent(&mut self, index: usize, parent: usize) -> Option<()>;
 }
 
 /// The 'DefaultFunctions' trait is used to define the default functions of a tree vector.

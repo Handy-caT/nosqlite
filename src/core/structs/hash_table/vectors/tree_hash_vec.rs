@@ -190,12 +190,12 @@ impl<
         index: u64,
         value_index: usize,
     ) -> Option<KeyValue<K, V>> {
-        let has_item = self.data[index as usize].get(value_index as i32);
+        let has_item = self.data[index as usize].get(value_index);
         match has_item {
             Some(_) => {
                 statistics_remove_actions(self, index);
                 let item = self.data[index as usize]
-                    .remove_by_index(value_index as i32);
+                    .remove_by_index(value_index);
                 Some(item.unwrap())
             }
             None => None,
@@ -207,17 +207,14 @@ impl<
         index: u64,
         value_index: usize,
     ) -> Option<KeyValue<K, V>> {
-        self.data[index as usize].get(value_index as i32)
+        self.data[index as usize].get(value_index)
     }
 
     fn find_key(&mut self, index: u64, key: K) -> Option<usize> {
         let item = KeyValue::new(key, V::default());
         let item_index = self.data[index as usize].find(item);
 
-        match item_index {
-            Some(i) => Some(i as usize),
-            None => None,
-        }
+        item_index.map(|i| i)
     }
 }
 

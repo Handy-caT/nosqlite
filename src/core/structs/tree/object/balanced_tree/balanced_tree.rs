@@ -156,7 +156,7 @@ impl<
 
                 let min_index = find_min(self.nodes.get_indexes(), right_index.unwrap());
                 self.nodes.get_index_mut(min_index).right_index =
-                    Some(remove_min(self.nodes.get_indexes(), right_index.unwrap()));
+                    remove_min(self.nodes.get_indexes(), right_index.unwrap());
                 self.nodes.get_index_mut(min_index).left_index = left_index;
 
                 return Some(balance(self.nodes.get_indexes(), min_index));
@@ -287,53 +287,57 @@ impl<
         let mut turn_count = 0;
 
         while !ind && current_index.is_some() {
-            if (self.compare)(&value, self.nodes.get_value_mut(current_index))
-                == Ordering::Less
-            {
-                if last.1 == "right" {
-                    turn_count += 1;
-                }
-
-                last = (current_index, "left".to_string());
-
-                if turn_count > 1 {
-                    while queue.peek().unwrap().1 != "right" {
-                        let _ = queue.remove();
+            if let Some(node_value) = self.nodes.get_value_mut(current_index.unwrap()) {
+                if (self.compare)(&value, node_value)
+                    == Ordering::Less
+                {
+                    if last.1 == "right" {
+                        turn_count += 1;
                     }
-                }
 
-                let _ = queue.add(last.clone());
-                current_index =
-                    self.nodes.get_index_mut(current_index).left_index;
-            } else if (self.compare)(
-                &value,
-                self.nodes.get_value_mut(current_index),
-            ) == Ordering::Greater
-            {
-                if last.1 == "left" {
-                    turn_count += 1;
-                }
+                    last = (current_index, "left".to_string());
 
-                last = (current_index, "right".to_string());
-
-                if turn_count > 1 {
-                    while queue.peek().unwrap().1 != "left" {
-                        let _ = queue.remove();
+                    if turn_count > 1 {
+                        while queue.peek().unwrap().1 != "right" {
+                            let _ = queue.remove();
+                        }
                     }
-                }
 
-                let _ = queue.add(last.clone());
-                current_index =
-                    self.nodes.get_index_mut(current_index).right_index;
+                    let _ = queue.add(last.clone());
+                    current_index =
+                        self.nodes.get_index_mut(current_index.unwrap()).left_index;
+                } else if (self.compare)(
+                    &value,
+                    node_value,
+                ) == Ordering::Greater
+                {
+                    if last.1 == "left" {
+                        turn_count += 1;
+                    }
+
+                    last = (current_index, "right".to_string());
+
+                    if turn_count > 1 {
+                        while queue.peek().unwrap().1 != "left" {
+                            let _ = queue.remove();
+                        }
+                    }
+
+                    let _ = queue.add(last.clone());
+                    current_index =
+                        self.nodes.get_index_mut(current_index.unwrap()).right_index;
+                } else {
+                    ind = true;
+                }
             } else {
-                ind = true;
+                current_index = None
             }
         }
 
         return if ind {
             Some((
-                self.nodes.get_index_mut(current_index).index,
-                self.nodes[current_index],
+                self.nodes.get_index_mut(current_index.unwrap()).index.unwrap(),
+                self.nodes[current_index.unwrap()],
             ))
         } else if last.1 == "right" {
             if queue.peek().unwrap().1 == "right" {
@@ -345,70 +349,74 @@ impl<
                 }
 
                 Some((
-                    self.nodes.get_index_mut(turn.0).index,
-                    self.nodes[turn.0],
+                    self.nodes.get_index_mut(turn.0.unwrap()).index.unwrap(),
+                    self.nodes[turn.0.unwrap()],
                 ))
             }
         } else {
-            Some((self.nodes.get_index_mut(last.0).index, self.nodes[last.0]))
+            Some((self.nodes.get_index_mut(last.0.unwrap()).index.unwrap(), self.nodes[last.0.unwrap()]))
         };
     }
 
-    fn find_less_equal(&mut self, value: T) -> Option<(i32, T)> {
-        let mut queue: Queue<(i32, String)> = queue![];
+    fn find_less_equal(&mut self, value: T) -> Option<(usize, T)> {
+        let mut queue: Queue<(Option<usize>, String)> = queue![];
         let mut current_index = self.root;
-        let mut last = (-1, "".to_string());
+        let mut last = (None, "".to_string());
         let mut ind = false;
         let mut turn_count = 0;
 
-        while !ind && current_index != -1 {
-            if (self.compare)(&value, self.nodes.get_value_mut(current_index))
-                == Ordering::Less
-            {
-                if last.1 == "right" {
-                    turn_count += 1;
-                }
-
-                last = (current_index, "left".to_string());
-
-                if turn_count > 1 {
-                    while queue.peek().unwrap().1 != "right" {
-                        let _ = queue.remove();
+        while !ind && current_index.is_some() {
+            if let Some(node_value) = self.nodes.get_value_mut(current_index.unwrap()) {
+                if (self.compare)(&value, node_value)
+                    == Ordering::Less
+                {
+                    if last.1 == "right" {
+                        turn_count += 1;
                     }
-                }
 
-                let _ = queue.add(last.clone());
-                current_index =
-                    self.nodes.get_index_mut(current_index).left_index;
-            } else if (self.compare)(
-                &value,
-                self.nodes.get_value_mut(current_index),
-            ) == Ordering::Greater
-            {
-                if last.1 == "left" {
-                    turn_count += 1;
-                }
+                    last = (current_index, "left".to_string());
 
-                last = (current_index, "right".to_string());
-
-                if turn_count > 1 {
-                    while queue.peek().unwrap().1 != "left" {
-                        let _ = queue.remove();
+                    if turn_count > 1 {
+                        while queue.peek().unwrap().1 != "right" {
+                            let _ = queue.remove();
+                        }
                     }
-                }
 
-                let _ = queue.add(last.clone());
-                current_index =
-                    self.nodes.get_index_mut(current_index).right_index;
+                    let _ = queue.add(last.clone());
+                    current_index =
+                        self.nodes.get_index_mut(current_index.unwrap()).left_index;
+                } else if (self.compare)(
+                    &value,
+                    node_value,
+                ) == Ordering::Greater
+                {
+                    if last.1 == "left" {
+                        turn_count += 1;
+                    }
+
+                    last = (current_index, "right".to_string());
+
+                    if turn_count > 1 {
+                        while queue.peek().unwrap().1 != "left" {
+                            let _ = queue.remove();
+                        }
+                    }
+
+                    let _ = queue.add(last.clone());
+                    current_index =
+                        self.nodes.get_index_mut(current_index.unwrap()).right_index;
+                } else {
+                    ind = true;
+                }
             } else {
-                ind = true;
+                current_index = None
             }
         }
 
         return if ind {
             Some((
-                self.nodes.get_index_mut(current_index).index,
-                self.nodes[current_index],
+                self.nodes.get_index_mut(current_index.unwrap()).index.unwrap(),
+                self.nodes[current_index.unwrap()],
             ))
         } else if last.1 == "left" {
             if queue.peek().unwrap().1 == "left" {
@@ -420,12 +428,12 @@ impl<
                 }
 
                 Some((
-                    self.nodes.get_index_mut(turn.0).index,
-                    self.nodes[turn.0],
+                    self.nodes.get_index_mut(turn.0.unwrap()).index.unwrap(),
+                    self.nodes[turn.0.unwrap()],
                 ))
             }
         } else {
-            Some((self.nodes.get_index_mut(last.0).index, self.nodes[last.0]))
+            Some((self.nodes.get_index_mut(last.0.unwrap()).index.unwrap(), self.nodes[last.0.unwrap()]))
         };
     }
 }
@@ -441,7 +449,7 @@ mod tests {
 
         let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
         assert_eq!(tree.nodes.len(), 0);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, None);
     }
 
     #[test]
@@ -452,6 +460,9 @@ mod tests {
         tree.push(1);
 
         let balanced = tree.add_from_root(0, 0);
+        assert!(balanced.is_some());
+        let balanced = balanced.unwrap();
+
         assert_eq!(balanced.0, 0);
         assert_eq!(balanced.1, 1);
     }
@@ -463,7 +474,7 @@ mod tests {
         let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
         tree.push(1);
         assert_eq!(tree.nodes.len(), 1);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, Some(0));
         assert_eq!(tree.nodes[0], 1);
     }
 
@@ -478,7 +489,13 @@ mod tests {
 
         tree.remove_by_value(2);
 
-        let balanced = tree.add_from_root(2, tree.root);
+        assert!(tree.root.is_some());
+        let root = tree.root.unwrap();
+
+        let balanced = tree.add_from_root(2, root);
+        assert!(balanced.is_some());
+        let balanced = balanced.unwrap();
+
         assert_eq!(balanced.0, 1);
         assert_eq!(balanced.1, 1);
     }
@@ -491,9 +508,9 @@ mod tests {
         tree.push(1);
         tree.push(0);
         assert_eq!(tree.nodes.len(), 2);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, Some(0));
         assert_eq!(tree.nodes[0], 1);
-        assert_eq!(tree.nodes.get_indexes()[0].left_index, 1);
+        assert_eq!(tree.nodes.get_indexes()[0].left_index, Some(1));
         assert_eq!(tree.nodes[1], 0);
     }
 
@@ -505,9 +522,9 @@ mod tests {
         tree.push(1);
         tree.push(2);
         assert_eq!(tree.nodes.len(), 2);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, Some(0));
         assert_eq!(tree.nodes[0], 1);
-        assert_eq!(tree.nodes.get_indexes()[0].right_index, 1);
+        assert_eq!(tree.nodes.get_indexes()[0].right_index, Some(1));
         assert_eq!(tree.nodes[1], 2);
     }
 
@@ -520,10 +537,10 @@ mod tests {
         tree.push(0);
         tree.push(2);
         assert_eq!(tree.nodes.len(), 3);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, Some(0));
         assert_eq!(tree.nodes[0], 1);
-        assert_eq!(tree.nodes.get_indexes()[0].left_index, 1);
-        assert_eq!(tree.nodes.get_indexes()[0].right_index, 2);
+        assert_eq!(tree.nodes.get_indexes()[0].left_index, Some(1));
+        assert_eq!(tree.nodes.get_indexes()[0].right_index, Some(2));
         assert_eq!(tree.nodes[1], 0);
         assert_eq!(tree.nodes[2], 2);
     }
@@ -537,10 +554,10 @@ mod tests {
         tree.push(2);
         tree.push(3);
         assert_eq!(tree.nodes.len(), 3);
-        assert_eq!(tree.root, 1);
+        assert_eq!(tree.root, Some(1));
         assert_eq!(tree.nodes[1], 2);
-        assert_eq!(tree.nodes.get_indexes()[1].left_index, 0);
-        assert_eq!(tree.nodes.get_indexes()[1].right_index, 2);
+        assert_eq!(tree.nodes.get_indexes()[1].left_index, Some(0));
+        assert_eq!(tree.nodes.get_indexes()[1].right_index, Some(2));
     }
 
     #[test]
@@ -557,7 +574,7 @@ mod tests {
         tree.push(7);
 
         assert_eq!(tree.nodes.len(), 7);
-        assert_eq!(tree.root, 3);
+        assert_eq!(tree.root, Some(3));
         assert_eq!(tree.nodes[3], 4);
     }
 
@@ -575,7 +592,7 @@ mod tests {
         tree.push(1);
 
         assert_eq!(tree.nodes.len(), 7);
-        assert_eq!(tree.root, 3);
+        assert_eq!(tree.root, Some(3));
         assert_eq!(tree.nodes[3], 4);
     }
 
@@ -587,7 +604,7 @@ mod tests {
         tree.push(1);
         tree.remove_by_value(1);
         assert_eq!(tree.nodes.len(), 0);
-        assert_eq!(tree.root, -1);
+        assert!(tree.root.is_none());
     }
 
     #[test]
@@ -599,7 +616,7 @@ mod tests {
         tree.push(0);
         tree.remove_by_value(0);
         assert_eq!(tree.nodes.len(), 1);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, Some(0));
         assert_eq!(tree.nodes[0], 1);
     }
 
@@ -612,7 +629,7 @@ mod tests {
         tree.push(2);
         tree.remove_by_value(2);
         assert_eq!(tree.nodes.len(), 1);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, Some(0));
         assert_eq!(tree.nodes[0], 1);
     }
 
@@ -640,10 +657,10 @@ mod tests {
         tree.push(3);
 
         assert_eq!(tree.nodes.len(), 3);
-        assert_eq!(tree.root, 1);
+        assert_eq!(tree.root, Some(1));
         assert_eq!(tree.nodes[1], 2);
-        assert_eq!(tree.nodes.get_indexes()[1].left_index, 2);
-        assert_eq!(tree.nodes.get_indexes()[1].right_index, 0);
+        assert_eq!(tree.nodes.get_indexes()[1].left_index, Some(2));
+        assert_eq!(tree.nodes.get_indexes()[1].right_index, Some(0));
         assert_eq!(tree.nodes[2], 3);
         assert_eq!(tree.nodes[0], 1);
     }
@@ -789,7 +806,7 @@ mod tests {
 
         tree.remove_by_index(4);
         assert_eq!(tree.nodes.len(), 9);
-        assert_eq!(tree.root, 0);
+        assert_eq!(tree.root, Some(0));
         assert_eq!(tree.find(300), None);
         assert_eq!(tree.find(350), Some(7));
     }

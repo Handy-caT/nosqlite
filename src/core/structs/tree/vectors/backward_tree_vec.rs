@@ -119,8 +119,12 @@ impl<T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
         get(self, index)
     }
 
-    fn get_value_mut(&mut self, index: usize) -> &mut T {
-        &mut self.data[index]
+    fn get_value_mut(&mut self, index: usize) -> Option<&mut T> {
+        if index < self.length {
+            Some(&mut self.data[index])
+        } else {
+            None
+        }
     }
 
     fn remove(&mut self, index: usize) -> Option<TreeNode<T>> {

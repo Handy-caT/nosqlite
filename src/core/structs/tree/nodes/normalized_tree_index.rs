@@ -100,7 +100,7 @@ mod tests {
         let node = NormalizedTreeIndex::new(0);
         let tree_node: Option<TreeIndex> = node.into();
 
-        assert_eq!(tree_node.is_some());
+        assert!(tree_node.is_some());
         let tree_node = tree_node.unwrap();
 
         assert_eq!(tree_node.index, Some(0));

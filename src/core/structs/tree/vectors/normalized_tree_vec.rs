@@ -161,7 +161,7 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     }
 
     fn get(&self, index: usize) -> Option<TreeNode<T>> {
-        if index >= self.length || index < 0 {
+        if index >= self.length {
             None
         } else {
             let tree_index = TreeIndex {
@@ -170,7 +170,7 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
                 right_index: Some(2 * index + 2),
                 height: self.indexes[index].height,
             };
-            let data = self.data[tree_index.index as usize];
+            let data = self.data[tree_index.index.unwrap()];
 
             let node = TreeNode {
                 value: data,
@@ -181,8 +181,12 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
         }
     }
 
-    fn get_value_mut(&mut self, index: usize) -> &mut T {
-        &mut self.data[index]
+    fn get_value_mut(&mut self, index: usize) -> Option<&mut T> {
+        if index < self.length {
+            Some(&mut self.data[index])
+        } else {
+            None
+        }
     }
 
     fn remove(&mut self, index: usize) -> Option<TreeNode<T>> {
@@ -229,12 +233,12 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
 impl<T: Default + Copy> NormalizedTreeVecIndexes<T>
     for NormalizedTreeVector<T>
 {
-    fn get_index_mut(&mut self, index: i32) -> &mut NormalizedTreeIndex {
-        &mut self.indexes[index as usize]
+    fn get_index_mut(&mut self, index: usize) -> &mut NormalizedTreeIndex {
+        &mut self.indexes[index]
     }
 
-    fn get_index(&self, index: i32) -> &NormalizedTreeIndex {
-        &self.indexes[index as usize]
+    fn get_index(&self, index: usize) -> &NormalizedTreeIndex {
+        &self.indexes[index]
     }
 
     fn get_indexes(&mut self) -> &mut Vec<NormalizedTreeIndex> {
@@ -318,8 +322,8 @@ mod tests {
 
         vec.swap_indexes(0, 2);
 
-        assert_eq!(vec.get(0).unwrap().indexes.index, 2);
-        assert_eq!(vec.get(2).unwrap().indexes.index, 0);
+        assert_eq!(vec.get(0).unwrap().indexes.index, Some(2));
+        assert_eq!(vec.get(2).unwrap().indexes.index, Some(0));
 
         assert_eq!(vec.get(0).unwrap().indexes.height, 1);
         assert_eq!(vec.get(0).unwrap().value, 3);
@@ -329,9 +333,9 @@ mod tests {
 
     #[test]
     fn test_normalized_tree_vector_get_parent() {
-        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(0), -1);
-        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(1), 0);
-        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(5), 2);
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(0), None);
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(1), Some(0));
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(5), Some(2));
     }
 
     #[test]
@@ -375,7 +379,7 @@ mod tests {
 
         let node = node.unwrap();
         assert_eq!(node.value, 4);
-        assert_eq!(node.indexes.index, 0);
+        assert_eq!(node.indexes.index, Some(0));
         assert_eq!(vec.empty.len(), 0);
     }
 }

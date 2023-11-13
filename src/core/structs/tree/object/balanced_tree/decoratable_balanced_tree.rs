@@ -25,7 +25,7 @@ pub struct DecoratableBalancedTree<
     /// Base tree object
     base: M,
     /// Root index
-    root: i32,
+    root: Option<usize>,
     /// Additional indexes vector
     indexes: AdditionalIndexVec,
     /// Compare function
@@ -53,7 +53,7 @@ impl<
 
         let mut dec_tree = DecoratableBalancedTree {
             base: tree,
-            root: -1,
+            root: None,
             indexes: additional_index_vec,
             compare,
             v: std::marker::PhantomData,
@@ -88,34 +88,38 @@ impl<
     fn add_from_root(
         &mut self,
         value: T,
-        root_index: i32,
-        value_index: i32,
-    ) -> i32 {
-        if (self.compare)(
-            &value,
-            self.base.get_nodes_mut().get_value_mut(root_index),
-        ) == Ordering::Less
-        {
-            if self.indexes[root_index as usize].left_index == -1 {
-                self.indexes[root_index as usize].left_index = value_index;
+        root_index: usize,
+        value_index: usize,
+    ) -> Option<usize> {
+        if let Some(node_value) = self.base.get_nodes_mut().get_value_mut(root_index) {
+            if (self.compare)(
+                &value,
+                node_value,
+            ) == Ordering::Less
+            {
+                if self.indexes[root_index].left_index.is_none() {
+                    self.indexes[root_index].left_index = Some(value_index);
+                } else {
+                    self.indexes[root_index].left_index = self
+                        .add_from_root(
+                            value,
+                            self.indexes[root_index].left_index.unwrap(),
+                            value_index,
+                        );
+                }
+            } else if self.indexes[root_index].right_index.is_none() {
+                self.indexes[root_index].right_index = Some(value_index);
             } else {
-                self.indexes[root_index as usize].left_index = self
-                    .add_from_root(
-                        value,
-                        self.indexes[root_index as usize].left_index,
-                        value_index,
-                    );
+                self.indexes[root_index].right_index = self.add_from_root(
+                    value,
+                    self.indexes[root_index].right_index.unwrap(),
+                    value_index,
+                );
             }
-        } else if self.indexes[root_index as usize].right_index == -1 {
-            self.indexes[root_index as usize].right_index = value_index;
+            Some(balance(self.indexes.get_indexes_mut(), root_index))
         } else {
-            self.indexes[root_index as usize].right_index = self.add_from_root(
-                value,
-                self.indexes[root_index as usize].right_index,
-                value_index,
-            );
+            None
         }
-        balance(self.indexes.get_indexes_mut(), root_index)
     }
 
     /// Function that remove value from root index
@@ -124,44 +128,48 @@ impl<
     /// * `root_index` - root index
     /// # Returns
     /// * `i32` - new root index
-    fn remove_from_root(&mut self, value: T, root_index: i32) -> i32 {
-        if (self.compare)(
-            &value,
-            self.base.get_nodes_mut().get_value_mut(root_index),
-        ) == Ordering::Less
-        {
-            self.indexes[root_index as usize].left_index = self
-                .remove_from_root(
-                    value,
-                    self.indexes[root_index as usize].left_index,
-                );
-        } else if (self.compare)(
-            &value,
-            self.base.get_nodes_mut().get_value_mut(root_index),
-        ) == Ordering::Greater
-        {
-            self.indexes[root_index as usize].right_index = self
-                .remove_from_root(
-                    value,
-                    self.indexes[root_index as usize].right_index,
-                );
-        } else {
-            let left_index = self.indexes[root_index as usize].left_index;
-            let right_index = self.indexes[root_index as usize].right_index;
+    fn remove_from_root(&mut self, value: T, root_index: usize) -> Option<usize> {
+        if let Some(node_value) = self.base.get_nodes_mut().get_value_mut(root_index) {
+            if (self.compare)(
+                &value,
+                node_value,
+            ) == Ordering::Less
+            {
+                self.indexes[root_index].left_index = self
+                    .remove_from_root(
+                        value,
+                        self.indexes[root_index].left_index.unwrap(),
+                    );
+            } else if (self.compare)(
+                &value,
+                node_value,
+            ) == Ordering::Greater
+            {
+                self.indexes[root_index].right_index = self
+                    .remove_from_root(
+                        value,
+                        self.indexes[root_index as usize].right_index.unwrap(),
+                    );
+            } else {
+                let left_index = self.indexes[root_index].left_index;
+                let right_index = self.indexes[root_index].right_index;
 
-            if right_index == -1 {
-                return left_index;
+                if right_index.is_none() {
+                    return left_index;
+                }
+
+                let min_index =
+                    find_min(self.indexes.get_indexes_mut(), right_index.unwrap());
+                self.indexes[root_index].right_index =
+                    remove_min(self.indexes.get_indexes_mut(), right_index.unwrap());
+                self.indexes[root_index].left_index = left_index;
+
+                return Some(balance(self.indexes.get_indexes_mut(), min_index));
             }
-
-            let min_index =
-                find_min(self.indexes.get_indexes_mut(), right_index);
-            self.indexes[root_index as usize].right_index =
-                remove_min(self.indexes.get_indexes_mut(), right_index);
-            self.indexes[root_index as usize].left_index = left_index;
-
-            return balance(self.indexes.get_indexes_mut(), min_index);
+            Some(balance(self.indexes.get_indexes_mut(), root_index))
+        } else {
+            None
         }
-        balance(self.indexes.get_indexes_mut(), root_index)
     }
 
     /// Function that fills additional indexes when base tree is not empty
@@ -171,17 +179,17 @@ impl<
             return;
         }
         self.indexes.push(TreeIndex::new_with_index(0));
-        self.root = 0;
+        self.root = Some(0);
 
         for i in 1..length {
-            let item = self.base.get_nodes().get(i as i32);
+            let item = self.base.get_nodes().get(i);
             if let Some(node) = item {
-                self.indexes.push(TreeIndex::new_with_index(i as i32));
-                let value = self.base.get_nodes().get(node.indexes.index);
+                self.indexes.push(TreeIndex::new_with_index(i));
+                let value = self.base.get_nodes().get(node.indexes.index.unwrap());
                 self.root = self.add_from_root(
                     value.unwrap().value,
-                    self.root,
-                    i as i32,
+                    self.root.unwrap(),
+                    i,
                 );
             } else {
                 self.indexes.push(TreeIndex::default());
@@ -189,11 +197,11 @@ impl<
         }
     }
 
-    fn push_index(&mut self, index: i32) {
-        if index >= self.indexes.len() as i32 {
+    fn push_index(&mut self, index: usize) {
+        if index >= self.indexes.len() {
             self.indexes.push(TreeIndex::new_with_index(index));
         } else {
-            self.indexes[index as usize] = TreeIndex::new_with_index(index);
+            self.indexes[index] = TreeIndex::new_with_index(index);
         }
     }
 }
@@ -204,36 +212,40 @@ impl<
         M: TreeObject<T> + Sized + TreeObjectVec<T, V>,
     > TreeObject<T> for DecoratableBalancedTree<T, V, M>
 {
-    fn push(&mut self, value: T) -> i32 {
+    fn push(&mut self, value: T) -> usize {
         let index = self.base.push(value);
         self.push_index(index);
-        if self.root == -1 {
-            self.root = index;
+        if self.root.is_none() {
+            self.root = Some(index);
         } else {
-            self.root = self.add_from_root(value, self.root, index);
+            self.root = self.add_from_root(value, self.root.unwrap(), index);
         }
 
         index
     }
 
-    fn find(&mut self, value: T) -> Option<i32> {
+    fn find(&mut self, value: T) -> Option<usize> {
         let mut current_index = self.root;
-        while current_index != -1 {
-            if (self.compare)(
-                &value,
-                self.base.get_nodes_mut().get_value_mut(current_index),
-            ) == Ordering::Less
-            {
-                current_index = self.indexes[current_index as usize].left_index;
-            } else if (self.compare)(
-                &value,
-                self.base.get_nodes_mut().get_value_mut(current_index),
-            ) == Ordering::Greater
-            {
-                current_index =
-                    self.indexes[current_index as usize].right_index;
+        while current_index.is_some() {
+            if let Some(node_value) = self.base.get_nodes_mut().get_value_mut(current_index.unwrap()) {
+                if (self.compare)(
+                    &value,
+                    node_value,
+                ) == Ordering::Less
+                {
+                    current_index = self.indexes[current_index.unwrap()].left_index;
+                } else if (self.compare)(
+                    &value,
+                    node_value,
+                ) == Ordering::Greater
+                {
+                    current_index =
+                        self.indexes[current_index.unwrap()].right_index;
+                } else {
+                    return self.indexes[current_index.unwrap()].index;
+                }
             } else {
-                return Some(self.indexes[current_index as usize].index);
+                return None
             }
         }
         None
@@ -245,10 +257,10 @@ impl<
         } else if self.len() == 1 {
             self.base.remove_by_value(value);
             self.indexes[0] = TreeIndex::default();
-            self.root = -1;
+            self.root = None;
             return Some(value);
         }
-        self.root = self.remove_from_root(value, self.root);
+        self.root = self.remove_from_root(value, self.root.unwrap());
         self.base.remove_by_value(value);
 
         Some(value)
@@ -269,7 +281,7 @@ impl<
         M: TreeObject<T> + Sized + TreeObjectVec<T, V>,
     > TreeObjectVec<T, V> for DecoratableBalancedTree<T, V, M>
 {
-    fn get(&mut self, index: i32) -> Option<T> {
+    fn get(&mut self, index: usize) -> Option<T> {
         self.base.get(index)
     }
 
@@ -281,22 +293,22 @@ impl<
         self.base.get_nodes()
     }
 
-    fn get_root_index(&self) -> i32 {
+    fn get_root_index(&self) -> Option<usize> {
         self.root
     }
 
-    fn remove_by_index(&mut self, index: i32) -> Option<T> {
+    fn remove_by_index(&mut self, index: usize) -> Option<T> {
         if self.len() == 0 {
             return None;
         } else if self.len() == 1 {
             let value = self.base.get(index).unwrap();
             self.base.remove_by_index(index);
             self.indexes[0] = TreeIndex::default();
-            self.root = -1;
+            self.root = None;
             return Some(value);
         }
         let value = self.base.get(index).unwrap();
-        self.root = self.remove_from_root(value, self.root);
+        self.root = self.remove_from_root(value, self.root.unwrap());
         self.base.remove_by_index(index);
 
         Some(value)
@@ -329,9 +341,9 @@ mod tests {
 
         assert_eq!(dec_tree.base.len(), 3);
         assert_eq!(dec_tree.indexes.len(), 3);
-        assert_eq!(dec_tree.root, 1);
-        assert_eq!(dec_tree.indexes[1].left_index, 2);
-        assert_eq!(dec_tree.indexes[1].right_index, 0);
+        assert_eq!(dec_tree.root, Some(1));
+        assert_eq!(dec_tree.indexes[1].left_index, Some(2));
+        assert_eq!(dec_tree.indexes[1].right_index, Some(0));
     }
 
     #[test]
@@ -347,7 +359,7 @@ mod tests {
 
         assert_eq!(dec_tree.base.len(), 0);
         assert_eq!(dec_tree.indexes.len(), 0);
-        assert_eq!(dec_tree.root, -1);
+        assert_eq!(dec_tree.root, None);
     }
 
     #[test]
@@ -369,13 +381,13 @@ mod tests {
 
         assert_eq!(dec_tree.base.len(), 3);
         assert_eq!(dec_tree.indexes.len(), 3);
-        assert_eq!(dec_tree.root, 1);
-        assert_eq!(dec_tree.indexes[1].left_index, 2);
-        assert_eq!(dec_tree.indexes[1].right_index, 0);
+        assert_eq!(dec_tree.root, Some(1));
+        assert_eq!(dec_tree.indexes[1].left_index, Some(2));
+        assert_eq!(dec_tree.indexes[1].right_index, Some(0));
 
-        assert_eq!(dec_tree.base.get_root_index(), 1);
-        assert_eq!(dec_tree.base.get_nodes().get_index(1).left_index, 0);
-        assert_eq!(dec_tree.base.get_nodes().get_index(1).right_index, 2);
+        assert_eq!(dec_tree.base.get_root_index(), Some(1));
+        assert_eq!(dec_tree.base.get_nodes().get_index(1).left_index, Some(0));
+        assert_eq!(dec_tree.base.get_nodes().get_index(1).right_index, Some(2));
     }
 
     #[test]
@@ -393,19 +405,19 @@ mod tests {
 
         assert_eq!(dec_tree.base.len(), 1);
         assert_eq!(dec_tree.indexes.len(), 1);
-        assert_eq!(dec_tree.root, 0);
-        assert_eq!(dec_tree.indexes[0].left_index, -1);
-        assert_eq!(dec_tree.indexes[0].right_index, -1);
+        assert_eq!(dec_tree.root, Some(0));
+        assert_eq!(dec_tree.indexes[0].left_index, None);
+        assert_eq!(dec_tree.indexes[0].right_index, None);
 
-        assert_eq!(dec_tree.base.get_root_index(), 0);
+        assert_eq!(dec_tree.base.get_root_index(), Some(0));
 
         dec_tree.push(2);
 
         assert_eq!(dec_tree.base.len(), 2);
         assert_eq!(dec_tree.indexes.len(), 2);
-        assert_eq!(dec_tree.root, 0);
-        assert_eq!(dec_tree.indexes[0].left_index, -1);
-        assert_eq!(dec_tree.indexes[0].right_index, 1);
+        assert_eq!(dec_tree.root, Some(0));
+        assert_eq!(dec_tree.indexes[0].left_index, None);
+        assert_eq!(dec_tree.indexes[0].right_index, Some(1));
     }
 
     #[test]

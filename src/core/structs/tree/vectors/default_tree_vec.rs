@@ -36,12 +36,12 @@ impl<T: Default + Copy> DefaultTreeVec<T> {
 }
 
 impl<T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
-    fn get_index_mut(&mut self, index: i32) -> &mut TreeIndex {
-        &mut self.indexes[index as usize]
+    fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex {
+        &mut self.indexes[index]
     }
 
-    fn get_index(&self, index: i32) -> &TreeIndex {
-        &self.indexes[index as usize]
+    fn get_index(&self, index: usize) -> &TreeIndex {
+        &self.indexes[index]
     }
 
     fn get_indexes(&mut self) -> &mut Vec<TreeIndex> {
@@ -176,9 +176,9 @@ impl<T> TreeVecLevels for DefaultTreeVec<T> {
         levels
     }
 
-    fn get_max_length(&self) -> u64 {
+    fn get_max_length(&self) -> usize {
         let levels = self.get_allocated_levels();
-        let max_length = 2u64.pow(levels as u32);
+        let max_length = 2usize.pow(levels as u32);
         max_length
     }
 }
@@ -285,7 +285,6 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.get(-1).is_none(), true);
         assert_eq!(vec.get(5).is_none(), true);
     }
 
@@ -297,7 +296,6 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.remove(-1).is_none(), true);
         assert_eq!(vec.remove(5).is_none(), true);
         assert_eq!(vec.empty.len(), 0);
     }
