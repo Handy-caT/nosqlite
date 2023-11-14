@@ -12,7 +12,7 @@ use crate::core::structs::{
     tree::{
         object::{
             balanced_tree::balanced_tree::BalancedTree,
-            tree_object::{TreeObject, TreeObjectVec},
+            tree_object::{TreeObject, VecFunctions},
         },
         vectors::optimized_tree_vec::OptimizedTreeVec,
     },

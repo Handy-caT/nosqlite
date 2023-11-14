@@ -4,11 +4,11 @@ use crate::core::structs::tree::{
         balanced_tree::balanced_tree_functions::{
             balance, find_min, remove_min,
         },
-        tree_object::{TreeObject, TreeObjectVec},
+        tree_object::{TreeObject, VecFunctions},
     },
     vectors::{
         additional_indexes::additional_index_vec::AdditionalIndexVec,
-        tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels},
+        tree_vec::{TreeVec, Indexes, Levels},
     },
 };
 use std::cmp::Ordering;
@@ -23,7 +23,7 @@ use std::cmp::Ordering;
 pub struct DecoratableBalancedTree<
     T,
     V: TreeVec<T> + Sized,
-    M: TreeObject<T> + Sized + TreeObjectVec<T, V>,
+    M: TreeObject<T> + Sized + VecFunctions<T, V>,
 > {
     /// Base tree object
     base: M,
@@ -38,8 +38,8 @@ pub struct DecoratableBalancedTree<
 
 impl<
         T: Default + Copy,
-        V: TreeVec<T> + TreeVecLevels + Sized,
-        M: TreeObject<T> + Sized + TreeObjectVec<T, V>,
+        V: TreeVec<T> + Levels + Sized,
+        M: TreeObject<T> + Sized + VecFunctions<T, V>,
     > DecoratableBalancedTree<T, V, M>
 {
     /// Create new DecoratableBalancedTree with compare function and tree object
@@ -212,8 +212,8 @@ impl<
 
 impl<
         T: Default + Copy,
-        V: TreeVec<T> + TreeVecLevels + Sized,
-        M: TreeObject<T> + Sized + TreeObjectVec<T, V>,
+        V: TreeVec<T> + Levels + Sized,
+        M: TreeObject<T> + Sized + VecFunctions<T, V>,
     > TreeObject<T> for DecoratableBalancedTree<T, V, M>
 {
     fn push(&mut self, value: T) -> usize {
@@ -280,9 +280,9 @@ impl<
 
 impl<
         T: Default + Copy,
-        V: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized,
-        M: TreeObject<T> + Sized + TreeObjectVec<T, V>,
-    > TreeObjectVec<T, V> for DecoratableBalancedTree<T, V, M>
+        V: TreeVec<T> + Indexes<T> + Levels + Sized,
+        M: TreeObject<T> + Sized + VecFunctions<T, V>,
+    > VecFunctions<T, V> for DecoratableBalancedTree<T, V, M>
 {
     fn get(&mut self, index: usize) -> Option<T> {
         self.base.get(index)

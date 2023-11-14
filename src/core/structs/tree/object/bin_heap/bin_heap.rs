@@ -1,5 +1,5 @@
 use crate::core::structs::tree::{
-    object::tree_object::{TreeObject, TreeObjectVec},
+    object::tree_object::{TreeObject, VecFunctions},
     vectors::{normalized_tree_vec::NormalizedTreeVector, tree_vec::TreeVec},
 };
 use std::cmp::Ordering;
@@ -12,18 +12,18 @@ use std::cmp::Ordering;
 /// It is using custom NormalizedTreeVector struct that represents the tree,
 /// where childrens are on 2*i + 1 and 2*i + 2 positions.
 pub struct BinHeap<T> {
-    /// NormalizedTreeVector that represents the tree
+    /// [`NormalizedTreeVector`] that represents the tree
     /// It is used to store the data
     data: NormalizedTreeVector<T>,
     /// Compare function that is used to compare the nodes
     compare: fn(&T, &T) -> Ordering,
 }
 
-/// Implementation of BinHeap struct
+/// Implementation of [`BinHeap`] struct
 impl<T: Default + PartialOrd + Copy> BinHeap<T> {
-    /// Creates a new BinHeap struct
+    /// Creates a new [`BinHeap`] struct
     /// With default compare function
-    /// So by default BinHeap is max heap
+    /// So by default `[BinHeap`] is max heap
     pub fn new() -> Self {
         BinHeap {
             data: NormalizedTreeVector::new(),
@@ -31,12 +31,12 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
         }
     }
 
-    /// Creates a new BinHeap struct
+    /// Creates a new [`BinHeap`] struct
     /// With custom compare function
     /// # Arguments
     /// * `compare` - Compare function that is used to compare the nodes
     /// # Returns
-    /// * `BinHeap` - New BinHeap struct
+    /// * `BinHeap` - New [`BinHeap`] struct
     pub fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self {
         BinHeap {
             data: NormalizedTreeVector::new(),
@@ -109,7 +109,7 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
     }
 }
 
-/// Implementation of TreeObject trait for BinHeap struct
+/// Implementation of TreeObject trait for [`BinHeap`] struct
 /// It is used for tree operations and to use as part of TreeDecorator
 impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
     fn push(&mut self, value: T) -> usize {
@@ -166,11 +166,10 @@ impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
             None
         } else {
             let index = self.find(value);
-            if index.is_none() {
-                return None;
-            } else {
-                let index = index.unwrap();
+            if let Some(index) = index {
                 self.remove_by_index(index)
+            } else {
+                None
             }
         }
     }
@@ -184,8 +183,8 @@ impl<T: Default + PartialOrd + Copy> TreeObject<T> for BinHeap<T> {
     }
 }
 
-/// Implementation of TreeObjectVec trait for BinHeap struct
-impl<T: Default + PartialOrd + Copy> TreeObjectVec<T, NormalizedTreeVector<T>>
+/// Implementation of [`TreeObjectVec`] trait for [`BinHeap`] struct
+impl<T: Default + PartialOrd + Copy> VecFunctions<T, NormalizedTreeVector<T>>
     for BinHeap<T>
 {
     fn get(&mut self, index: usize) -> Option<T> {
@@ -227,11 +226,11 @@ mod tests {
     use crate::core::structs::tree::{
         object::{
             bin_heap::bin_heap::BinHeap,
-            tree_object::{TreeObject, TreeObjectVec},
+            tree_object::{TreeObject, VecFunctions},
         },
         vectors::{
             optimized_tree_vec::INITIAL_LEVELS,
-            tree_vec::{TreeVec, TreeVecLevels},
+            tree_vec::{TreeVec, Levels},
         },
     };
 
@@ -320,7 +319,7 @@ mod tests {
 
         assert_eq!(heap.remove_by_value(2).unwrap(), 2);
         assert_eq!(heap.data.len(), 3);
-        assert_eq!(heap.peek_max().is_some(), true);
+        assert!(heap.peek_max().is_some());
         assert_eq!(heap.peek_max().unwrap(), 4);
     }
 
@@ -335,7 +334,7 @@ mod tests {
 
         assert_eq!(heap.remove_by_index(2).unwrap(), 2);
         assert_eq!(heap.data.len(), 3);
-        assert_eq!(heap.peek_max().is_some(), true);
+        assert!(heap.peek_max().is_some());
         assert_eq!(heap.peek_max().unwrap(), 4);
     }
 

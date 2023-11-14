@@ -6,8 +6,8 @@ use crate::core::structs::tree::{
     vectors::{
         optimized_tree_vec::INITIAL_LEVELS,
         tree_vec::{
-            NormalizedTreeVecIndexes, OptimizedFunctions, TreeVec,
-            TreeVecLevels,
+            NormalizedIndexes, OptimizedFunctions, TreeVec,
+            Levels,
         },
     },
 };
@@ -37,11 +37,11 @@ pub struct NormalizedTreeVector<T> {
     empty: Vec<usize>,
 }
 
-/// NormalizedTreeVector implementation.
+/// [`NormalizedTreeVector`] implementation.
 impl<T: Default + Copy> NormalizedTreeVector<T> {
-    /// Creates new NormalizedTreeVector.
+    /// Creates new [`NormalizedTreeVector`].
     /// # Returns
-    /// New NormalizedTreeVector.
+    /// New [`NormalizedTreeVector`].
     pub fn new() -> NormalizedTreeVector<T> {
         let mut vec = NormalizedTreeVector {
             allocated_levels: 0,
@@ -52,7 +52,7 @@ impl<T: Default + Copy> NormalizedTreeVector<T> {
             empty: Vec::new(),
         };
 
-        let length = 2usize.pow(INITIAL_LEVELS as u32) - 1;
+        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
 
         vec.data.reserve(length);
         vec.indexes.reserve(length);
@@ -92,8 +92,8 @@ impl<T: Default + Copy> NormalizedTreeVector<T> {
     }
 }
 
-/// TreeVecLevels implementation for NormalizedTreeVector.
-impl<T> TreeVecLevels for NormalizedTreeVector<T> {
+/// [`Levels`] implementation for [`NormalizedTreeVector`].
+impl<T> Levels for NormalizedTreeVector<T> {
     fn get_allocated_levels(&self) -> u8 {
         self.allocated_levels
     }
@@ -121,7 +121,7 @@ impl<T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
     }
 
     fn allocate_level(&mut self) {
-        let length = 2usize.pow(self.allocated_levels as u32) - 1;
+        let length = 2usize.pow(u32::from(self.allocated_levels)) - 1;
 
         self.data.reserve(length);
         self.indexes.reserve(length);
@@ -135,20 +135,20 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     fn push(&mut self, value: T) -> usize {
         let index = self.length;
 
-        let data_index = if !self.empty.is_empty() {
-            self.empty.pop().unwrap()
-        } else {
+        let data_index = if self.empty.is_empty() {
             index
+        } else {
+            self.empty.pop().unwrap()
         };
 
         if index == self.max_length {
             self.allocate_level();
         }
 
-        if data_index != index {
-            self.data[data_index] = value;
-        } else {
+        if data_index == index {
             self.data.push(value);
+        } else {
+            self.data[data_index] = value;
         }
 
         let tree_index = NormalizedTreeIndex {
@@ -200,10 +200,10 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
             let height = item.height;
 
             let data = self.data[data_index];
-            if data_index != index {
-                self.empty.push(data_index);
-            } else {
+            if data_index == index {
                 self.data.pop();
+            } else {
+                self.empty.push(data_index);
             }
 
             self.length -= 1;
@@ -231,7 +231,7 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     }
 }
 
-impl<T: Default + Copy> NormalizedTreeVecIndexes<T>
+impl<T: Default + Copy> NormalizedIndexes<T>
     for NormalizedTreeVector<T>
 {
     fn get_index_mut(&mut self, index: usize) -> &mut NormalizedTreeIndex {
@@ -266,7 +266,7 @@ mod tests {
     use crate::core::structs::tree::vectors::{
         normalized_tree_vec::NormalizedTreeVector,
         optimized_tree_vec::INITIAL_LEVELS,
-        tree_vec::{TreeVec, TreeVecLevels},
+        tree_vec::{TreeVec, Levels},
     };
 
     #[test]
@@ -307,7 +307,7 @@ mod tests {
 
         assert_eq!(vec.len(), 3);
 
-        assert_eq!(vec.get(0).is_some(), true);
+        assert!(vec.get(0).is_some());
         assert_eq!(vec.get(0).unwrap().value, 1)
     }
 
@@ -351,7 +351,7 @@ mod tests {
         assert_eq!(vec.len(), 3);
 
         let node = vec.remove(2);
-        assert_eq!(node.is_some(), true);
+        assert!(node.is_some());
         assert_eq!(node.unwrap().value, 3);
         assert_eq!(vec.len(), 2);
         assert_eq!(vec.empty.len(), 0);
@@ -369,14 +369,14 @@ mod tests {
 
         vec.swap_indexes(0, 2);
         let node = vec.remove(2);
-        assert_eq!(node.is_some(), true);
+        assert!(node.is_some());
 
         assert_eq!(node.unwrap().value, 1);
         assert_eq!(vec.empty.len(), 1);
 
         vec.push(4);
         let node = vec.get(2);
-        assert_eq!(node.is_some(), true);
+        assert!(node.is_some());
 
         let node = node.unwrap();
         assert_eq!(node.value, 4);

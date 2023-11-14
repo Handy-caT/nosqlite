@@ -1,6 +1,6 @@
 use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
-/// TreeObject is a trait that defines the basic operations that
+/// [`TreeObject`] is a trait that defines the basic operations that
 /// a tree object must implement.
 pub trait TreeObject<T> {
     /// Pushes a value into the tree. Returns the index of the value.
@@ -33,9 +33,9 @@ pub trait TreeObject<T> {
     fn len(&self) -> usize;
 }
 
-/// TreeObjectVec is a trait that defines the vector operations that
+/// [`VecFunctions`] is a trait that defines the vector operations that
 /// a tree object can implement.
-pub trait TreeObjectVec<T, M: TreeVec<T> + Sized> {
+pub trait VecFunctions<T, M: TreeVec<T> + Sized> {
     /// Returns the value of the index in underlying vector.
     /// If the index is wrong, returns None.
     /// # Arguments
@@ -64,10 +64,10 @@ pub trait TreeObjectVec<T, M: TreeVec<T> + Sized> {
     fn remove_by_index(&mut self, index: usize) -> Option<T>;
 }
 
-/// TreeObjectFind is a trait that defines the find operations
+/// [`FindFunctions`] is a trait that defines the find operations
 /// that a tree object can implement.
 /// It expands find features of the TreeObject trait.
-pub trait TreeObjectFind<T> {
+pub trait FindFunctions<T> {
     /// Finds the first value that is greater than the given value
     /// or equals to it.
     /// Returns the index of the value and the value itself.

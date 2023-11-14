@@ -1,7 +1,7 @@
 use crate::core::structs::tree::{
     nodes::{TreeIndex, TreeNode},
     vectors::tree_vec::{
-        DefaultFunctions, TreeVec, TreeVecIndexes, TreeVecLevels,
+        DefaultFunctions, TreeVec, Indexes, Levels,
     },
 };
 use std::ops::{Index, IndexMut};
@@ -35,7 +35,7 @@ impl<T: Default + Copy> DefaultTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
+impl<T: Default + Copy> Indexes<T> for DefaultTreeVec<T> {
     fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex {
         &mut self.indexes[index]
     }
@@ -51,11 +51,11 @@ impl<T: Default + Copy> TreeVecIndexes<T> for DefaultTreeVec<T> {
 
 impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     fn push(&mut self, value: T) -> usize {
-        let index = if self.empty.len() > 0 {
-            self.empty.pop().unwrap()
-        } else {
+        let index = if self.empty.is_empty() {
             self.length += 1;
             self.data.len()
+        } else {
+            self.empty.pop().unwrap()
         };
 
         let indexes = TreeIndex::new_with_index(index);
@@ -73,10 +73,7 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
 
     fn get(&self, index: usize) -> Option<TreeNode<T>> {
         let item = self.indexes.get(index);
-        return if item.is_none() {
-            None
-        } else {
-            let item = item.unwrap();
+        return if let Some(item) = item {
             if item.index.is_none() {
                 None
             } else {
@@ -86,6 +83,8 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
                     indexes: *item,
                 })
             }
+        } else {
+            None
         };
     }
 
@@ -98,15 +97,9 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     }
 
     fn remove(&mut self, index: usize) -> Option<TreeNode<T>> {
-        let mut item = self.indexes.get(index);
-        if item.is_none() {
-            return None;
-        }
+        let item = *self.indexes.get(index)?;
 
-        let item = *item.unwrap();
-        if item.index.is_none() {
-            return None;
-        }
+        item.index?;
 
         self.indexes[index] = TreeIndex::default();
         self.empty.push(index);
@@ -168,17 +161,15 @@ impl<T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
     }
 }
 
-impl<T> TreeVecLevels for DefaultTreeVec<T> {
+impl<T> Levels for DefaultTreeVec<T> {
     fn get_allocated_levels(&self) -> u8 {
-        let length = f64::from(self.length as u16);
-        let levels = length.log2().ceil() as u8;
-        levels
+        let length = f64::from(self.length as u32);
+        length.log2().ceil() as u8
     }
 
     fn get_max_length(&self) -> usize {
         let levels = self.get_allocated_levels();
-        let max_length = 2usize.pow(levels as u32);
-        max_length
+        2usize.pow(u32::from(levels))
     }
 }
 
@@ -209,7 +200,7 @@ mod tests {
 
         let item = tree_vec.get(0);
 
-        assert_eq!(item.is_some(), true);
+        assert!(item.is_some());
         assert_eq!(item.unwrap().value, 1)
     }
 
@@ -243,8 +234,8 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.remove(index).is_some(), true);
-        assert_eq!(vec.get(index).is_none(), true);
+        assert!(vec.remove(index).is_some());
+        assert!(vec.get(index).is_none());
     }
 
     #[test]
@@ -255,13 +246,13 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.remove(index).is_some(), true);
+        assert!(vec.remove(index).is_some());
 
         assert_eq!(vec.data.len(), 3);
         assert_eq!(vec.empty.len(), 1);
         assert_eq!(vec.empty[0], 0);
 
-        assert_eq!(vec.remove(index).is_none(), true);
+        assert!(vec.remove(index).is_none());
     }
 
     #[test]
@@ -272,7 +263,7 @@ mod tests {
         vec.push(2);
         let index = vec.push(3);
 
-        assert_eq!(vec.remove(index).is_some(), true);
+        assert!(vec.remove(index).is_some());
         assert_eq!(vec.len(), 2);
     }
 
@@ -284,7 +275,7 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.get(5).is_none(), true);
+        assert!(vec.get(5).is_none());
     }
 
     #[test]
@@ -295,7 +286,7 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.remove(5).is_none(), true);
+        assert!(vec.remove(5).is_none());
         assert_eq!(vec.empty.len(), 0);
     }
 }

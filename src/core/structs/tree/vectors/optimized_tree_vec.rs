@@ -2,8 +2,8 @@ use crate::core::structs::tree::{
     nodes::{TreeIndex, TreeNode},
     vectors::{
         tree_vec::{
-            DefaultFunctions, OptimizedFunctions, TreeVec, TreeVecIndexes,
-            TreeVecLevels,
+            DefaultFunctions, OptimizedFunctions, TreeVec, Indexes,
+            Levels,
         },
         vec_functions::{allocate_level, get, push, remove},
     },
@@ -47,7 +47,7 @@ impl<T: Default + Copy> OptimizedTreeVec<T> {
             empty: Vec::new(),
         };
 
-        let length = 2usize.pow(INITIAL_LEVELS as u32) - 1;
+        let length = 2usize.pow(u32::from(INITIAL_LEVELS )) - 1;
 
         vec.data.reserve(length);
         vec.indexes.reserve(length);
@@ -59,7 +59,7 @@ impl<T: Default + Copy> OptimizedTreeVec<T> {
     }
 }
 
-impl<T> TreeVecLevels for OptimizedTreeVec<T> {
+impl<T> Levels for OptimizedTreeVec<T> {
     fn get_allocated_levels(&self) -> u8 {
         self.allocated_levels
     }
@@ -113,11 +113,11 @@ impl<T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
     }
 
     fn allocate_level(&mut self) {
-        allocate_level(self)
+        allocate_level(self);
     }
 }
 
-impl<T: Default + Copy> TreeVecIndexes<T> for OptimizedTreeVec<T> {
+impl<T: Default + Copy> Indexes<T> for OptimizedTreeVec<T> {
     fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex {
         &mut self.indexes[index]
     }
@@ -201,7 +201,7 @@ mod tests {
         let index = vec.push(1);
         let node = vec.get(index);
 
-        assert_eq!(node.is_some(), true);
+        assert!(node.is_some());
         assert_eq!(node.unwrap().value, 1);
     }
 
@@ -230,8 +230,8 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.remove(index).is_some(), true);
-        assert_eq!(vec.remove(index).is_none(), true);
+        assert!(vec.remove(index).is_some());
+        assert!(vec.remove(index).is_none());
     }
 
     #[test]
@@ -242,8 +242,8 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        assert_eq!(vec.remove(index).is_some(), true);
-        assert_eq!(vec.get(index).is_none(), true);
+        assert!(vec.remove(index).is_some());
+        assert!(vec.get(index).is_none());
     }
 
     #[test]

@@ -7,9 +7,9 @@ use crate::core::{
     structs::tree::{
         object::{
             balanced_tree::balanced_tree::BalancedTree,
-            tree_object::{TreeObject, TreeObjectFind},
+            tree_object::{TreeObject, FindFunctions},
         },
-        vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels},
+        vectors::tree_vec::{TreeVec, Indexes, Levels},
     },
 };
 
@@ -18,7 +18,7 @@ use crate::core::{
 /// So the getting the best fit is O(log n).
 pub struct BestFitAdvisor<'a, V>
 where
-    V: TreeVec<PageLink> + Sized + TreeVecIndexes<PageLink> + TreeVecLevels,
+    V: TreeVec<PageLink> + Sized + Indexes<PageLink> + Levels,
 {
     /// Link to the EmptyLinkRegistry
     empty_link_registry:
@@ -27,7 +27,7 @@ where
 
 impl<'a, V> BestFitAdvisor<'a, V>
 where
-    V: TreeVec<PageLink> + Sized + TreeVecIndexes<PageLink> + TreeVecLevels,
+    V: TreeVec<PageLink> + Sized + Indexes<PageLink> + Levels,
 {
     /// Creates a new BestFitAdvisor
     /// # Arguments
@@ -60,7 +60,7 @@ where
 
 impl<'a, V> PlaceAdvisorStrategy for BestFitAdvisor<'a, V>
 where
-    V: TreeVec<PageLink> + Sized + TreeVecIndexes<PageLink> + TreeVecLevels,
+    V: TreeVec<PageLink> + Sized + Indexes<PageLink> + Levels,
 {
     fn provide_place(&mut self, size: u64) -> Option<PageLink> {
         let data = self.empty_link_registry.get_data_mut();

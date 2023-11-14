@@ -3,9 +3,9 @@ use crate::core::structs::tree::{
         balanced_tree::balanced_tree_functions::{
             balance, find_min, remove_min,
         },
-        tree_object::{TreeObject, TreeObjectFind, TreeObjectVec},
+        tree_object::{TreeObject, FindFunctions, VecFunctions},
     },
-    vectors::tree_vec::{TreeVec, TreeVecIndexes, TreeVecLevels},
+    vectors::tree_vec::{TreeVec, Indexes, Levels},
 };
 use queues::{queue, IsQueue, Queue};
 use std::cmp::Ordering;
@@ -40,7 +40,7 @@ fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
 /// Functions for the balanced tree
 impl<
         T: Default + PartialOrd + Copy,
-        M: TreeVec<T> + TreeVecLevels + TreeVecIndexes<T> + Sized,
+        M: TreeVec<T> + Levels + Indexes<T> + Sized,
     > BalancedTree<T, M>
 {
     /// Creates new balanced tree using specified vector
@@ -193,7 +193,7 @@ impl<
 /// to use in DecoratableTree
 impl<
         T: Default + PartialOrd + Copy,
-        M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized,
+        M: TreeVec<T> + Indexes<T> + Levels + Sized,
     > TreeObject<T> for BalancedTree<T, M>
 {
     fn push(&mut self, value: T) -> usize {
@@ -271,8 +271,8 @@ impl<
 
 impl<
         T: Default + PartialOrd + Copy,
-        M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized,
-    > TreeObjectVec<T, M> for BalancedTree<T, M>
+        M: TreeVec<T> + Indexes<T> + Levels + Sized,
+    > VecFunctions<T, M> for BalancedTree<T, M>
 {
     fn get(&mut self, index: usize) -> Option<T> {
         let item = self.nodes.get(index);
@@ -303,8 +303,8 @@ impl<
 
 impl<
         T: Default + PartialOrd + Copy,
-        M: TreeVec<T> + TreeVecIndexes<T> + Sized,
-    > TreeObjectFind<T> for BalancedTree<T, M>
+        M: TreeVec<T> + Indexes<T> + Sized,
+    > FindFunctions<T> for BalancedTree<T, M>
 {
     fn find_greater_equal(&mut self, value: T) -> Option<(usize, T)> {
         let mut queue: Queue<(Option<usize>, String)> = queue![];

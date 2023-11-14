@@ -4,7 +4,8 @@ use crate::core::structs::tree::nodes::{
 };
 use std::ops::{Index, IndexMut};
 
-/// The `TreeVec` trait is used to define the basic functions of a tree vector.
+/// The [`TreeVec`] trait is used to define the basic functions
+/// of a tree vector.
 pub trait TreeVec<T>: Index<usize, Output = T> + IndexMut<usize> {
     /// Pushes a value to the vector.
     /// Returns the index of the added value.
@@ -13,12 +14,12 @@ pub trait TreeVec<T>: Index<usize, Output = T> + IndexMut<usize> {
     /// # Returns
     /// * `usize` - Index of the added value
     fn push(&mut self, value: T) -> usize;
-    /// Returns the TreeNode at the given index.
+    /// Returns the [`TreeNode`] at the given index.
     /// Returns `None` if the index is out of bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
-    /// * `Option<TreeNode<T>>` - TreeNode at the given index
+    /// * `Option<TreeNode<T>>` - [`TreeNode`] at the given index
     fn get(&self, index: usize) -> Option<TreeNode<T>>;
     /// Returns the mutable reference to the value at the given index.
     /// Index must be in bounds.
@@ -29,12 +30,12 @@ pub trait TreeVec<T>: Index<usize, Output = T> + IndexMut<usize> {
     fn get_value_mut(&mut self, index: usize) -> Option<&mut T>;
 
     /// Removes the value at the given index.
-    /// Returns the removed TreeNode.
+    /// Returns the removed [`TreeNode`].
     /// Returns `None` if the index is out of bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
-    /// * `Option<TreeNode<T>>` - Removed TreeNode
+    /// * `Option<TreeNode<T>>` - Removed [`TreeNode`]
     fn remove(&mut self, index: usize) -> Option<TreeNode<T>>;
     /// Returns the length of the vector.
     /// # Returns
@@ -42,62 +43,64 @@ pub trait TreeVec<T>: Index<usize, Output = T> + IndexMut<usize> {
     fn len(&self) -> usize;
 }
 
-/// The `TreeVecIndexes` trait is used to define the basic functions of a
+/// The [`Indexes`] trait is used to define the basic functions of a
 /// index part of a tree vector.
-pub trait TreeVecIndexes<T> {
-    /// Returns the mutable reference to the TreeIndex at the given index.
+pub trait Indexes<T> {
+    /// Returns the mutable reference to the [`TreeIndex`] at the given index.
     /// Index must be in bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
     /// * `&mut TreeIndex` - Mutable reference to the
-    /// TreeIndex at the given index
+    /// [`TreeIndex`] at the given index
     fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex;
-    /// Returns the reference to the TreeIndex at the given index.
+    /// Returns the reference to the [`TreeIndex`] at the given index.
     /// Index must be in bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
-    /// * `&TreeIndex` - Reference to the TreeIndex at the given index
+    /// * `&TreeIndex` - Reference to the [`TreeIndex`] at the given index
     fn get_index(&self, index: usize) -> &TreeIndex;
-    /// Returns the mutable reference to the vector of TreeIndexes.
+    /// Returns the mutable reference to the vector of [`TreeIndexes`].
     /// # Returns
-    /// * `&mut Vec<TreeIndex>` - Mutable reference to the vector of TreeIndexes
+    /// * `&mut Vec<TreeIndex>` - Mutable reference to the
+    /// vector of [`TreeIndexes`]
     fn get_indexes(&mut self) -> &mut Vec<TreeIndex>;
 }
 
-/// NormalizedTreeVecIndexes is used to define the basic functions
+/// [`NormalizedIndexes`] is used to define the basic functions
 /// of a index part of a normalized tree vector.
-pub trait NormalizedTreeVecIndexes<T> {
-    /// Returns the mutable reference to the NormalizedTreeIndex
+pub trait NormalizedIndexes<T> {
+    /// Returns the mutable reference to the [`NormalizedTreeIndex`]
     /// at the given index.
     /// Index must be in bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
     /// * `&mut NormalizedTreeIndex` - Mutable reference to the
-    /// NormalizedTreeIndex at the given index
+    /// [`NormalizedTreeIndex`] at the given index
     fn get_index_mut(&mut self, index: usize) -> &mut NormalizedTreeIndex;
-    /// Returns the reference to the NormalizedTreeIndex at the given index.
+    /// Returns the reference to the [`NormalizedTreeIndex`] at the given index.
     /// Index must be in bounds.
     /// # Arguments
     /// * `index` - Index of the value
     /// # Returns
-    /// * `&NormalizedTreeIndex` - Reference to the NormalizedTreeIndex
+    /// * `&NormalizedTreeIndex` - Reference to the [`NormalizedTreeIndex`]
     /// at the given index
     fn get_index(&self, index: usize) -> &NormalizedTreeIndex;
-    /// Returns the mutable reference to the vector of NormalizedTreeIndexes.
+    /// Returns the mutable reference to the vector of
+    /// [`NormalizedTreeIndex`]es.
     /// # Returns
     /// * `&mut Vec<NormalizedTreeIndex>` - Mutable reference to the vector
-    /// of NormalizedTreeIndexes
+    /// of [`NormalizedTreeIndexes`]
     fn get_indexes(&mut self) -> &mut Vec<NormalizedTreeIndex>;
 }
 
-/// The `TreeVecLevels` trait is used to define the basic functions of a levels
+/// The [`Levels`] trait is used to define the basic functions of a levels
 /// part of a tree vector.
 /// It is used with vectors that uses tree level structure and allocates memory
 /// for each level when needed.
-pub trait TreeVecLevels {
+pub trait Levels {
     /// Returns the count of allocated levels.
     /// # Returns
     /// * `u8` - Count of allocated levels
@@ -109,9 +112,9 @@ pub trait TreeVecLevels {
     fn get_max_length(&self) -> usize;
 }
 
-/// The 'BackwardTreeVec' trait is used to define the basic functions
+/// The [`Backward`] trait is used to define the basic functions
 /// of tree with nodes that have a parent index.
-pub trait BackwardTreeVec {
+pub trait Backward {
     /// Returns the parent index of the node at the given index.
     /// Returns `None` if the index is out of bounds.
     /// # Arguments
@@ -126,7 +129,7 @@ pub trait BackwardTreeVec {
     fn add_parent(&mut self, index: usize, parent: usize) -> Option<()>;
 }
 
-/// The 'DefaultFunctions' trait is used to define
+/// The [`DefaultFunctions`] trait is used to define
 /// the default functions of a tree vector.
 /// This trait is private and should not be used outside of the crate.
 pub(in crate::core::structs::tree::vectors) trait DefaultFunctions<T> {
@@ -158,7 +161,7 @@ pub(in crate::core::structs::tree::vectors) trait DefaultFunctions<T> {
     fn get_indexes_mut(&mut self) -> &mut Vec<TreeIndex>;
 }
 
-/// The 'OptimizedFunctions' trait is used to define
+/// The [`OptimizedFunctions`] trait is used to define
 /// the optimized functions of a tree vector.
 pub(in crate::core::structs::tree::vectors) trait OptimizedFunctions<T> {
     /// Returns the mutable reference to the allocated levels count.
