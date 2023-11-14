@@ -4,6 +4,7 @@ use std::{
 };
 
 /// A struct that represents a link to a page.
+#[derive(Debug, Default, Copy, Clone)]
 pub struct PageLink {
     /// The index of the page.
     pub page_index: u64,
@@ -38,7 +39,8 @@ impl PageLink {
     }
 
     /// Returns the raw end of the link.
-    /// Raw end is the index from the start of the file plus the length of the link.
+    /// Raw end is the index from the start of the file plus
+    /// the length of the link.
     /// # Returns
     /// u64 - The raw end of the link.
     pub fn get_raw_end(&self) -> u64 {
@@ -101,24 +103,6 @@ impl Into<[u8; 16]> for PageLink {
     }
 }
 
-impl Clone for PageLink {
-    fn clone(&self) -> Self {
-        PageLink {
-            page_index: self.page_index,
-            start: self.start,
-            len: self.len,
-        }
-    }
-}
-
-impl Copy for PageLink {}
-
-impl Default for PageLink {
-    fn default() -> Self {
-        return PageLink::new(0, 0, 0);
-    }
-}
-
 impl PartialEq for PageLink {
     fn eq(&self, other: &PageLink) -> bool {
         self.page_index == other.page_index && self.start == other.start
@@ -126,16 +110,6 @@ impl PartialEq for PageLink {
 }
 
 impl Eq for PageLink {}
-
-impl Debug for PageLink {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("PageLink")
-            .field("page_index", &self.page_index)
-            .field("start", &self.start)
-            .field("len", &self.len)
-            .finish()
-    }
-}
 
 impl Ord for PageLink {
     fn cmp(&self, other: &Self) -> Ordering {

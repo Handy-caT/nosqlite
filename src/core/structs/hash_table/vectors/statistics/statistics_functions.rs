@@ -4,7 +4,8 @@ use crate::core::structs::hash_table::vectors::hash_vec::{
 
 /// Function that updates statistics after push action.
 /// It checks if bucket length is bigger than max length and updates statistics.
-/// If bucket length is equal to max length, it adds bucket to max length buckets.
+/// If bucket length is equal to max length,
+/// it adds bucket to max length buckets.
 /// # Arguments
 /// * `hash_vec` - hash_vec to update
 /// * `index` - index of bucket
@@ -51,12 +52,9 @@ pub(in crate::core::structs::hash_table) fn statistics_remove_actions<K, V, M>(
         hash_vec.get_statistics_mut().remove_bucket(index as usize);
         if hash_vec.get_statistics().get_count() == 0 {
             let bucket_len = hash_vec.get_bucket_len(index);
-            match bucket_len {
-                Some(len) => {
-                    hash_vec.get_statistics_mut().update(len - 1);
-                    hash_vec.get_statistics_mut().add_bucket(index as usize);
-                }
-                None => {}
+            if let Some(len) = bucket_len {
+                hash_vec.get_statistics_mut().update(len - 1);
+                hash_vec.get_statistics_mut().add_bucket(index as usize);
             }
         }
     }

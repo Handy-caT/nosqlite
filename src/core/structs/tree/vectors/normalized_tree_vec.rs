@@ -16,7 +16,8 @@ use std::ops::{Index, IndexMut};
 /// Struct that represents normalized tree vector.
 /// In this vector child indexes are 2i+1 and 2i+2.
 /// This vector has empty vector to contain empty indexes.
-/// Indexes vector contains indexes of data vector, so data is independent from indexes.
+/// Indexes vector contains indexes of data vector,
+/// so data is independent from indexes.
 /// # Type parameters
 /// * `T` - Type of the data that the vector stores
 /// # Fields

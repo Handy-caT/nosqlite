@@ -76,7 +76,8 @@ impl HashVecStatistics {
     /// # Arguments
     /// * `bucket` - Bucket to check.
     /// # Returns
-    /// * `Option<bool>` - True if the bucket is a bucket with the maximum length.
+    /// * `Option<bool>` - True if the bucket is
+    /// a bucket with the maximum length.
     /// None if the bucket is out of range.
     pub fn is_max_length_bucket(&self, bucket: usize) -> Option<bool> {
         if bucket < self.max_length_buckets.len() {

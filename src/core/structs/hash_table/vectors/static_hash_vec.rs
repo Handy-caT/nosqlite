@@ -14,12 +14,14 @@ use crate::core::structs::hash_table::vectors::{
 /// A static hash table that uses vectors as buckets.
 /// # Arguments
 /// * `V` - Type of the value
-/// * `N` - Number of buckets, must be a power of 2, if it is not, it will be rounded up to the next power of 2
+/// * `N` - Number of buckets, must be a power of 2, if it is not,
+/// it will be rounded up to the next power of 2
 pub(crate) struct StaticHashVec<K, V, const N: u64> {
     /// The data of the hash vector as a vector of vectors.
     data: Vec<Vec<KeyValue<K, V>>>,
     /// The size of the hash vector. This is the number of buckets.
-    /// It is a power of 2. If N is not a power of 2, it will be rounded up to the next power of 2.
+    /// It is a power of 2. If N is not a power of 2,
+    /// it will be rounded up to the next power of 2.
     pub size: u64,
     /// Statistics of the hash vector
     statistics: HashVecStatistics,
@@ -97,18 +99,13 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64> HashVec<K, V>
 
     fn have_key(&mut self, index: u64, key: K) -> bool {
         let item_index = self.find_key(index, key);
-        match item_index {
-            Some(_) => true,
-            None => false,
-        }
+        item_index.is_some()
     }
 
     fn remove(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>> {
         let item_index = self.find_key(index, key);
         match item_index {
-            Some(i) => {
-                return self.remove_by_index(index, i);
-            }
+            Some(i) => self.remove_by_index(index, i),
             None => None,
         }
     }
@@ -144,14 +141,10 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: u64>
         index: u64,
         value_index: usize,
     ) -> Option<KeyValue<K, V>> {
-        if index >= N {
+        if value_index >= self.data[index as usize].len() {
             None
         } else {
-            if value_index >= self.data[index as usize].len() {
-                None
-            } else {
-                Some(self.data[index as usize][value_index])
-            }
+            Some(self.data[index as usize][value_index])
         }
     }
 
@@ -295,9 +288,9 @@ mod tests {
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
 
-        assert_eq!(hash_vec.have_key(0, 1), true);
-        assert_eq!(hash_vec.have_key(0, 2), true);
-        assert_eq!(hash_vec.have_key(0, 3), false);
+        assert!(hash_vec.have_key(0, 1));
+        assert!(hash_vec.have_key(0, 2));
+        assert!(!hash_vec.have_key(0, 3));
     }
 
     #[test]
@@ -324,13 +317,13 @@ mod tests {
 
         assert_eq!(hash_vec.remove(0, 1), Some(KeyValue::new(1, 1)));
         assert_eq!(hash_vec.find_key(0, 1), None);
-        assert_eq!(hash_vec.have_key(0, 1), false);
+        assert!(!hash_vec.have_key(0, 1));
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 1);
 
         assert_eq!(hash_vec.remove(0, 2), Some(KeyValue::new(2, 2)));
         assert_eq!(hash_vec.find_key(0, 2), None);
-        assert_eq!(hash_vec.have_key(0, 2), false);
+        assert!(!hash_vec.have_key(0, 2));
         assert_eq!(hash_vec.statistics.get_count(), 0);
         assert_eq!(hash_vec.statistics.max_length, 0);
 
@@ -351,13 +344,13 @@ mod tests {
 
         assert_eq!(hash_vec.remove_by_index(0, 0), Some(KeyValue::new(1, 1)));
         assert_eq!(hash_vec.find_key(0, 1), None);
-        assert_eq!(hash_vec.have_key(0, 1), false);
+        assert!(!hash_vec.have_key(0, 1));
         assert_eq!(hash_vec.statistics.get_count(), 1);
         assert_eq!(hash_vec.statistics.max_length, 1);
 
         assert_eq!(hash_vec.remove_by_index(0, 0), Some(KeyValue::new(2, 2)));
         assert_eq!(hash_vec.find_key(0, 2), None);
-        assert_eq!(hash_vec.have_key(0, 2), false);
+        assert!(!hash_vec.have_key(0, 2));
         assert_eq!(hash_vec.statistics.get_count(), 0);
         assert_eq!(hash_vec.statistics.max_length, 0);
 
@@ -402,12 +395,12 @@ mod tests {
 
         let vec = hash_vec.get_vec(0);
 
-        assert_eq!(vec.is_some(), true);
+        assert!(vec.is_some());
         assert_eq!(vec.unwrap().len(), 2);
 
         let vec = hash_vec.get_vec(9);
 
-        assert_eq!(vec.is_some(), false);
+        assert!(vec.is_none());
     }
 
     #[test]

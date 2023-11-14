@@ -8,7 +8,8 @@ use crate::core::structs::hash_table::{
 };
 use std::marker::PhantomData;
 
-/// StaticHashTable is a hash table with a fixed size. It is using HashVec as a storage.
+/// StaticHashTable is a hash table with a fixed size.
+/// It is using HashVec as a storage.
 /// * `K` - key type
 /// * `V` - value type
 /// * `N` - size of the hash table
@@ -101,10 +102,7 @@ where
         let index = hash & (self.table.size() - 1);
 
         let item = self.table.get(index, key);
-        match item {
-            Some(item) => Some(item.value),
-            None => None,
-        }
+        item.map(|item| item.value)
     }
 
     fn len(&self) -> usize {

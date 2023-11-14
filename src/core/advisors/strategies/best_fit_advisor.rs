@@ -14,7 +14,8 @@ use crate::core::{
 };
 
 /// BestFitAdvisor is a strategy that finds the best fit for a given size.
-/// It uses EmptyLinkRegistry with BalancedTree as a data structure. So the getting the best fit is O(log n).
+/// It uses EmptyLinkRegistry with BalancedTree as a data structure.
+/// So the getting the best fit is O(log n).
 pub struct BestFitAdvisor<'a, V>
 where
     V: TreeVec<PageLink> + Sized + TreeVecIndexes<PageLink> + TreeVecLevels,
@@ -47,13 +48,13 @@ where
     pub fn get_empty_link_registry(
         &self,
     ) -> &EmptyLinkRegistry<V, BalancedTree<PageLink, V>> {
-        &self.empty_link_registry
+        self.empty_link_registry
     }
 
     pub fn get_empty_link_registry_mut(
         &mut self,
     ) -> &mut EmptyLinkRegistry<V, BalancedTree<PageLink, V>> {
-        &mut self.empty_link_registry
+        self.empty_link_registry
     }
 }
 
@@ -90,7 +91,7 @@ where
             self.empty_link_registry.add_link(new_link);
         }
 
-        self.empty_link_registry.remove_link(link.clone());
+        self.empty_link_registry.remove_link(*link);
     }
 
     fn get_name(&self) -> String {
@@ -125,7 +126,8 @@ mod tests {
     fn test_best_fit_advisor_new() {
         let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
+            ::new_with_compare(
             nodes,
             PageLink::compare_by_len,
         );
@@ -149,7 +151,8 @@ mod tests {
     fn test_best_fit_advisor_provide_place() {
         let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
+            ::new_with_compare(
             nodes,
             PageLink::compare_by_len,
         );
@@ -183,7 +186,8 @@ mod tests {
     fn test_best_fit_advisor_provide_place_with_empty_registry() {
         let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
+            ::new_with_compare(
             nodes,
             PageLink::compare_by_len,
         );
@@ -208,7 +212,9 @@ mod tests {
     #[test]
     fn test_best_fit_advisor_apply_place() {
         let nodes = DefaultTreeVec::<PageLink>::new();
-        let tree = BalancedTree::<PageLink, DefaultTreeVec<PageLink>>::new_with_compare(
+        let tree =
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
+            ::new_with_compare(
             nodes,
             PageLink::compare_by_len,
         );

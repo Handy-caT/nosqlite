@@ -189,7 +189,8 @@ impl<
 }
 
 /// TreeObject trait implementation for the balanced tree
-/// It implemented to use BalancedTree as TreeObject and to use in in DecoratableTree
+/// It implemented to use BalancedTree as TreeObject and
+/// to use in DecoratableTree
 impl<
         T: Default + PartialOrd + Copy,
         M: TreeVec<T> + TreeVecIndexes<T> + TreeVecLevels + Sized,

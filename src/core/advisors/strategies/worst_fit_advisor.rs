@@ -46,16 +46,7 @@ impl<'a> PlaceAdvisorStrategy for WorstFitAdvisor<'a> {
 
         let link = base_obj.peek_max();
 
-        match link {
-            Some(link) => {
-                if link.len >= size as u32 {
-                    Some(link.clone())
-                } else {
-                    None
-                }
-            }
-            None => None,
-        }
+        link.filter(|&link| link.len >= size as u32)
     }
 
     fn apply_place(&mut self, link: &PageLink, size: u64) {
@@ -68,7 +59,7 @@ impl<'a> PlaceAdvisorStrategy for WorstFitAdvisor<'a> {
             self.empty_link_registry.add_link(new_link);
         }
 
-        self.empty_link_registry.remove_link(link.clone());
+        self.empty_link_registry.remove_link(*link);
     }
 
     fn get_name(&self) -> String {
@@ -89,7 +80,7 @@ mod tests {
         link_struct::PageLink,
         structs::tree::{
             object::{
-                balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree,
+                balanced_tree::DecoratableBalancedTree,
                 bin_heap::bin_heap::BinHeap, tree_object::TreeObject,
             },
             vectors::normalized_tree_vec::NormalizedTreeVector,

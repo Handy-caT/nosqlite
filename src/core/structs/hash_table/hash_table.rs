@@ -14,7 +14,8 @@ pub trait HashTable<K, V> {
     /// # Arguments
     /// * `key` - key of the value
     /// # Returns
-    /// * `Option<V>` - The value removed. None if the key is not in the hash table.
+    /// * `Option<V>` - The value removed.
+    /// None if the key is not in the hash table.
     fn remove(&mut self, key: K) -> Option<V>;
 
     /// Gets a value from the hash table
