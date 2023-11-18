@@ -1,29 +1,29 @@
 use crate::core::structs::tree::{
     nodes::tree_index::TreeIndex,
     object::{
-        balanced_tree::balanced_tree_functions::{
+        balanced_tree::functions::{
             balance, find_min, remove_min,
         },
-        tree_object::{TreeObject, VecFunctions},
+        tree::{Tree, VecFunctions},
     },
     vectors::{
         additional_indexes::additional_index_vec::AdditionalIndexVec,
-        tree_vec::{TreeVec, Indexes, Levels},
+        tree_vec::{Indexes, Levels, TreeVec},
     },
 };
 use std::cmp::Ordering;
 
-/// DecoratableBalancedTree is a tree that can be decorated
+/// [`Decoratable`] balanced tree is a tree that can be decorated
 /// with additional indexes.
-/// It is a wrapper around BalancedTree.
+/// It is a wrapper around [`BalancedTree`].
 /// It can be used to don't duplicate data in memory.
 /// So you can create various tree indexes on the
 /// same data using custom compare functions.
-/// You can also use BinHeap to decorate it.
-pub struct DecoratableBalancedTree<
+/// You can also use [`BinHeap`] to decorate it.
+pub struct Decoratable<
     T,
     V: TreeVec<T> + Sized,
-    M: TreeObject<T> + Sized + VecFunctions<T, V>,
+    M: Tree<T> + Sized + VecFunctions<T, V>,
 > {
     /// Base tree object
     base: M,
@@ -39,22 +39,22 @@ pub struct DecoratableBalancedTree<
 impl<
         T: Default + Copy,
         V: TreeVec<T> + Levels + Sized,
-        M: TreeObject<T> + Sized + VecFunctions<T, V>,
-    > DecoratableBalancedTree<T, V, M>
+        M: Tree<T> + Sized + VecFunctions<T, V>,
+    > Decoratable<T, V, M>
 {
-    /// Create new DecoratableBalancedTree with compare function and tree object
+    /// Create new [`Decoratable`] balanced tree with compare function and tree object
     /// # Arguments
     /// * `tree` - tree object, can contain data
     /// * `compare` - compare function
     /// # Returns
-    /// * `DecoratableBalancedTree` - new DecoratableBalancedTree
+    /// * `Decoratable` - new [`Decoratable`] balanced tree
     pub fn new(
         tree: M,
         compare: fn(&T, &T) -> Ordering,
-    ) -> DecoratableBalancedTree<T, V, M> {
+    ) -> Decoratable<T, V, M> {
         let additional_index_vec = AdditionalIndexVec::new(tree.get_nodes());
 
-        let mut dec_tree = DecoratableBalancedTree {
+        let mut dec_tree = Decoratable {
             base: tree,
             root: None,
             indexes: additional_index_vec,
@@ -67,16 +67,16 @@ impl<
         dec_tree
     }
 
-    /// Returns the link to the base TreeObject
+    /// Returns the link to the base [`Tree`]
     /// # Returns
-    /// * `&M` - link to the base TreeObject
+    /// * `&M` - link to the base [`Tree`]
     pub fn get_base(&self) -> &M {
         &self.base
     }
 
-    /// Returns the mutable link to the base TreeObject
+    /// Returns the mutable link to the base [`Tree`]
     /// # Returns
-    /// * `&mut M` - mutable link to the base TreeObject
+    /// * `&mut M` - mutable link to the base [`Tree`]
     pub fn get_base_mut(&mut self) -> &mut M {
         &mut self.base
     }
@@ -144,7 +144,7 @@ impl<
             } else if (self.compare)(&value, node_value) == Ordering::Greater {
                 self.indexes[root_index].right_index = self.remove_from_root(
                     value,
-                    self.indexes[root_index as usize].right_index.unwrap(),
+                    self.indexes[root_index].right_index.unwrap(),
                 );
             } else {
                 let left_index = self.indexes[root_index].left_index;
@@ -213,8 +213,8 @@ impl<
 impl<
         T: Default + Copy,
         V: TreeVec<T> + Levels + Sized,
-        M: TreeObject<T> + Sized + VecFunctions<T, V>,
-    > TreeObject<T> for DecoratableBalancedTree<T, V, M>
+        M: Tree<T> + Sized + VecFunctions<T, V>,
+    > Tree<T> for Decoratable<T, V, M>
 {
     fn push(&mut self, value: T) -> usize {
         let index = self.base.push(value);
@@ -281,8 +281,8 @@ impl<
 impl<
         T: Default + Copy,
         V: TreeVec<T> + Indexes<T> + Levels + Sized,
-        M: TreeObject<T> + Sized + VecFunctions<T, V>,
-    > VecFunctions<T, V> for DecoratableBalancedTree<T, V, M>
+        M: Tree<T> + Sized + VecFunctions<T, V>,
+    > VecFunctions<T, V> for Decoratable<T, V, M>
 {
     fn get(&mut self, index: usize) -> Option<T> {
         self.base.get(index)
@@ -322,7 +322,7 @@ impl<
 mod tests {
     use super::*;
     use crate::core::structs::tree::{
-        object::balanced_tree::balanced_tree::BalancedTree,
+        object::BalancedTree,
         vectors::default_tree_vec::DefaultTreeVec,
     };
 
@@ -336,7 +336,7 @@ mod tests {
         tree.push(2);
         tree.push(3);
 
-        let dec_tree = DecoratableBalancedTree::<
+        let dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -354,7 +354,7 @@ mod tests {
         let nodes = DefaultTreeVec::<u64>::new();
         let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
 
-        let dec_tree = DecoratableBalancedTree::<
+        let dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -374,7 +374,7 @@ mod tests {
         tree.push(1);
         tree.push(2);
 
-        let mut dec_tree = DecoratableBalancedTree::<
+        let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -398,7 +398,7 @@ mod tests {
         let nodes = DefaultTreeVec::<u64>::new();
         let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
 
-        let mut dec_tree = DecoratableBalancedTree::<
+        let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -433,7 +433,7 @@ mod tests {
         tree.push(2);
         tree.push(3);
 
-        let mut dec_tree = DecoratableBalancedTree::<
+        let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -454,7 +454,7 @@ mod tests {
         tree.push(2);
         tree.push(3);
 
-        let mut dec_tree = DecoratableBalancedTree::<
+        let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -475,7 +475,7 @@ mod tests {
         tree.push(2);
         tree.push(3);
 
-        let mut dec_tree = DecoratableBalancedTree::<
+        let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -496,7 +496,7 @@ mod tests {
 
         tree.push(1);
 
-        let mut dec_tree = DecoratableBalancedTree::<
+        let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
@@ -517,7 +517,7 @@ mod tests {
 
         tree.push(1);
 
-        let mut dec_tree = DecoratableBalancedTree::<
+        let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,

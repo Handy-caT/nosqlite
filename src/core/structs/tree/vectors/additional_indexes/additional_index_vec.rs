@@ -1,6 +1,6 @@
 use crate::core::structs::tree::{
     nodes::tree_index::TreeIndex,
-    vectors::tree_vec::{TreeVec, Levels},
+    vectors::tree_vec::{Levels, TreeVec},
 };
 use std::ops::{Index, IndexMut};
 
@@ -51,8 +51,8 @@ impl AdditionalIndexVec {
         &mut self.indexes
     }
 
-    pub fn remove(&mut self, index: i32) -> TreeIndex {
-        self.indexes.remove(index as usize)
+    pub fn remove(&mut self, index: usize) -> TreeIndex {
+        self.indexes.remove(index)
     }
 
     pub fn len(&self) -> usize {

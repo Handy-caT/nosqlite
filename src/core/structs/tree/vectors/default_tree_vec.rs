@@ -1,8 +1,6 @@
 use crate::core::structs::tree::{
     nodes::{TreeIndex, TreeNode},
-    vectors::tree_vec::{
-        DefaultFunctions, TreeVec, Indexes, Levels,
-    },
+    vectors::tree_vec::{DefaultFunctions, Indexes, Levels, TreeVec},
 };
 use std::ops::{Index, IndexMut};
 
@@ -162,6 +160,8 @@ impl<T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
 }
 
 impl<T> Levels for DefaultTreeVec<T> {
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_sign_loss)]
     fn get_allocated_levels(&self) -> u8 {
         let length = f64::from(self.length as u32);
         length.log2().ceil() as u8

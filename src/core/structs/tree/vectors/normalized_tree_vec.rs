@@ -5,10 +5,7 @@ use crate::core::structs::tree::{
     },
     vectors::{
         optimized_tree_vec::INITIAL_LEVELS,
-        tree_vec::{
-            NormalizedIndexes, OptimizedFunctions, TreeVec,
-            Levels,
-        },
+        tree_vec::{Levels, NormalizedIndexes, OptimizedFunctions, TreeVec},
     },
 };
 use std::ops::{Index, IndexMut};
@@ -231,9 +228,7 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     }
 }
 
-impl<T: Default + Copy> NormalizedIndexes<T>
-    for NormalizedTreeVector<T>
-{
+impl<T: Default + Copy> NormalizedIndexes<T> for NormalizedTreeVector<T> {
     fn get_index_mut(&mut self, index: usize) -> &mut NormalizedTreeIndex {
         &mut self.indexes[index]
     }
@@ -266,7 +261,7 @@ mod tests {
     use crate::core::structs::tree::vectors::{
         normalized_tree_vec::NormalizedTreeVector,
         optimized_tree_vec::INITIAL_LEVELS,
-        tree_vec::{TreeVec, Levels},
+        tree_vec::{Levels, TreeVec},
     };
 
     #[test]

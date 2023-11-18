@@ -2,8 +2,7 @@ use crate::core::structs::tree::{
     nodes::{TreeIndex, TreeNode},
     vectors::{
         tree_vec::{
-            DefaultFunctions, OptimizedFunctions, TreeVec, Indexes,
-            Levels,
+            DefaultFunctions, Indexes, Levels, OptimizedFunctions, TreeVec,
         },
         vec_functions::{allocate_level, get, push, remove},
     },
@@ -47,7 +46,7 @@ impl<T: Default + Copy> OptimizedTreeVec<T> {
             empty: Vec::new(),
         };
 
-        let length = 2usize.pow(u32::from(INITIAL_LEVELS )) - 1;
+        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
 
         vec.data.reserve(length);
         vec.indexes.reserve(length);

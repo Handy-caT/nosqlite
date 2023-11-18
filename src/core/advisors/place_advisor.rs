@@ -1,7 +1,7 @@
 use crate::core::{
     link_struct::PageLink,
     structs::tree::{
-        object::tree_object::{TreeObject, VecFunctions},
+        object::tree::{Tree, VecFunctions},
         vectors::tree_vec::TreeVec,
     },
 };

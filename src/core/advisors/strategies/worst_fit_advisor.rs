@@ -5,7 +5,7 @@ use crate::core::{
     },
     link_struct::PageLink,
     structs::tree::{
-        object::bin_heap::bin_heap::BinHeap,
+        object::BinHeap,
         vectors::normalized_tree_vec::NormalizedTreeVector,
     },
 };
@@ -80,8 +80,8 @@ mod tests {
         link_struct::PageLink,
         structs::tree::{
             object::{
-                balanced_tree::DecoratableBalancedTree,
-                bin_heap::bin_heap::BinHeap, tree_object::TreeObject,
+                balanced_tree::Decoratable,
+                BinHeap, tree::Tree,
             },
             vectors::normalized_tree_vec::NormalizedTreeVector,
         },
@@ -91,7 +91,7 @@ mod tests {
     fn test_worst_fit_advisor_new() {
         let heap =
             BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
-        let tree = DecoratableBalancedTree::<
+        let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
@@ -111,7 +111,7 @@ mod tests {
     fn test_worst_fit_advisor_provide_place() {
         let heap =
             BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
-        let tree = DecoratableBalancedTree::<
+        let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
@@ -140,7 +140,7 @@ mod tests {
     fn test_worst_fit_advisor_provide_place_with_empty_registry() {
         let heap =
             BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
-        let tree = DecoratableBalancedTree::<
+        let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
@@ -162,7 +162,7 @@ mod tests {
     fn test_worst_fit_advisor_apply_place() {
         let heap =
             BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
-        let tree = DecoratableBalancedTree::<
+        let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,

@@ -2,13 +2,12 @@ use crate::core::structs::hash_table::vectors::{
     hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal},
     key_value::KeyValue,
 };
-use std::{marker::PhantomData, vec::IntoIter};
+use std::marker::PhantomData;
 
 /// HashVecIterator is an iterator for HashVec
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - HashVec implementation
-/// * `N` - size of the hash table
 pub struct HashVecIterator<'a, K, V, H>
 where
     H: HashVec<K, V>,
@@ -53,20 +52,18 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let bucket = self.bucket;
         let index = self.index;
-        let value = self.table.get_by_index(bucket as u64, index);
+        let value = self.table.get_by_index(bucket, index);
 
-        return if value.is_some() {
+        if value.is_some() {
             self.index += 1;
             value
+        } else if self.bucket >= self.size as usize {
+            None
         } else {
-            if self.bucket >= self.size as usize {
-                None
-            } else {
-                self.bucket += 1;
-                self.index = 0;
-                self.next()
-            }
-        };
+            self.bucket += 1;
+            self.index = 0;
+            self.next()
+        }
     }
 }
 

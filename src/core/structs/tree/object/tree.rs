@@ -1,8 +1,8 @@
 use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 
-/// [`TreeObject`] is a trait that defines the basic operations that
+/// [`Tree`] is a trait that defines the basic operations that
 /// a tree object must implement.
-pub trait TreeObject<T> {
+pub trait Tree<T> {
     /// Pushes a value into the tree. Returns the index of the value.
     /// # Arguments
     /// * `value` - The value to be pushed.
@@ -66,7 +66,7 @@ pub trait VecFunctions<T, M: TreeVec<T> + Sized> {
 
 /// [`FindFunctions`] is a trait that defines the find operations
 /// that a tree object can implement.
-/// It expands find features of the TreeObject trait.
+/// It expands find features of the [`Tree`] trait.
 pub trait FindFunctions<T> {
     /// Finds the first value that is greater than the given value
     /// or equals to it.

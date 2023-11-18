@@ -1,9 +1,12 @@
-use crate::core::structs::hash_table::{
-    hash::{custom_hash::CustomHash, hash::custom_hash},
-    hash_table::{HashTable, HashTableExtended, HashTableVectors},
-    vectors::{
-        hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal},
-        key_value::KeyValue,
+use crate::core::{
+    base::cast::usize::UsizeCast as _,
+    structs::hash_table::{
+        hash::{custom_hash::CustomHash, hash::custom_hash},
+        hash_table::{HashTable, HashTableExtended, HashTableVectors},
+        vectors::{
+            hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal},
+            key_value::KeyValue,
+        },
     },
 };
 use std::marker::PhantomData;
@@ -14,7 +17,7 @@ use std::marker::PhantomData;
 /// * `V` - value type
 /// * `N` - size of the hash table
 /// * `H` - HashVec implementation
-struct StaticHashTable<K, V, H, const N: u64>
+struct StaticHashTable<K, V, H, const N: usize>
 where
     H: HashVec<K, V>,
 {
@@ -25,7 +28,7 @@ where
     hash: fn(&[u8]) -> u64,
 }
 
-impl<K, V, H, const N: u64> StaticHashTable<K, V, H, N>
+impl<K, V, H, const N: usize> StaticHashTable<K, V, H, N>
 where
     H: HashVec<K, V>,
 {
@@ -47,7 +50,7 @@ where
     /// Creates a new StaticHashTable with a custom hash function
     /// # Arguments
     /// * `table` - HashVec implementation
-    /// * `hash` - Hash function fn(&[u8]) -> u64
+    /// * `hash` - Hash function fn(&[u8]) -> usize
     /// # Returns
     /// * `Self` - StaticHashTable
     fn new_with_hash(table: H, hash: fn(&[u8]) -> u64) -> Self {
@@ -61,7 +64,7 @@ where
     }
 }
 
-impl<K, V, H, const N: u64> HashTable<K, V> for StaticHashTable<K, V, H, N>
+impl<K, V, H, const N: usize> HashTable<K, V> for StaticHashTable<K, V, H, N>
 where
     H: HashVec<K, V>,
     K: Eq + Copy + CustomHash,
@@ -70,7 +73,7 @@ where
     fn insert(&mut self, key: K, value: V) -> Option<V> {
         let hash = key.hash(self.hash);
 
-        let index = hash & (self.table.size() - 1);
+        let index = hash.to_usize() & (self.table.size() - 1);
 
         let has_key = self.table.have_key(index, key);
         if has_key {
@@ -85,7 +88,7 @@ where
 
     fn remove(&mut self, key: K) -> Option<V> {
         let hash = key.hash(self.hash);
-        let index = hash & (self.table.size() - 1);
+        let index = hash.to_usize() & (self.table.size() - 1);
 
         let item = self.table.remove(index, key);
         match item {
@@ -99,7 +102,7 @@ where
 
     fn get(&mut self, key: K) -> Option<V> {
         let hash = key.hash(self.hash);
-        let index = hash & (self.table.size() - 1);
+        let index = hash.to_usize() & (self.table.size() - 1);
 
         let item = self.table.get(index, key);
         item.map(|item| item.value)
@@ -110,7 +113,7 @@ where
     }
 }
 
-impl<K, V, H, const N: u64> HashTableVectors<K, V>
+impl<K, V, H, const N: usize> HashTableVectors<K, V>
     for StaticHashTable<K, V, H, N>
 where
     H: HashVec<K, V> + HashVecStatisticsInternal<K, V> + HashVecIndexes<K, V>,
@@ -157,7 +160,7 @@ where
     }
 }
 
-impl<K, V, H, const N: u64> HashTableExtended<K, V>
+impl<K, V, H, const N: usize> HashTableExtended<K, V>
     for StaticHashTable<K, V, H, N>
 where
     H: HashVec<K, V>,
@@ -184,9 +187,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_new() {
         let hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -196,9 +199,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_insert() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -212,9 +215,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_insert_existing() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -233,9 +236,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_remove() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -260,9 +263,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_get() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -280,9 +283,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_get_keys() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -297,9 +300,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_get_values() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -314,9 +317,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_get_key_values() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
 
@@ -331,9 +334,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_insert_key_value() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
         let key_value = hash_table.insert_key_value(KeyValue::new(0, 0));
@@ -346,9 +349,9 @@ mod tests {
     #[test]
     fn test_static_hash_table_insert_tuple() {
         let mut hash_table: StaticHashTable<
-            u64,
-            u64,
-            StaticHashVec<u64, u64, 8>,
+            usize,
+            usize,
+            StaticHashVec<usize, usize, 8>,
             8,
         > = StaticHashTable::new(StaticHashVec::new());
         let tuple = hash_table.insert_tuple((0, 0));

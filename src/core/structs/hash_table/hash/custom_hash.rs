@@ -8,3 +8,10 @@ impl CustomHash for u64 {
         hash(&bytes)
     }
 }
+
+impl CustomHash for usize {
+    fn hash(&self, hash: fn(&[u8]) -> u64) -> u64 {
+        let bytes = self.to_be_bytes();
+        hash(&bytes)
+    }
+}

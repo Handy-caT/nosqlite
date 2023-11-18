@@ -2,7 +2,7 @@
 /// Now implemented only for the maximum length of the buckets.
 pub struct HashVecStatistics {
     /// Size of the hash vector.
-    pub size: u64,
+    pub size: usize,
 
     /// Maximum length of the buckets.
     pub max_length: usize,
@@ -153,7 +153,7 @@ mod tests {
         hash_vec_statistics.add_bucket(5);
 
         assert_eq!(hash_vec_statistics.max_length, 5);
-        assert!(!hash_vec_statistics.max_length_buckets[5]);
+        assert!(hash_vec_statistics.max_length_buckets[5]);
         assert_eq!(hash_vec_statistics.count, 1);
 
         hash_vec_statistics.update(6);

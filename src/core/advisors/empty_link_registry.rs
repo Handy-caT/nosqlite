@@ -2,27 +2,27 @@ use crate::core::{
     link_struct::PageLink,
     structs::tree::{
         object::{
-            balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree,
-            tree_object::{TreeObject, VecFunctions},
+            balanced_tree::decoratable::Decoratable,
+            tree::{Tree, VecFunctions},
         },
-        vectors::tree_vec::{TreeVec, Indexes, Levels},
+        vectors::tree_vec::{Indexes, Levels, TreeVec},
     },
 };
 
 pub struct EmptyLinkRegistry<V, M>
 where
     V: TreeVec<PageLink> + Sized,
-    M: TreeObject<PageLink> + Sized + VecFunctions<PageLink, V>,
+    M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
 {
-    data: DecoratableBalancedTree<PageLink, V, M>,
+    data: Decoratable<PageLink, V, M>,
 }
 
 impl<V, M> EmptyLinkRegistry<V, M>
 where
     V: TreeVec<PageLink> + Levels + Sized,
-    M: TreeObject<PageLink> + Sized + VecFunctions<PageLink, V>,
+    M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
 {
-    pub fn new(data: DecoratableBalancedTree<PageLink, V, M>) -> Self {
+    pub fn new(data: Decoratable<PageLink, V, M>) -> Self {
         EmptyLinkRegistry { data }
     }
 
@@ -40,13 +40,13 @@ where
 
     pub(in crate::core::advisors) fn get_data(
         &self,
-    ) -> &DecoratableBalancedTree<PageLink, V, M> {
+    ) -> &Decoratable<PageLink, V, M> {
         &self.data
     }
 
     pub(in crate::core::advisors) fn get_data_mut(
         &mut self,
-    ) -> &mut DecoratableBalancedTree<PageLink, V, M> {
+    ) -> &mut Decoratable<PageLink, V, M> {
         &mut self.data
     }
 }
@@ -58,11 +58,9 @@ mod tests {
         link_struct::PageLink,
         structs::tree::{
             object::{
-                balanced_tree::{
-                    balanced_tree::BalancedTree,
-                    decoratable_balanced_tree::DecoratableBalancedTree,
-                },
-                tree_object::{TreeObject, VecFunctions},
+                BalancedTree,
+                balanced_tree::Decoratable,
+                tree::Tree,
             },
             vectors::default_tree_vec::DefaultTreeVec,
         },
@@ -75,7 +73,7 @@ mod tests {
             BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
 
         let decoratable_tree =
-            DecoratableBalancedTree::new(tree, PageLink::compare_by_len);
+            Decoratable::new(tree, PageLink::compare_by_len);
 
         let empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 
@@ -89,7 +87,7 @@ mod tests {
             BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
 
         let decoratable_tree =
-            DecoratableBalancedTree::new(tree, PageLink::compare_by_len);
+            Decoratable::new(tree, PageLink::compare_by_len);
 
         let mut empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 

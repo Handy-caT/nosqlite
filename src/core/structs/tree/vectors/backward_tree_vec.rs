@@ -3,8 +3,7 @@ use crate::core::structs::tree::{
     vectors::{
         optimized_tree_vec::INITIAL_LEVELS,
         tree_vec::{
-            Backward, DefaultFunctions, OptimizedFunctions, TreeVec,
-            Levels,
+            Backward, DefaultFunctions, Levels, OptimizedFunctions, TreeVec,
         },
         vec_functions::{allocate_level, get, push, remove},
     },
@@ -180,7 +179,7 @@ mod tests {
     use crate::core::structs::tree::vectors::{
         backward_tree_vec::BackwardsTreeVec,
         optimized_tree_vec::INITIAL_LEVELS,
-        tree_vec::{DefaultFunctions, TreeVec, Levels},
+        tree_vec::{DefaultFunctions, Levels, TreeVec},
     };
 
     #[test]
@@ -189,7 +188,10 @@ mod tests {
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.get_allocated_levels(), INITIAL_LEVELS);
-        assert_eq!(vec.get_max_length(), 2usize.pow(u32::from(INITIAL_LEVELS)) - 1);
+        assert_eq!(
+            vec.get_max_length(),
+            2usize.pow(u32::from(INITIAL_LEVELS)) - 1
+        );
         assert_eq!(vec.get_data().len(), 0);
         assert_eq!(vec.get_indexes().len(), 0);
         assert_eq!(vec.get_empty().len(), 0);
@@ -206,7 +208,10 @@ mod tests {
 
         assert_eq!(vec.len(), 3);
         assert_eq!(vec.get_allocated_levels(), INITIAL_LEVELS);
-        assert_eq!(vec.get_max_length(), 2usize.pow(u32::from(INITIAL_LEVELS)) - 1);
+        assert_eq!(
+            vec.get_max_length(),
+            2usize.pow(u32::from(INITIAL_LEVELS)) - 1
+        );
         assert_eq!(vec.get_data().len(), 3);
         assert_eq!(vec.get_indexes().len(), 3);
         assert_eq!(vec.get_empty().len(), 0);

@@ -1,6 +1,6 @@
 use crate::core::structs::tree::{
     nodes::{tree_index::TreeIndex, tree_node::TreeNode},
-    vectors::tree_vec::{DefaultFunctions, OptimizedFunctions, Levels},
+    vectors::tree_vec::{DefaultFunctions, Levels, OptimizedFunctions},
 };
 
 /// Function to push a value to a vector

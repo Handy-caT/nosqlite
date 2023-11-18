@@ -6,10 +6,10 @@ use crate::core::{
     link_struct::PageLink,
     structs::tree::{
         object::{
-            balanced_tree::balanced_tree::BalancedTree,
-            tree_object::{TreeObject, FindFunctions},
+            BalancedTree,
+            tree::{FindFunctions, Tree},
         },
-        vectors::tree_vec::{TreeVec, Indexes, Levels},
+        vectors::tree_vec::{Indexes, Levels, TreeVec},
     },
 };
 
@@ -112,11 +112,9 @@ mod tests {
         link_struct::PageLink,
         structs::tree::{
             object::{
-                balanced_tree::{
-                    balanced_tree::BalancedTree,
-                    decoratable_balanced_tree::DecoratableBalancedTree,
-                },
-                tree_object::TreeObject,
+                BalancedTree,
+                balanced_tree::Decoratable,
+                tree::Tree,
             },
             vectors::default_tree_vec::DefaultTreeVec,
         },
@@ -132,7 +130,7 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = DecoratableBalancedTree::<
+        let dec_tree = Decoratable::<
             PageLink,
             DefaultTreeVec<PageLink>,
             BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
@@ -157,7 +155,7 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = DecoratableBalancedTree::<
+        let dec_tree = Decoratable::<
             PageLink,
             DefaultTreeVec<PageLink>,
             BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
@@ -192,7 +190,7 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = DecoratableBalancedTree::<
+        let dec_tree = Decoratable::<
             PageLink,
             DefaultTreeVec<PageLink>,
             BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
@@ -219,7 +217,7 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = DecoratableBalancedTree::<
+        let dec_tree = Decoratable::<
             PageLink,
             DefaultTreeVec<PageLink>,
             BalancedTree<PageLink, DefaultTreeVec<PageLink>>,

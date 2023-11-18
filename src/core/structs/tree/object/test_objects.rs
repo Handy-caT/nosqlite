@@ -2,8 +2,8 @@
 mod tests {
     use crate::core::structs::tree::{
         object::{
-            balanced_tree::decoratable_balanced_tree::DecoratableBalancedTree,
-            bin_heap::bin_heap::BinHeap, tree_object::TreeObject,
+            balanced_tree::decoratable::Decoratable,
+            BinHeap, tree::Tree,
         },
         vectors::normalized_tree_vec::NormalizedTreeVector,
     };
@@ -16,7 +16,7 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let tree = DecoratableBalancedTree::<
+        let tree = Decoratable::<
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,
@@ -33,7 +33,7 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let mut tree = DecoratableBalancedTree::<
+        let mut tree = Decoratable::<
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,
@@ -52,7 +52,7 @@ mod tests {
         heap.push(2);
         heap.push(3);
 
-        let mut tree = DecoratableBalancedTree::<
+        let mut tree = Decoratable::<
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,

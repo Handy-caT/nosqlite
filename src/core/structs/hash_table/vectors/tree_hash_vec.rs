@@ -11,8 +11,8 @@ use crate::core::structs::{
     },
     tree::{
         object::{
-            balanced_tree::balanced_tree::BalancedTree,
-            tree_object::{TreeObject, VecFunctions},
+            BalancedTree,
+            tree::{Tree, VecFunctions},
         },
         vectors::optimized_tree_vec::OptimizedTreeVec,
     },
@@ -25,7 +25,7 @@ use crate::core::structs::{
 pub struct TreeHashVec<
     K: Copy + Default + PartialOrd,
     V: Copy + Default + PartialOrd,
-    const N: u64,
+    const N: usize,
 > {
     /// The data of the hash vector as a vector of trees.
     /// OptimizedTreeVec is used as the underlying data structure for the trees.
@@ -33,7 +33,7 @@ pub struct TreeHashVec<
     /// The size of the hash vector. This is the number of buckets.
     /// It is a power of 2. If N is not a power of 2,
     /// it will be rounded up to the next power of 2.
-    pub size: u64,
+    pub size: usize,
     /// Statistics of the hash vector
     statistics: HashVecStatistics,
 }
@@ -41,7 +41,7 @@ pub struct TreeHashVec<
 impl<
         K: Copy + Default + PartialOrd,
         V: Copy + Default + PartialOrd,
-        const N: u64,
+        const N: usize,
     > TreeHashVec<K, V, N>
 {
     /// Creates a new TreeHashVec
@@ -51,14 +51,14 @@ impl<
         let mut vec = TreeHashVec {
             data: Vec::new(),
             size: N,
-            statistics: HashVecStatistics::new(N as usize),
+            statistics: HashVecStatistics::new(N),
         };
 
         let mut size = N;
 
         if (N as f64).log2() != (N as f64).log2().floor() {
-            let pow = (N as f64).log2().ceil() as u64;
-            size = 2u64.pow(pow as u32);
+            let pow = (N as f64).log2().ceil();
+            size = 2usize.pow(pow as u32);
         }
 
         for _ in 0..size {
@@ -79,75 +79,72 @@ impl<
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Default + Eq + Copy + PartialOrd,
-        const N: u64,
+        const N: usize,
     > HashVec<K, V> for TreeHashVec<K, V, N>
 {
-    fn push(&mut self, index: u64, key: K, value: V) -> (u64, usize) {
+    fn push(&mut self, index: usize, key: K, value: V) -> (usize, usize) {
         let data = KeyValue::new(key, value);
 
-        let data_index = self.data[index as usize].push(data);
+        let data_index = self.data[index].push(data);
         statistics_add_actions(self, index);
 
-        (index, data_index as usize)
+        (index, data_index)
     }
 
-    fn get(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>> {
+    fn get(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>> {
         let item = KeyValue::new(key, V::default());
-        let item_index = self.data[index as usize].find(item);
+        let item_index = self.data[index].find(item);
 
         match item_index {
-            Some(i) => self.data[index as usize].get(i),
+            Some(i) => self.data[index].get(i),
             None => None,
         }
     }
 
     fn update(
         &mut self,
-        index: u64,
+        index: usize,
         key: K,
         value: V,
     ) -> Option<KeyValue<K, V>> {
         let item = KeyValue::new(key, V::default());
-        let item_index = self.data[index as usize].find(item);
+        let item_index = self.data[index].find(item);
 
         match item_index {
             Some(i) => {
                 let item = KeyValue::new(key, value);
-                self.data[index as usize].remove_by_index(i);
-                self.data[index as usize].push(item);
+                self.data[index].remove_by_index(i);
+                self.data[index].push(item);
                 Some(item)
             }
             None => None,
         }
     }
 
-    fn have_key(&mut self, index: u64, key: K) -> bool {
+    fn have_key(&mut self, index: usize, key: K) -> bool {
         let item_index = self.find_key(index, key);
-        match item_index {
-            Some(_) => true,
-            None => false,
-        }
+        item_index.is_some()
     }
 
-    fn remove(&mut self, index: u64, key: K) -> Option<KeyValue<K, V>> {
+    fn remove(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>> {
         let item = KeyValue::new(key, V::default());
-        let has_item = self.data[index as usize].find(item);
+        let has_item = self.data[index].find(item);
 
         match has_item {
             Some(_) => {
                 statistics_remove_actions(self, index);
-                let item = self.data[index as usize].remove_by_value(item);
+                let item = self.data[index].remove_by_value(item);
                 Some(item.unwrap())
             }
             None => None,
         }
     }
 
-    fn size(&self) -> u64 {
+    fn size(&self) -> usize {
         self.size
     }
 
-    fn len(&self) -> u64 {
+    fn len(&self) -> usize {
         self.statistics.size
     }
 }
@@ -156,7 +153,7 @@ impl<
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Default + Eq + Copy + PartialOrd,
-        const N: u64,
+        const N: usize,
     > HashVecStatisticsInternal<K, V> for TreeHashVec<K, V, N>
 {
     fn get_max_len(&self) -> usize {
@@ -171,11 +168,11 @@ impl<
         &mut self.statistics
     }
 
-    fn get_bucket_len(&self, index: u64) -> Option<usize> {
+    fn get_bucket_len(&self, index: usize) -> Option<usize> {
         if index >= N {
             None
         } else {
-            Some(self.data[index as usize].len())
+            Some(self.data[index].len())
         }
     }
 }
@@ -184,20 +181,19 @@ impl<
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Eq + Copy + Default + PartialOrd,
-        const N: u64,
+        const N: usize,
     > HashVecIndexes<K, V> for TreeHashVec<K, V, N>
 {
     fn remove_by_index(
         &mut self,
-        index: u64,
+        index: usize,
         value_index: usize,
     ) -> Option<KeyValue<K, V>> {
-        let has_item = self.data[index as usize].get(value_index);
+        let has_item = self.data[index].get(value_index);
         match has_item {
             Some(_) => {
                 statistics_remove_actions(self, index);
-                let item =
-                    self.data[index as usize].remove_by_index(value_index);
+                let item = self.data[index].remove_by_index(value_index);
                 Some(item.unwrap())
             }
             None => None,
@@ -206,17 +202,15 @@ impl<
 
     fn get_by_index(
         &mut self,
-        index: u64,
+        index: usize,
         value_index: usize,
     ) -> Option<KeyValue<K, V>> {
-        self.data[index as usize].get(value_index)
+        self.data[index].get(value_index)
     }
 
-    fn find_key(&mut self, index: u64, key: K) -> Option<usize> {
+    fn find_key(&mut self, index: usize, key: K) -> Option<usize> {
         let item = KeyValue::new(key, V::default());
-        let item_index = self.data[index as usize].find(item);
-
-        item_index.map(|i| i)
+        self.data[index].find(item)
     }
 }
 
@@ -226,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_new() {
-        let vec = TreeHashVec::<u64, u64, 8>::new();
+        let vec = TreeHashVec::<usize, usize, 8>::new();
 
         assert_eq!(vec.data.len(), 8);
         for i in 0..8 {
@@ -237,14 +231,14 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_new_sizes() {
-        let vec = TreeHashVec::<u64, u64, 10>::new();
+        let vec = TreeHashVec::<usize, usize, 10>::new();
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 16);
         assert_eq!(vec.size, 16);
         assert_eq!(vec.size(), 16);
 
-        let vec = TreeHashVec::<u64, u64, 32>::new();
+        let vec = TreeHashVec::<usize, usize, 32>::new();
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 32);
@@ -254,7 +248,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_push() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         let (index, value_index) = vec.push(0, 1, 1);
 
@@ -270,7 +264,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_update() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -290,7 +284,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_remove_by_index() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -312,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_get() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -324,7 +318,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_have_key() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -336,7 +330,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_get_by_index() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -348,7 +342,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_find_key() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -360,7 +354,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_get_bucket_len() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -372,7 +366,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_remove() {
-        let mut vec = TreeHashVec::<u64, u64, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize, 8>::new();
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -382,13 +376,13 @@ mod tests {
 
         assert_eq!(vec.remove(0, 1), Some(KeyValue::new(1, 1)));
         assert_eq!(vec.find_key(0, 1), None);
-        assert!(vec.have_key(0, 1));
+        assert!(!vec.have_key(0, 1));
         assert_eq!(vec.statistics.get_count(), 1);
         assert_eq!(vec.statistics.max_length, 1);
 
         assert_eq!(vec.remove(0, 2), Some(KeyValue::new(2, 2)));
         assert_eq!(vec.find_key(0, 2), None);
-        assert!(vec.have_key(0, 2));
+        assert!(!vec.have_key(0, 2));
         assert_eq!(vec.statistics.get_count(), 0);
         assert_eq!(vec.statistics.max_length, 0);
 
