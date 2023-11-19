@@ -1,22 +1,22 @@
 use crate::core::{
     base::cast::usize::UsizeCast as _,
     structs::hash_table::{
-        hash::{custom_hash::CustomHash, hash::custom_hash},
-        hash_table::{HashTable, HashTableExtended, HashTableVectors},
+        hash::{custom_hashable::CustomHash, hash},
+        HashTable, ExtendedFunctions, VecFunctions,
         vectors::{
-            hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal},
+            hash_vec::{HashVec, Indexes, HashVecStatisticsInternal},
             key_value::KeyValue,
         },
     },
 };
 use std::marker::PhantomData;
 
-/// StaticHashTable is a hash table with a fixed size.
-/// It is using HashVec as a storage.
+/// [`StaticHashTable`] is a hash table with a fixed size.
+/// It is using [`HashVec`] as a storage.
 /// * `K` - key type
 /// * `V` - value type
 /// * `N` - size of the hash table
-/// * `H` - HashVec implementation
+/// * `H` - [`HashVec`] implementation
 struct StaticHashTable<K, V, H, const N: usize>
 where
     H: HashVec<K, V>,
@@ -32,27 +32,27 @@ impl<K, V, H, const N: usize> StaticHashTable<K, V, H, N>
 where
     H: HashVec<K, V>,
 {
-    /// Creates a new StaticHashTable
+    /// Creates a new [`StaticHashTable`]
     /// # Arguments
-    /// * `table` - HashVec implementation
+    /// * `table` - [`HashVec`] implementation
     /// # Returns
-    /// * `Self` - StaticHashTable
+    /// * `Self` - [`StaticHashTable`]
     fn new(table: H) -> Self {
         StaticHashTable {
             table,
             size: 0,
             v: PhantomData,
             k: PhantomData,
-            hash: custom_hash,
+            hash,
         }
     }
 
-    /// Creates a new StaticHashTable with a custom hash function
+    /// Creates a new [`StaticHashTable`] with a custom hash function
     /// # Arguments
-    /// * `table` - HashVec implementation
+    /// * `table` - [`HashVec`] implementation
     /// * `hash` - Hash function fn(&[u8]) -> usize
     /// # Returns
-    /// * `Self` - StaticHashTable
+    /// * `Self` - [`StaticHashTable`]
     fn new_with_hash(table: H, hash: fn(&[u8]) -> u64) -> Self {
         StaticHashTable {
             table,
@@ -113,10 +113,10 @@ where
     }
 }
 
-impl<K, V, H, const N: usize> HashTableVectors<K, V>
+impl<K, V, H, const N: usize> VecFunctions<K, V>
     for StaticHashTable<K, V, H, N>
 where
-    H: HashVec<K, V> + HashVecStatisticsInternal<K, V> + HashVecIndexes<K, V>,
+    H: HashVec<K, V> + HashVecStatisticsInternal<K, V> + Indexes<K, V>,
     K: Eq + Copy + CustomHash,
     V: Eq + Copy,
 {
@@ -160,7 +160,7 @@ where
     }
 }
 
-impl<K, V, H, const N: usize> HashTableExtended<K, V>
+impl<K, V, H, const N: usize> ExtendedFunctions<K, V>
     for StaticHashTable<K, V, H, N>
 where
     H: HashVec<K, V>,
@@ -179,7 +179,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::core::structs::hash_table::{
-        hash_table::{HashTable, HashTableExtended, HashTableVectors},
+        HashTable, ExtendedFunctions, VecFunctions,
         static_hash_table::StaticHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
     };

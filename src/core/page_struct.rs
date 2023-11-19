@@ -1,16 +1,18 @@
+use crate::core::base::cast::usize;
 use crate::core::link_struct::PageLink;
 
+#[derive(Clone, Copy, Debug)]
 pub struct PageInfo {
-    index: u64,
+    index: u32,
     free: u16,
 }
 
 impl PageInfo {
-    pub fn new(index: u64) -> PageInfo {
+    pub fn new(index: u32) -> PageInfo {
         PageInfo { index, free: 4096 }
     }
 
-    pub fn get_index(&self) -> u64 {
+    pub fn get_index(&self) -> u32 {
         self.index
     }
 
@@ -19,39 +21,31 @@ impl PageInfo {
     }
 }
 
-impl From<[u8; 10]> for PageInfo {
-    fn from(bytes: [u8; 10]) -> Self {
-        let index = u64::from_be_bytes(bytes[0..8].try_into().unwrap());
-        let free = u16::from_be_bytes(bytes[8..10].try_into().unwrap());
+impl From<[u8; 6]> for PageInfo {
+    fn from(bytes: [u8; 6]) -> Self {
+        let index = u32::from_be_bytes(bytes[0..4].try_into().unwrap());
+        let free = u16::from_be_bytes(bytes[4..6].try_into().unwrap());
         PageInfo { index, free }
     }
 }
 
-impl Into<[u8; 10]> for PageInfo {
-    fn into(self) -> [u8; 10] {
-        let mut bytes = [0; 10];
-        bytes[0..8].copy_from_slice(&self.index.to_be_bytes());
-        bytes[8..10].copy_from_slice(&self.free.to_be_bytes());
+impl Into<[u8; 6]> for PageInfo {
+    fn into(self) -> [u8; 6] {
+        let mut bytes = [0; 6];
+        bytes[0..4].copy_from_slice(&self.index.to_be_bytes());
+        bytes[4..6].copy_from_slice(&self.free.to_be_bytes());
         bytes
     }
 }
 
-impl Clone for PageInfo {
-    fn clone(&self) -> Self {
-        PageInfo {
-            index: self.index,
-            free: self.free,
-        }
-    }
-}
-
+#[derive(Clone, Copy, Debug)]
 pub struct Page {
     info: PageInfo,
     data: [u8; 4096],
 }
 
 impl Page {
-    pub fn new(index: u64) -> Page {
+    pub fn new(index: u32) -> Page {
         Page {
             info: PageInfo::new(index),
             data: [0; 4096],
@@ -66,7 +60,7 @@ impl Page {
         self.info.free
     }
 
-    pub fn get_index(&self) -> u64 {
+    pub fn get_index(&self) -> u32 {
         self.info.index
     }
 
@@ -103,7 +97,7 @@ impl Page {
             i += 1;
         }
         let res_link = PageLink::new(self.info.index, link.start, link.len);
-        return Ok(res_link);
+        Ok(res_link)
     }
 
     pub fn erase_data(&mut self, link: &PageLink) {
@@ -120,15 +114,6 @@ impl Page {
     }
 }
 
-impl Clone for Page {
-    fn clone(&self) -> Self {
-        Page {
-            info: self.info.clone(),
-            data: self.data,
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     #[test]
@@ -140,12 +125,12 @@ mod tests {
 
     #[test]
     fn test_page_info_from() {
-        let index: u64 = 2;
+        let index: u32 = 2;
         let free: u16 = 10;
 
-        let mut bytes = [0; 10];
-        bytes[0..8].copy_from_slice(&index.to_be_bytes());
-        bytes[8..10].copy_from_slice(&free.to_be_bytes());
+        let mut bytes = [0; 6];
+        bytes[0..4].copy_from_slice(&index.to_be_bytes());
+        bytes[4..6].copy_from_slice(&free.to_be_bytes());
 
         let info = super::PageInfo::from(bytes);
         assert_eq!(info.index, index);
@@ -154,17 +139,17 @@ mod tests {
 
     #[test]
     fn test_page_info_into() {
-        let index: u64 = 2;
+        let index: u32 = 2;
         let free: u16 = 4092;
 
-        let mut bytes = [0; 10];
-        bytes[0..8].copy_from_slice(&index.to_be_bytes());
-        bytes[8..10].copy_from_slice(&free.to_be_bytes());
+        let mut bytes = [0; 6];
+        bytes[0..4].copy_from_slice(&index.to_be_bytes());
+        bytes[4..6].copy_from_slice(&free.to_be_bytes());
 
         let info = super::PageInfo::from(bytes);
-        let bytes: [u8; 10] = info.into();
-        assert_eq!(bytes[0..8], index.to_be_bytes());
-        assert_eq!(bytes[8..10], free.to_be_bytes());
+        let bytes: [u8; 6] = info.into();
+        assert_eq!(bytes[0..4], index.to_be_bytes());
+        assert_eq!(bytes[4..6], free.to_be_bytes());
     }
 
     #[test]

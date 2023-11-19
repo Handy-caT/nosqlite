@@ -70,7 +70,7 @@ where
             return None;
         }
         let link =
-            base_obj.find_greater_equal(PageLink::new(0, 0, size as u32));
+            base_obj.find_greater_equal(PageLink::new(0, 0, size as u16));
 
         match link {
             Some(link) => {
@@ -82,11 +82,11 @@ where
     }
 
     fn apply_place(&mut self, link: &PageLink, size: u64) {
-        if link.len > size as u32 {
+        if u64::from(link.len) > size {
             let new_link = PageLink::new(
                 link.page_index,
-                link.start + size as u32,
-                link.len - size as u32,
+                link.start + size as u16,
+                link.len - size as u16,
             );
             self.empty_link_registry.add_link(new_link);
         }

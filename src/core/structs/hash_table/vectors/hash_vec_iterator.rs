@@ -1,20 +1,20 @@
 use crate::core::structs::hash_table::vectors::{
-    hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal},
+    hash_vec::{HashVec, Indexes, HashVecStatisticsInternal},
     key_value::KeyValue,
 };
 use std::marker::PhantomData;
 
-/// HashVecIterator is an iterator for HashVec
+/// [`HashVecIterator`] is an iterator for [`HashVec`]
 /// * `K` - key type
 /// * `V` - value type
-/// * `H` - HashVec implementation
+/// * `H` - [`HashVec`] implementation
 pub struct HashVecIterator<'a, K, V, H>
 where
     H: HashVec<K, V>,
 {
     table: &'a mut H,
     index: usize,
-    size: u64,
+    size: usize,
     bucket: usize,
     v: PhantomData<V>,
     k: PhantomData<K>,
@@ -24,12 +24,12 @@ impl<'a, K, V, H> HashVecIterator<'a, K, V, H>
 where
     H: HashVec<K, V>,
 {
-    /// Creates a new HashVecIterator
+    /// Creates a new [`HashVecIterator`]
     /// # Arguments
-    /// * `table` - HashVec implementation
+    /// * `table` - [`HashVec`] implementation
     /// # Returns
-    /// * `Self` - HashVecIterator
-    pub fn new(table: &'a mut H, size: u64) -> Self {
+    /// * `Self` - [`HashVecIterator`]
+    pub fn new(table: &'a mut H, size: usize) -> Self {
         HashVecIterator {
             table,
             index: 0,
@@ -43,7 +43,7 @@ where
 
 impl<'a, K, V, H> Iterator for HashVecIterator<'a, K, V, H>
 where
-    H: HashVec<K, V> + HashVecIndexes<K, V> + HashVecStatisticsInternal<K, V>,
+    H: HashVec<K, V> + Indexes<K, V> + HashVecStatisticsInternal<K, V>,
     K: Copy,
     V: Copy,
 {
@@ -57,7 +57,7 @@ where
         if value.is_some() {
             self.index += 1;
             value
-        } else if self.bucket >= self.size as usize {
+        } else if self.bucket >= self.size {
             None
         } else {
             self.bucket += 1;

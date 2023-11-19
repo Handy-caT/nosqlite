@@ -1,6 +1,6 @@
 /// Struct that stores statistics about a hash vector.
 /// Now implemented only for the maximum length of the buckets.
-pub struct HashVecStatistics {
+pub struct Stats {
     /// Size of the hash vector.
     pub size: usize,
 
@@ -12,12 +12,12 @@ pub struct HashVecStatistics {
     count: usize,
 }
 
-impl HashVecStatistics {
-    /// Creates a new HashVecStatistics.
+impl Stats {
+    /// Creates a new [`Stats`].
     /// # Arguments
     /// * `pool_size` - Size of the bucket pool.
     /// # Returns
-    /// * `HashVecStatistics` - New HashVecStatistics.
+    /// * `HashVecStatistics` - New [`Stats`].
     /// Default values:
     /// * `max_length` - 0
     /// * `max_length_buckets` - Vec of size `pool_size` filled with false.
@@ -107,14 +107,14 @@ mod tests {
 
     #[test]
     fn test_hash_vec_statistics_new() {
-        let hash_vec_statistics = HashVecStatistics::new(10);
+        let hash_vec_statistics = Stats::new(10);
         assert_eq!(hash_vec_statistics.max_length, 0);
         assert_eq!(hash_vec_statistics.max_length_buckets, vec![false; 10]);
     }
 
     #[test]
     fn test_hash_vec_statistics_update() {
-        let mut hash_vec_statistics = HashVecStatistics::new(10);
+        let mut hash_vec_statistics = Stats::new(10);
 
         assert_eq!(hash_vec_statistics.update(5), 5);
         assert_eq!(hash_vec_statistics.max_length, 5);
@@ -131,7 +131,7 @@ mod tests {
 
     #[test]
     fn test_hash_vec_statistics_add_bucket() {
-        let mut hash_vec_statistics = HashVecStatistics::new(10);
+        let mut hash_vec_statistics = Stats::new(10);
 
         hash_vec_statistics.add_bucket(5);
         assert_eq!(hash_vec_statistics.max_length, 0);
@@ -147,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_hash_vec_statistics_update_existing() {
-        let mut hash_vec_statistics = HashVecStatistics::new(10);
+        let mut hash_vec_statistics = Stats::new(10);
 
         hash_vec_statistics.update(5);
         hash_vec_statistics.add_bucket(5);
@@ -165,7 +165,7 @@ mod tests {
 
     #[test]
     fn test_hash_vec_statistics_remove_bucket() {
-        let mut hash_vec_statistics = HashVecStatistics::new(10);
+        let mut hash_vec_statistics = Stats::new(10);
 
         hash_vec_statistics.update(5);
         hash_vec_statistics.add_bucket(5);
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn test_hash_vec_statistics_remove_bucket_out_of_range() {
-        let mut hash_vec_statistics = HashVecStatistics::new(10);
+        let mut hash_vec_statistics = Stats::new(10);
 
         hash_vec_statistics.update(5);
         hash_vec_statistics.add_bucket(5);

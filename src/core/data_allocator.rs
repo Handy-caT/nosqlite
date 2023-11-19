@@ -32,7 +32,7 @@ impl DataAllocator {
         let mut request = AllocationRequest::new();
         let free = page.get_free();
         let start = page.get_first_free();
-        let link = PageLink::new(page.get_index(), start as u32, free as u32);
+        let link = PageLink::new(page.get_index(), start, free);
 
         request.add_link(link);
         request.set_status(AllocationStatus::Free);
@@ -41,7 +41,7 @@ impl DataAllocator {
     }
 
     fn allocate(&mut self, len: u64) {
-        let mut request = AllocationRequest::new();
+        let request = AllocationRequest::new();
         let mut last_page = self.page_controller.get_last_page();
 
         if (last_page.get_free() as u64) < len {

@@ -28,11 +28,11 @@ pub struct BalancedTree<T, M: TreeVec<T> + Sized> {
     /// Length of the tree
     len: usize,
     /// Compare function
-    compare: fn(&T, &T) -> Ordering,
+    compare: fn(T, T) -> Ordering,
 }
 
 /// Default comparator for the balanced tree
-fn default_compare<T: PartialOrd + Copy>(a: &T, b: &T) -> Ordering {
+fn default_compare<T: PartialOrd + Copy>(a: T, b: T) -> Ordering {
     if a < b {
         Ordering::Less
     } else if a > b {
@@ -71,7 +71,7 @@ impl<
     /// * `BalancedTree<T, M>` - New balanced tree
     pub fn new_with_compare(
         vec: M,
-        compare: fn(&T, &T) -> Ordering,
+        compare: fn(T, T) -> Ordering,
     ) -> BalancedTree<T, M> {
         BalancedTree {
             root: None,
@@ -95,7 +95,7 @@ impl<
     ) -> Option<(usize, usize)> {
         let mut pushed_index;
         if let Some(node_value) = self.nodes.get_value_mut(root_index) {
-            if (self.compare)(&value, node_value) == Ordering::Less {
+            if (self.compare)(value, *node_value) == Ordering::Less {
                 if self.nodes.get_index_mut(root_index).left_index.is_none() {
                     self.nodes.get_index_mut(root_index).left_index =
                         Some(self.nodes.push(value));
@@ -154,13 +154,13 @@ impl<
         root_index: usize,
     ) -> Option<usize> {
         if let Some(node_value) = self.nodes.get_value_mut(root_index) {
-            if (self.compare)(&value, node_value) == Ordering::Less {
+            if (self.compare)(value, *node_value) == Ordering::Less {
                 self.nodes.get_index_mut(root_index).left_index = self
                     .remove_from_root(
                         value,
                         self.nodes.get_index(root_index).left_index.unwrap(),
                     );
-            } else if (self.compare)(&value, node_value) == Ordering::Greater {
+            } else if (self.compare)(value, *node_value) == Ordering::Greater {
                 self.nodes.get_index_mut(root_index).right_index = self
                     .remove_from_root(
                         value,
@@ -221,12 +221,12 @@ impl<
             if let Some(node_value) =
                 self.nodes.get_value_mut(current_index.unwrap())
             {
-                if (self.compare)(&value, node_value) == Ordering::Less {
+                if (self.compare)(value, *node_value) == Ordering::Less {
                     current_index = self
                         .nodes
                         .get_index_mut(current_index.unwrap())
                         .left_index;
-                } else if (self.compare)(&value, node_value)
+                } else if (self.compare)(value, *node_value)
                     == Ordering::Greater
                 {
                     current_index = self
@@ -320,7 +320,7 @@ FindFunctions<T> for BalancedTree<T, M>
             if let Some(node_value) =
                 self.nodes.get_value_mut(current_index.unwrap())
             {
-                if (self.compare)(&value, node_value) == Ordering::Less {
+                if (self.compare)(value, *node_value) == Ordering::Less {
                     if last.1 == "right" {
                         turn_count += 1;
                     }
@@ -338,7 +338,7 @@ FindFunctions<T> for BalancedTree<T, M>
                         .nodes
                         .get_index_mut(current_index.unwrap())
                         .left_index;
-                } else if (self.compare)(&value, node_value)
+                } else if (self.compare)(value, *node_value)
                     == Ordering::Greater
                 {
                     if last.1 == "left" {
@@ -407,7 +407,7 @@ FindFunctions<T> for BalancedTree<T, M>
             if let Some(node_value) =
                 self.nodes.get_value_mut(current_index.unwrap())
             {
-                if (self.compare)(&value, node_value) == Ordering::Less {
+                if (self.compare)(value, *node_value) == Ordering::Less {
                     if last.1 == "right" {
                         turn_count += 1;
                     }
@@ -425,7 +425,7 @@ FindFunctions<T> for BalancedTree<T, M>
                         .nodes
                         .get_index_mut(current_index.unwrap())
                         .left_index;
-                } else if (self.compare)(&value, node_value)
+                } else if (self.compare)(value, *node_value)
                     == Ordering::Greater
                 {
                     if last.1 == "left" {
@@ -681,14 +681,8 @@ mod tests {
 
     #[test]
     fn test_custom_compare() {
-        fn compare_reversed(a: &u64, b: &u64) -> Ordering {
-            if a < b {
-                Ordering::Greater
-            } else if a > b {
-                Ordering::Less
-            } else {
-                Ordering::Equal
-            }
+        fn compare_reversed(a: u64, b: u64) -> Ordering {
+            b.cmp(&a)
         }
 
         let nodes = DefaultTreeVec::<u64>::new();

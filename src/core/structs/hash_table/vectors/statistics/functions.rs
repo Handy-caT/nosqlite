@@ -7,7 +7,7 @@ use crate::core::structs::hash_table::vectors::hash_vec::{
 /// If bucket length is equal to max length,
 /// it adds bucket to max length buckets.
 /// # Arguments
-/// * `hash_vec` - hash_vec to update
+/// * `hash_vec` - [`HashVec`] to update
 /// * `index` - index of bucket
 pub(in crate::core::structs::hash_table) fn statistics_add_actions<K, V, M>(
     hash_vec: &mut M,
@@ -34,7 +34,7 @@ pub(in crate::core::structs::hash_table) fn statistics_add_actions<K, V, M>(
 /// If bucket length is equal to max length,
 /// it removes bucket from max length buckets.
 /// # Arguments
-/// * `hash_vec` - hash_vec to update
+/// * `hash_vec` - [`HashVec`] to update
 /// * `index` - index of bucket
 pub(in crate::core::structs::hash_table) fn statistics_remove_actions<K, V, M>(
     hash_vec: &mut M,

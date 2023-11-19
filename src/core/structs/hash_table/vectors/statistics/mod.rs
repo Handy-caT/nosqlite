@@ -1,2 +1,2 @@
-pub mod hash_vec_statistics;
-pub mod statistics_functions;
+pub mod hash_vec;
+pub mod functions;

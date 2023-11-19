@@ -1,10 +1,10 @@
 use crate::core::structs::{
     hash_table::vectors::{
-        hash_vec::{HashVec, HashVecIndexes, HashVecStatisticsInternal},
+        hash_vec::{HashVec, Indexes, HashVecStatisticsInternal},
         key_value::KeyValue,
         statistics::{
-            hash_vec_statistics::HashVecStatistics,
-            statistics_functions::{
+            hash_vec,
+            functions::{
                 statistics_add_actions, statistics_remove_actions,
             },
         },
@@ -18,6 +18,8 @@ use crate::core::structs::{
     },
 };
 
+type TreeBuckets<K, V> = Vec<BalancedTree<KeyValue<K, V>, OptimizedTreeVec<KeyValue<K, V>>>>;
+
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
 /// * `N` - Number of buckets, must be a power of 2,
@@ -28,14 +30,14 @@ pub struct TreeHashVec<
     const N: usize,
 > {
     /// The data of the hash vector as a vector of trees.
-    /// OptimizedTreeVec is used as the underlying data structure for the trees.
-    data: Vec<BalancedTree<KeyValue<K, V>, OptimizedTreeVec<KeyValue<K, V>>>>,
+    /// [`OptimizedTreeVec`] is used as the underlying data structure for the trees.
+    data: TreeBuckets<K, V>,
     /// The size of the hash vector. This is the number of buckets.
     /// It is a power of 2. If N is not a power of 2,
     /// it will be rounded up to the next power of 2.
     pub size: usize,
     /// Statistics of the hash vector
-    statistics: HashVecStatistics,
+    statistics: hash_vec::Stats,
 }
 
 impl<
@@ -44,22 +46,21 @@ impl<
         const N: usize,
     > TreeHashVec<K, V, N>
 {
-    /// Creates a new TreeHashVec
+    /// Creates a new [`TreeHashVec`]
     /// # Returns
-    /// * `TreeHashVec<V, N>` - New TreeHashVec
+    /// * `TreeHashVec<V, N>` - New [`TreeHashVec`]
     pub fn new() -> TreeHashVec<K, V, N> {
         let mut vec = TreeHashVec {
             data: Vec::new(),
             size: N,
-            statistics: HashVecStatistics::new(N),
+            statistics: hash_vec::Stats::new(N),
         };
 
-        let mut size = N;
-
-        if (N as f64).log2() != (N as f64).log2().floor() {
-            let pow = (N as f64).log2().ceil();
-            size = 2usize.pow(pow as u32);
+        let mut pow = N.ilog2();
+        if N > 2usize.pow(pow) {
+            pow += 1;
         }
+        let size = 2usize.pow(pow);
 
         for _ in 0..size {
             let nodes = OptimizedTreeVec::new();
@@ -75,7 +76,7 @@ impl<
     }
 }
 
-/// Implementation of basic HashVec trait for TreeHashVec
+/// Implementation of basic [`HashVec`] trait for [`TreeHashVec`]
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Default + Eq + Copy + PartialOrd,
@@ -149,7 +150,7 @@ impl<
     }
 }
 
-/// Implementation of HashVecStatisticsInternal trait for TreeHashVec
+/// Implementation of [`HashVecStatisticsInternal`] trait for [`TreeHashVec`]
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Default + Eq + Copy + PartialOrd,
@@ -160,11 +161,11 @@ impl<
         self.statistics.max_length
     }
 
-    fn get_statistics(&self) -> &HashVecStatistics {
+    fn get_statistics(&self) -> &hash_vec::Stats {
         &self.statistics
     }
 
-    fn get_statistics_mut(&mut self) -> &mut HashVecStatistics {
+    fn get_statistics_mut(&mut self) -> &mut hash_vec::Stats {
         &mut self.statistics
     }
 
@@ -177,12 +178,12 @@ impl<
     }
 }
 
-/// Implementation of HashVecIndexes trait for TreeHashVec
+/// Implementation of [`Indexes`] trait for [`TreeHashVec`]
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Eq + Copy + Default + PartialOrd,
         const N: usize,
-    > HashVecIndexes<K, V> for TreeHashVec<K, V, N>
+    > Indexes<K, V> for TreeHashVec<K, V, N>
 {
     fn remove_by_index(
         &mut self,
@@ -323,9 +324,9 @@ mod tests {
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
 
-        assert_eq!(vec.have_key(0, 1), true);
-        assert_eq!(vec.have_key(0, 2), true);
-        assert_eq!(vec.have_key(0, 3), false);
+        assert!(vec.have_key(0, 1));
+        assert!(vec.have_key(0, 2));
+        assert!(!vec.have_key(0, 3));
     }
 
     #[test]

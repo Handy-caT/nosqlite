@@ -20,7 +20,7 @@ mod tests {
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,
-        >::new(heap, |a, b| b.cmp(a));
+        >::new(heap, |a, b| b.cmp(&a));
 
         assert_eq!(tree.len(), 3);
     }
@@ -37,7 +37,7 @@ mod tests {
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,
-        >::new(heap, |a, b| b.cmp(a));
+        >::new(heap, |a, b| b.cmp(&a));
 
         tree.push(4);
 
@@ -56,7 +56,7 @@ mod tests {
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,
-        >::new(heap, |a, b| b.cmp(a));
+        >::new(heap, |a, b| b.cmp(&a));
 
         tree.remove_by_value(2);
 

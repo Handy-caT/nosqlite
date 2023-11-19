@@ -1,13 +1,13 @@
 use crate::core::structs::hash_table::{
-    hash::hash::custom_hash, vectors::hash_vec::HashVec,
+    hash::hash, vectors::hash_vec::HashVec,
 };
 use std::marker::PhantomData;
 
-/// ScalableHashTable is a hash table with a scalable size.
-/// It is using HashVec as a storage.
+/// [`ScalableHashTable`] is a hash table with a scalable size.
+/// It is using [`HashVec`] as a storage.
 /// * `K` - key type
 /// * `V` - value type
-/// * `H` - HashVec implementation
+/// * `H` - [`HashVec`] implementation
 struct ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V>,
@@ -23,27 +23,27 @@ impl<K, V, H> ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V>,
 {
-    /// Creates a new ScalableHashTable
+    /// Creates a new [`ScalableHashTable`]
     /// # Arguments
-    /// * `table` - HashVec implementation
+    /// * `table` - [`HashVec`] implementation
     /// # Returns
-    /// * `Self` - ScalableHashTable
+    /// * `Self` - [`ScalableHashTable`]
     fn new(table: H) -> Self {
         ScalableHashTable {
             table,
             size: 0,
             v: PhantomData,
             k: PhantomData,
-            hash: custom_hash,
+            hash,
         }
     }
 
-    /// Creates a new ScalableHashTable with a custom hash function
+    /// Creates a new [`ScalableHashTable`] with a custom hash function
     /// # Arguments
-    /// * `table` - HashVec implementation
+    /// * `table` - [`HashVec`] implementation
     /// * `hash` - Hash function fn(&[u8]) -> u64
     /// # Returns
-    /// * `Self` - ScalableHashTable
+    /// * `Self` - [`ScalableHashTable`]
     fn new_with_hash(table: H, hash: fn(&[u8]) -> u64) -> Self {
         ScalableHashTable {
             table,

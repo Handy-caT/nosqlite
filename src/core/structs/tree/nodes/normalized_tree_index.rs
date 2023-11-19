@@ -2,8 +2,8 @@ use crate::core::structs::tree::nodes::tree_index::TreeIndex;
 use smart_default::SmartDefault;
 
 /// Struct that represents a normalized index in a tree
-/// A normalized index is a index where left_index = index * 2 + 1 and
-/// right_index = index * 2 + 2
+/// A normalized index is a index where `left_index` = index * 2 + 1 and
+/// `right_index` = index * 2 + 2
 #[derive(Copy, Clone, Debug, SmartDefault)]
 pub struct NormalizedTreeIndex {
     /// Index of the node
@@ -32,22 +32,14 @@ impl NormalizedTreeIndex {
     /// # Returns
     /// * `Option<usize>` - Index of the right child
     pub fn get_right_index(&self) -> Option<usize> {
-        if let Some(index) = self.index {
-            Some(index * 2 + 2)
-        } else {
-            None
-        }
+        self.index.map(|index| index * 2 + 2)
     }
 
     /// Returns the index of the left child
     /// # Returns
     /// * `i32` - Index of the left child
     pub fn get_left_index(&self) -> Option<usize> {
-        if let Some(index) = self.index {
-            Some(index * 2 + 1)
-        } else {
-            None
-        }
+        self.index.map(|index| index * 2 + 1)
     }
 
     /// Returns the height of the node at the given index
@@ -55,23 +47,22 @@ impl NormalizedTreeIndex {
     /// * `index` - Index of the node
     /// # Returns
     /// * `u8` - Height of the node
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_precision_loss)]
     pub fn find_height(index: usize) -> u8 {
-        (index as f32 + 1.).log2().floor() as u8 + 1
+        (index as f64 + 1.).log2().floor() as u8 + 1
     }
 }
 
 impl From<NormalizedTreeIndex> for Option<TreeIndex> {
     fn from(value: NormalizedTreeIndex) -> Self {
-        if let Some(index) = value.index {
-            Some(TreeIndex {
+        value.index.map(|index| TreeIndex {
                 index: Some(index),
                 left_index: value.get_left_index(),
                 right_index: value.get_right_index(),
                 height: value.height,
             })
-        } else {
-            None
-        }
     }
 }
 

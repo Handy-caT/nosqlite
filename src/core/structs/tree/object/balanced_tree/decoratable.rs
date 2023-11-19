@@ -32,7 +32,7 @@ pub struct Decoratable<
     /// Additional indexes vector
     indexes: AdditionalIndexVec,
     /// Compare function
-    compare: fn(&T, &T) -> Ordering,
+    compare: fn(T, T) -> Ordering,
     v: std::marker::PhantomData<V>,
 }
 
@@ -50,7 +50,7 @@ impl<
     /// * `Decoratable` - new [`Decoratable`] balanced tree
     pub fn new(
         tree: M,
-        compare: fn(&T, &T) -> Ordering,
+        compare: fn(T, T) -> Ordering,
     ) -> Decoratable<T, V, M> {
         let additional_index_vec = AdditionalIndexVec::new(tree.get_nodes());
 
@@ -97,7 +97,7 @@ impl<
         if let Some(node_value) =
             self.base.get_nodes_mut().get_value_mut(root_index)
         {
-            if (self.compare)(&value, node_value) == Ordering::Less {
+            if (self.compare)(value, *node_value) == Ordering::Less {
                 if self.indexes[root_index].left_index.is_none() {
                     self.indexes[root_index].left_index = Some(value_index);
                 } else {
@@ -136,12 +136,12 @@ impl<
         if let Some(node_value) =
             self.base.get_nodes_mut().get_value_mut(root_index)
         {
-            if (self.compare)(&value, node_value) == Ordering::Less {
+            if (self.compare)(value, *node_value) == Ordering::Less {
                 self.indexes[root_index].left_index = self.remove_from_root(
                     value,
                     self.indexes[root_index].left_index.unwrap(),
                 );
-            } else if (self.compare)(&value, node_value) == Ordering::Greater {
+            } else if (self.compare)(value, *node_value) == Ordering::Greater {
                 self.indexes[root_index].right_index = self.remove_from_root(
                     value,
                     self.indexes[root_index].right_index.unwrap(),
@@ -236,10 +236,10 @@ impl<
                 .get_nodes_mut()
                 .get_value_mut(current_index.unwrap())
             {
-                if (self.compare)(&value, node_value) == Ordering::Less {
+                if (self.compare)(value, *node_value) == Ordering::Less {
                     current_index =
                         self.indexes[current_index.unwrap()].left_index;
-                } else if (self.compare)(&value, node_value)
+                } else if (self.compare)(value, *node_value)
                     == Ordering::Greater
                 {
                     current_index =
@@ -340,7 +340,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.base.len(), 3);
         assert_eq!(dec_tree.indexes.len(), 3);
@@ -358,7 +358,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.base.len(), 0);
         assert_eq!(dec_tree.indexes.len(), 0);
@@ -378,7 +378,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         dec_tree.push(3);
 
@@ -402,7 +402,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         dec_tree.push(3);
 
@@ -437,7 +437,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.find(1), Some(0));
         assert_eq!(dec_tree.find(2), Some(1));
@@ -458,7 +458,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_value(1), Some(1));
         assert_eq!(dec_tree.remove_by_value(2), Some(2));
@@ -479,7 +479,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_index(0), Some(1));
         assert_eq!(dec_tree.remove_by_index(1), Some(2));
@@ -500,7 +500,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_value(1), Some(1));
         assert_eq!(dec_tree.len(), 0);
@@ -521,7 +521,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(a));
+        >::new(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_index(0), Some(1));
         assert_eq!(dec_tree.len(), 0);

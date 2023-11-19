@@ -46,15 +46,15 @@ impl<'a> PlaceAdvisorStrategy for WorstFitAdvisor<'a> {
 
         let link = base_obj.peek_max();
 
-        link.filter(|&link| link.len >= size as u32)
+        link.filter(|&link| u64::from(link.len) >= size)
     }
 
     fn apply_place(&mut self, link: &PageLink, size: u64) {
-        if link.len > size as u32 {
+        if u64::from(link.len) > size{
             let new_link = PageLink::new(
                 link.page_index,
-                link.start + size as u32,
-                link.len - size as u32,
+                link.start + size as u16,
+                link.len - size as u16,
             );
             self.empty_link_registry.add_link(new_link);
         }

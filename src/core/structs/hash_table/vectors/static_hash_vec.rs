@@ -1,11 +1,11 @@
 use crate::core::structs::hash_table::vectors::{
     hash_vec::{
-        HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
+        HashVec, Indexes, HashVecInternal, HashVecStatisticsInternal,
     },
     key_value::KeyValue,
     statistics::{
-        hash_vec_statistics::HashVecStatistics,
-        statistics_functions::{
+        hash_vec,
+        functions::{
             statistics_add_actions, statistics_remove_actions,
         },
     },
@@ -23,23 +23,25 @@ pub(crate) struct StaticHashVec<K, V, const N: usize> {
     /// It is a power of 2. If N is not a power of 2,
     /// it will be rounded up to the next power of 2.
     pub size: usize,
-    /// Statistics of the hash vector
-    statistics: HashVecStatistics,
+    /// [`Statistics`] of the hash vector
+    /// 
+    /// [`Statistics`]: hash_vec::Stats
+    statistics: hash_vec::Stats,
 }
 
 impl<K: Eq, V: Default + Eq, const N: usize> StaticHashVec<K, V, N> {
-    /// Creates a new StaticHashVec
+    /// Creates a new [`StaticHashVec`]
     /// # Returns
-    /// * `StaticHashVec<V, N>` - New StaticHashVec
+    /// * `StaticHashVec<V, N>` - New [`StaticHashVec`]
     pub fn new() -> Self {
         let mut data = Vec::new();
         let mut i = 0;
-        let mut size = N;
 
-        if (N as f64).log2() != (N as f64).log2().floor() {
-            let pow = (N as f64).log2().ceil() as u64;
-            size = 2usize.pow(pow as u32);
+        let mut pow = N.ilog2();
+        if N > 2usize.pow(pow) {
+            pow += 1;
         }
+        let size = 2usize.pow(pow);
 
         while i < size {
             data.push(Vec::new());
@@ -49,12 +51,12 @@ impl<K: Eq, V: Default + Eq, const N: usize> StaticHashVec<K, V, N> {
         StaticHashVec {
             data,
             size,
-            statistics: HashVecStatistics::new(N as usize),
+            statistics: hash_vec::Stats::new(N),
         }
     }
 }
 
-/// Implementation of basic HashVec trait for StaticHashVec
+/// Implementation of basic [`HashVec`] trait for [`StaticHashVec`].
 impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: usize>
     HashVec<K, V> for StaticHashVec<K, V, N>
 {
@@ -119,9 +121,9 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: usize>
     }
 }
 
-/// Implementation of HashVecIndexes trait for StaticHashVec
+/// Implementation of [`Indexes`] trait for [`StaticHashVec`]
 impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: usize>
-    HashVecIndexes<K, V> for StaticHashVec<K, V, N>
+    Indexes<K, V> for StaticHashVec<K, V, N>
 {
     fn remove_by_index(
         &mut self,
@@ -194,11 +196,11 @@ impl<K: Eq, V: Default + Eq, const N: usize> HashVecStatisticsInternal<K, V>
         self.statistics.max_length
     }
 
-    fn get_statistics(&self) -> &HashVecStatistics {
+    fn get_statistics(&self) -> &hash_vec::Stats {
         &self.statistics
     }
 
-    fn get_statistics_mut(&mut self) -> &mut HashVecStatistics {
+    fn get_statistics_mut(&mut self) -> &mut hash_vec::Stats {
         &mut self.statistics
     }
 
@@ -215,7 +217,7 @@ impl<K: Eq, V: Default + Eq, const N: usize> HashVecStatisticsInternal<K, V>
 mod tests {
     use crate::core::structs::hash_table::vectors::{
         hash_vec::{
-            HashVec, HashVecIndexes, HashVecInternal, HashVecStatisticsInternal,
+            HashVec, Indexes, HashVecInternal, HashVecStatisticsInternal,
         },
         key_value::KeyValue,
         static_hash_vec::StaticHashVec,

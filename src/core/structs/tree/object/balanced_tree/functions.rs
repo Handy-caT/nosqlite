@@ -3,7 +3,7 @@ use queues::{queue, IsQueue, Queue};
 use std::cmp::Ordering;
 
 pub fn height_from_root(
-    indexes: &mut Vec<TreeIndex>,
+    indexes: &mut [TreeIndex],
     root_index: Option<usize>,
 ) -> u8 {
     if let Some(index) = root_index {
@@ -13,13 +13,13 @@ pub fn height_from_root(
     }
 }
 
-pub fn bfactor(indexes: &mut Vec<TreeIndex>, root_index: usize) -> i8 {
+pub fn bfactor(indexes: &mut [TreeIndex], root_index: usize) -> i8 {
     let node_indexes = indexes[root_index];
-    height_from_root(indexes, node_indexes.right_index) as i8
-        - height_from_root(indexes, node_indexes.left_index) as i8
+    i8::try_from(height_from_root(indexes, node_indexes.right_index)).unwrap()
+        - i8::try_from(height_from_root(indexes, node_indexes.left_index)).unwrap()
 }
 
-pub fn fix_height(indexes: &mut Vec<TreeIndex>, root_index: usize) {
+pub fn fix_height(indexes: &mut [TreeIndex], root_index: usize) {
     let node_indexes = indexes[root_index];
 
     let left_height = height_from_root(indexes, node_indexes.left_index);
@@ -32,10 +32,10 @@ pub fn fix_height(indexes: &mut Vec<TreeIndex>, root_index: usize) {
     };
 
     let node_indexes = &mut indexes[root_index];
-    node_indexes.height = height
+    node_indexes.height = height;
 }
 
-pub fn rotate_right(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
+pub fn rotate_right(indexes: &mut [TreeIndex], root_index: usize) -> usize {
     let left_index = indexes[root_index].left_index.unwrap();
 
     indexes[root_index].left_index = indexes[left_index].right_index;
@@ -47,7 +47,7 @@ pub fn rotate_right(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
     left_index
 }
 
-pub fn rotate_left(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
+pub fn rotate_left(indexes: &mut [TreeIndex], root_index: usize) -> usize {
     let right_index = indexes[root_index].right_index.unwrap();
 
     indexes[root_index].right_index = indexes[right_index].left_index;
@@ -59,7 +59,7 @@ pub fn rotate_left(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
     right_index
 }
 
-pub fn balance(indexes: &mut Vec<TreeIndex>, root_index: usize) -> usize {
+pub fn balance(indexes: &mut [TreeIndex], root_index: usize) -> usize {
     let mut new_root_index = root_index;
     fix_height(indexes, root_index);
 
@@ -108,15 +108,15 @@ pub fn remove_min(
 }
 
 pub fn find_greater_equal<T: Default + PartialOrd + Copy>(
-    nodes: &mut Vec<T>,
-    indexes: &mut Vec<TreeIndex>,
+    nodes: &mut [T],
+    indexes: &mut [TreeIndex],
     compare: fn(&T, &T) -> Ordering,
     root: usize,
     value: T,
 ) -> Option<(usize, T)> {
     let mut queue: Queue<(Option<usize>, String)> = queue![];
     let mut current_index = Some(root);
-    let mut last = (None, "".to_string());
+    let mut last = (None, String::new());
     let mut ind = false;
     let mut turn_count = 0;
 

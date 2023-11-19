@@ -2,7 +2,7 @@ use crate::core::page_struct::Page;
 
 pub struct PageController {
     pages: Vec<Page>,
-    page_count: u64,
+    page_count: u32,
 }
 
 impl PageController {
@@ -13,7 +13,7 @@ impl PageController {
         }
     }
 
-    pub fn get_page_count(&self) -> u64 {
+    pub fn get_page_count(&self) -> u32 {
         self.page_count
     }
 
