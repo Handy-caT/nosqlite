@@ -50,7 +50,7 @@ impl<'a> PlaceAdvisorStrategy for WorstFitAdvisor<'a> {
     }
 
     fn apply_place(&mut self, link: &PageLink, size: u64) {
-        if u64::from(link.len) > size{
+        if u64::from(link.len) > size {
             let new_link = PageLink::new(
                 link.page_index,
                 link.start + size as u16,

@@ -1,3 +1,5 @@
+#![feature(core_intrinsics)]
+
 mod core;
 
 fn main() {

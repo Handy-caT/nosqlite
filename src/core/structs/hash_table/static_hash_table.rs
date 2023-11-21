@@ -1,5 +1,5 @@
 use crate::core::{
-    base::cast::usize::UsizeCast as _,
+    base::cast::usize::Usize as _,
     structs::hash_table::{
         hash::{custom_hashable::CustomHash, hash},
         HashTable, ExtendedFunctions, VecFunctions,

@@ -1,8 +1,12 @@
-pub trait UsizeCast {
+use std::intrinsics::size_of;
+
+pub const USIZE_SIZE: usize = size_of::<usize>();
+
+pub trait Usize {
     fn to_usize(self) -> usize;
 }
 
-impl UsizeCast for u64 {
+impl Usize for u64 {
     fn to_usize(self) -> usize {
         if let Ok(res) = self.try_into() {
             res
@@ -18,7 +22,7 @@ impl UsizeCast for u64 {
     }
 }
 
-impl UsizeCast for u32 {
+impl Usize for u32 {
     fn to_usize(self) -> usize {
         if let Ok(res) = self.try_into() {
             res

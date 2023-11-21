@@ -2,12 +2,13 @@ use std::{
     cmp::Ordering,
     fmt::{Debug, Display, Formatter},
 };
+use crate::core::base::cast::usize::USIZE_SIZE;
 
 /// A struct that represents a link to a page.
 #[derive(Debug, Default, Copy, Clone, Eq)]
 pub struct PageLink {
     /// The index of the page.
-    pub page_index: u32,
+    pub page_index: usize,
     /// The start index of the link on a page.
     pub start: u16,
     /// The length of the link.
@@ -22,7 +23,7 @@ impl PageLink {
     /// * `len` - The length of the link.
     /// # Returns
     /// A new `PageLink` with the given parameters.
-    pub fn new(page: u32, start: u16, len: u16) -> PageLink {
+    pub fn new(page: usize, start: u16, len: u16) -> PageLink {
         PageLink {
             page_index: page,
             start,
@@ -35,7 +36,7 @@ impl PageLink {
     /// # Returns
     /// u64 - The raw index of the link.
     pub fn get_raw_index(&self) -> u64 {
-        u64::from(self.page_index * 4096 + u32::from(self.start))
+        u64::try_from(self.page_index).unwrap() * 4096 + u64::from(self.start)
     }
 
     /// Returns the raw end of the link.
@@ -44,7 +45,8 @@ impl PageLink {
     /// # Returns
     /// u64 - The raw end of the link.
     pub fn get_raw_end(&self) -> u64 {
-        u64::from(self.page_index * 4096 + u32::from(self.start) + u32::from(self.len) - 1)
+        u64::try_from(self.page_index).unwrap() + u64::from(self.start)
+            + u64::from(self.len) - 1
     }
 
     /// Compares two `PageLink`s by their length.
@@ -68,11 +70,11 @@ impl PageLink {
     }
 }
 
-impl From<[u8; 8]> for PageLink {
-    fn from(bytes: [u8; 8]) -> Self {
-        let page = u32::from_be_bytes(bytes[0..4].try_into().unwrap());
-        let start = u16::from_be_bytes(bytes[4..6].try_into().unwrap());
-        let len = u16::from_be_bytes(bytes[6..8].try_into().unwrap());
+impl From<[u8; 4 + USIZE_SIZE]> for PageLink {
+    fn from(bytes: [u8; 4 + USIZE_SIZE]) -> Self {
+        let page = usize::from_be_bytes(bytes[0..USIZE_SIZE].try_into().unwrap());
+        let start = u16::from_be_bytes(bytes[USIZE_SIZE..USIZE_SIZE + 2].try_into().unwrap());
+        let len = u16::from_be_bytes(bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].try_into().unwrap());
         PageLink {
             page_index: page,
             start,
@@ -81,12 +83,12 @@ impl From<[u8; 8]> for PageLink {
     }
 }
 
-impl Into<[u8; 8]> for PageLink {
-    fn into(self) -> [u8; 8] {
-        let mut bytes = [0; 8];
-        bytes[0..4].copy_from_slice(&self.page_index.to_be_bytes());
-        bytes[4..6].copy_from_slice(&self.start.to_be_bytes());
-        bytes[6..8].copy_from_slice(&self.len.to_be_bytes());
+impl From<PageLink> for [u8; 4 + USIZE_SIZE] {
+    fn from(val: PageLink) -> Self {
+        let mut bytes = [0; 4 + USIZE_SIZE];
+        bytes[0..USIZE_SIZE].copy_from_slice(&val.page_index.to_be_bytes());
+        bytes[USIZE_SIZE..USIZE_SIZE + 2].copy_from_slice(&val.start.to_be_bytes());
+        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].copy_from_slice(&val.len.to_be_bytes());
         bytes
     }
 }
@@ -121,6 +123,8 @@ impl Display for PageLink {
 
 #[cfg(test)]
 mod tests {
+    use crate::core::base::cast::usize::USIZE_SIZE;
+
     #[test]
     fn test_page_link_new() {
         let link = super::PageLink::new(0, 0, 10);
@@ -133,14 +137,14 @@ mod tests {
 
     #[test]
     fn test_page_link_from() {
-        let page: u32 = 2;
+        let page: usize = 2;
         let start: u16 = 10;
         let len: u16 = 20;
 
-        let mut bytes = [0; 8];
-        bytes[0..4].copy_from_slice(&page.to_be_bytes());
-        bytes[4..6].copy_from_slice(&start.to_be_bytes());
-        bytes[6..8].copy_from_slice(&len.to_be_bytes());
+        let mut bytes = [0; USIZE_SIZE + 4];
+        bytes[0..USIZE_SIZE].copy_from_slice(&page.to_be_bytes());
+        bytes[USIZE_SIZE..USIZE_SIZE + 2].copy_from_slice(&start.to_be_bytes());
+        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].copy_from_slice(&len.to_be_bytes());
 
         let link = super::PageLink::from(bytes);
         assert_eq!(link.page_index, page);
@@ -150,16 +154,16 @@ mod tests {
 
     #[test]
     fn test_page_link_into() {
-        let page: u32 = 2;
+        let page: usize = 2;
         let start: u16 = 10;
         let len: u16 = 20;
 
         let link = super::PageLink::new(page, start, len);
-        let bytes: [u8; 8] = link.into();
+        let bytes: [u8; USIZE_SIZE + 4] = link.into();
 
-        assert_eq!(bytes[0..4], page.to_be_bytes());
-        assert_eq!(bytes[4..6], start.to_be_bytes());
-        assert_eq!(bytes[6..8], len.to_be_bytes());
+        assert_eq!(bytes[0..USIZE_SIZE], page.to_be_bytes());
+        assert_eq!(bytes[USIZE_SIZE..USIZE_SIZE + 2], start.to_be_bytes());
+        assert_eq!(bytes[USIZE_SIZE + 2..USIZE_SIZE + 4], len.to_be_bytes());
     }
 
     #[test]

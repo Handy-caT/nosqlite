@@ -12,11 +12,11 @@ impl IdGenerator {
     }
 
     pub fn get_id(&mut self) -> u128 {
-        if self.empty.len() > 0 {
-            self.empty.pop().unwrap()
-        } else {
+        if self.empty.is_empty() {
             self.counter += 1;
             self.counter - 1
+        } else {
+            self.empty.pop().unwrap()
         }
     }
 
