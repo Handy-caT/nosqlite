@@ -269,6 +269,10 @@ impl<
         Some(value)
     }
 
+    fn pop(&self) -> Option<T> {
+        todo!()
+    }
+
     fn is_empty(&self) -> bool {
         self.base.is_empty()
     }

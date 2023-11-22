@@ -2,12 +2,13 @@ use crate::core::{
     link_struct::PageLink,
     structs::tree::{
         object::{
-            balanced_tree::decoratable::Decoratable,
+            balanced_tree::Decoratable,
             tree::{Tree, VecFunctions},
         },
-        vectors::tree_vec::{Indexes, Levels, TreeVec},
+        vectors::tree_vec::{Levels, TreeVec},
     },
 };
+
 
 pub struct EmptyLinkRegistry<V, M>
 where

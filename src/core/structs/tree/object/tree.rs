@@ -9,6 +9,7 @@ pub trait Tree<T> {
     /// # Returns
     /// * `usize` - The index of the value.
     fn push(&mut self, value: T) -> usize;
+    
     /// Finds a value in the tree. Returns the index of the value.
     /// If the value is not found, returns None.
     /// # Arguments
@@ -16,6 +17,7 @@ pub trait Tree<T> {
     /// # Returns
     /// * `Option<usize>` - The index of the value.
     fn find(&mut self, value: T) -> Option<usize>;
+    
     /// Removes a value from the tree. Returns the value.
     /// If the value is not found, returns None.
     /// # Arguments
@@ -23,10 +25,17 @@ pub trait Tree<T> {
     /// # Returns
     /// * `Option<T>` - The value.
     fn remove_by_value(&mut self, value: T) -> Option<T>;
+
+    /// Removes some object from a tree
+    /// # Returns
+    /// /// * `Option<T>` - The value, None if empty
+    fn pop(&self) -> Option<T>;
+    
     /// Checks if the object is empty.
     /// # Returns
     /// * `bool` - True if the object is empty, false otherwise.
     fn is_empty(&self) -> bool;
+    
     /// Returns the length of the object.
     /// # Returns
     /// * `usize` - The length of the object.

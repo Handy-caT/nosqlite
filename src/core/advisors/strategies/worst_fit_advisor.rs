@@ -10,11 +10,11 @@ use crate::core::{
     },
 };
 
-/// WorstFitAdvisor is a strategy that provides the worst fit for a given size.
-/// It uses EmptyLinkRegistry with BinHeap as a base structure.
+/// [`WorstFitAdvisor`] is a strategy that provides the worst fit for a given size.
+/// It uses [`EmptyLinkRegistry`] with [`BinHeap`] as a base structure.
 /// So the getting the biggest length is O(1).
 pub struct WorstFitAdvisor<'a> {
-    /// Link to the EmptyLinkRegistry
+    /// Link to the [`EmptyLinkRegistry`]
     empty_link_registry: &'a mut EmptyLinkRegistry<
         NormalizedTreeVector<PageLink>,
         BinHeap<PageLink>,
@@ -22,11 +22,11 @@ pub struct WorstFitAdvisor<'a> {
 }
 
 impl<'a> WorstFitAdvisor<'a> {
-    /// Creates a new WorstFitAdvisor
+    /// Creates a new [`WorstFitAdvisor`]
     /// # Arguments
-    /// * `empty_link_registry` - Link to the EmptyLinkRegistry
+    /// * `empty_link_registry` - Link to the [`EmptyLinkRegistry`]
     /// # Returns
-    /// * `WorstFitAdvisor` - New WorstFitAdvisor
+    /// * `WorstFitAdvisor` - New [`WorstFitAdvisor`]
     pub fn new(
         empty_link_registry: &'a mut EmptyLinkRegistry<
             NormalizedTreeVector<PageLink>,
@@ -40,21 +40,21 @@ impl<'a> WorstFitAdvisor<'a> {
 }
 
 impl<'a> PlaceAdvisorStrategy for WorstFitAdvisor<'a> {
-    fn provide_place(&mut self, size: u64) -> Option<PageLink> {
+    fn provide_place(&mut self, size: u16) -> Option<PageLink> {
         let data = self.empty_link_registry.get_data_mut();
         let base_obj = data.get_base_mut();
 
         let link = base_obj.peek_max();
 
-        link.filter(|&link| u64::from(link.len) >= size)
+        link.filter(|&link| link.len >= size)
     }
 
-    fn apply_place(&mut self, link: &PageLink, size: u64) {
-        if u64::from(link.len) > size {
+    fn apply_place(&mut self, link: &PageLink, size: u16) {
+        if link.len > size {
             let new_link = PageLink::new(
                 link.page_index,
-                link.start + size as u16,
-                link.len - size as u16,
+                link.start + size,
+                link.len - size,
             );
             self.empty_link_registry.add_link(new_link);
         }

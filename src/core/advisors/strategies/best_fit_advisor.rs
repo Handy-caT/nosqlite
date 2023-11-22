@@ -13,14 +13,14 @@ use crate::core::{
     },
 };
 
-/// BestFitAdvisor is a strategy that finds the best fit for a given size.
-/// It uses EmptyLinkRegistry with BalancedTree as a data structure.
+/// [`BestFitAdvisor`] is a strategy that finds the best fit for a given size.
+/// It uses [`EmptyLinkRegistry`] with [`BalancedTree`] as a data structure.
 /// So the getting the best fit is O(log n).
 pub struct BestFitAdvisor<'a, V>
 where
     V: TreeVec<PageLink> + Sized + Indexes<PageLink> + Levels,
 {
-    /// Link to the EmptyLinkRegistry
+    /// Link to the [`EmptyLinkRegistry`]
     empty_link_registry:
         &'a mut EmptyLinkRegistry<V, BalancedTree<PageLink, V>>,
 }
@@ -29,11 +29,11 @@ impl<'a, V> BestFitAdvisor<'a, V>
 where
     V: TreeVec<PageLink> + Sized + Indexes<PageLink> + Levels,
 {
-    /// Creates a new BestFitAdvisor
+    /// Creates a new [`BestFitAdvisor`]
     /// # Arguments
-    /// * `empty_link_registry` - Link to the EmptyLinkRegistry
+    /// * `empty_link_registry` - Link to the [`EmptyLinkRegistry`]
     /// # Returns
-    /// * `BestFitAdvisor` - New BestFitAdvisor
+    /// * `BestFitAdvisor` - New [`BestFitAdvisor`]
     pub fn new(
         empty_link_registry: &'a mut EmptyLinkRegistry<
             V,
@@ -62,7 +62,7 @@ impl<'a, V> PlaceAdvisorStrategy for BestFitAdvisor<'a, V>
 where
     V: TreeVec<PageLink> + Sized + Indexes<PageLink> + Levels,
 {
-    fn provide_place(&mut self, size: u64) -> Option<PageLink> {
+    fn provide_place(&mut self, size: u16) -> Option<PageLink> {
         let data = self.empty_link_registry.get_data_mut();
         let base_obj = data.get_base_mut();
 
@@ -70,7 +70,7 @@ where
             return None;
         }
         let link =
-            base_obj.find_greater_equal(PageLink::new(0, 0, size as u16));
+            base_obj.find_greater_equal(PageLink::new(0, 0, size));
 
         match link {
             Some(link) => {
@@ -81,12 +81,12 @@ where
         }
     }
 
-    fn apply_place(&mut self, link: &PageLink, size: u64) {
-        if u64::from(link.len) > size {
+    fn apply_place(&mut self, link: &PageLink, size: u16) {
+        if link.len > size {
             let new_link = PageLink::new(
                 link.page_index,
-                link.start + size as u16,
-                link.len - size as u16,
+                link.start + size,
+                link.len - size,
             );
             self.empty_link_registry.add_link(new_link);
         }

@@ -174,6 +174,10 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
         }
     }
 
+    fn pop(&self) -> Option<T> {
+        todo!()
+    }
+
     fn is_empty(&self) -> bool {
         self.data.len() == 0
     }
