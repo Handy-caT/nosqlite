@@ -1,5 +1,5 @@
 use crate::core::structs::hash_table::vectors::hash_vec::{
-    HashVec, HashVecStatisticsInternal,
+    HashVec, InternalStatistics,
 };
 
 /// Function that updates statistics after push action.
@@ -15,7 +15,7 @@ pub(in crate::core::structs::hash_table) fn statistics_add_actions<K, V, M>(
 ) where
     V: Default + Eq,
     K: Default + Eq,
-    M: HashVec<K, V> + HashVecStatisticsInternal<K, V>,
+    M: HashVec<K, V> + InternalStatistics<K, V>,
 {
     let bucket_len = hash_vec.get_bucket_len(index);
     if let Some(len) = bucket_len {
@@ -42,7 +42,7 @@ pub(in crate::core::structs::hash_table) fn statistics_remove_actions<K, V, M>(
 ) where
     V: Default + Eq,
     K: Default + Eq,
-    M: HashVec<K, V> + HashVecStatisticsInternal<K, V>,
+    M: HashVec<K, V> + InternalStatistics<K, V>,
 {
     hash_vec.get_statistics_mut().size -= 1;
     let is_max = hash_vec.get_statistics().is_max_length_bucket(index);

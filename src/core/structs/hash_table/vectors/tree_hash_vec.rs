@@ -1,6 +1,6 @@
 use crate::core::structs::{
     hash_table::vectors::{
-        hash_vec::{HashVec, Indexes, HashVecStatisticsInternal},
+        hash_vec::{HashVec, Indexes, InternalStatistics},
         key_value::KeyValue,
         statistics::{
             hash_vec,
@@ -22,42 +22,39 @@ type TreeBuckets<K, V> = Vec<BalancedTree<KeyValue<K, V>, OptimizedTreeVec<KeyVa
 
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
-/// * `N` - Number of buckets, must be a power of 2,
-/// if it is not, it will be rounded up to the next power of 2
+/// * `K` - Type of the key
 pub struct TreeHashVec<
     K: Copy + Default + PartialOrd,
     V: Copy + Default + PartialOrd,
-    const N: usize,
 > {
     /// The data of the hash vector as a vector of trees.
     /// [`OptimizedTreeVec`] is used as the underlying data structure for the trees.
     data: TreeBuckets<K, V>,
+
     /// The size of the hash vector. This is the number of buckets.
     /// It is a power of 2. If N is not a power of 2,
     /// it will be rounded up to the next power of 2.
     pub size: usize,
+
     /// Statistics of the hash vector
     statistics: hash_vec::Stats,
 }
 
+/// Implementation of basic [`HashVec`] trait for [`TreeHashVec`]
 impl<
-        K: Copy + Default + PartialOrd,
-        V: Copy + Default + PartialOrd,
-        const N: usize,
-    > TreeHashVec<K, V, N>
+        K: Default + Eq + Copy + PartialOrd,
+        V: Default + Eq + Copy + PartialOrd,
+    > HashVec<K, V> for TreeHashVec<K, V>
 {
-    /// Creates a new [`TreeHashVec`]
-    /// # Returns
-    /// * `TreeHashVec<V, N>` - New [`TreeHashVec`]
-    pub fn new() -> TreeHashVec<K, V, N> {
+    fn new(size: usize) -> TreeHashVec<K, V> {
         let mut vec = TreeHashVec {
             data: Vec::new(),
-            size: N,
-            statistics: hash_vec::Stats::new(N),
+            size,
+            statistics: hash_vec::Stats::new(size),
         };
 
-        let mut pow = N.ilog2();
-        if N > 2usize.pow(pow) {
+        let mut pow = size.ilog2();
+        if size > 2usize.pow(pow) {
             pow += 1;
         }
         let size = 2usize.pow(pow);
@@ -74,15 +71,7 @@ impl<
 
         vec
     }
-}
 
-/// Implementation of basic [`HashVec`] trait for [`TreeHashVec`]
-impl<
-        K: Default + Eq + Copy + PartialOrd,
-        V: Default + Eq + Copy + PartialOrd,
-        const N: usize,
-    > HashVec<K, V> for TreeHashVec<K, V, N>
-{
     fn push(&mut self, index: usize, key: K, value: V) -> (usize, usize) {
         let data = KeyValue::new(key, value);
 
@@ -150,12 +139,11 @@ impl<
     }
 }
 
-/// Implementation of [`HashVecStatisticsInternal`] trait for [`TreeHashVec`]
+/// Implementation of [`InternalStatistics`] trait for [`TreeHashVec`]
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Default + Eq + Copy + PartialOrd,
-        const N: usize,
-    > HashVecStatisticsInternal<K, V> for TreeHashVec<K, V, N>
+    > InternalStatistics<K, V> for TreeHashVec<K, V>
 {
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
@@ -170,7 +158,7 @@ impl<
     }
 
     fn get_bucket_len(&self, index: usize) -> Option<usize> {
-        if index >= N {
+        if index >= self.size {
             None
         } else {
             Some(self.data[index].len())
@@ -182,8 +170,7 @@ impl<
 impl<
         K: Default + Eq + Copy + PartialOrd,
         V: Eq + Copy + Default + PartialOrd,
-        const N: usize,
-    > Indexes<K, V> for TreeHashVec<K, V, N>
+    > Indexes<K, V> for TreeHashVec<K, V>
 {
     fn remove_by_index(
         &mut self,
@@ -221,7 +208,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_new() {
-        let vec = TreeHashVec::<usize, usize, 8>::new();
+        let vec = TreeHashVec::<usize, usize>::new(8);
 
         assert_eq!(vec.data.len(), 8);
         for i in 0..8 {
@@ -232,14 +219,14 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_new_sizes() {
-        let vec = TreeHashVec::<usize, usize, 10>::new();
+        let vec = TreeHashVec::<usize, usize>::new(10);
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 16);
         assert_eq!(vec.size, 16);
         assert_eq!(vec.size(), 16);
 
-        let vec = TreeHashVec::<usize, usize, 32>::new();
+        let vec = TreeHashVec::<usize, usize>::new(32);
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.data.len(), 32);
@@ -249,7 +236,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_push() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         let (index, value_index) = vec.push(0, 1, 1);
 
@@ -265,7 +252,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_update() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -285,7 +272,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_remove_by_index() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -307,7 +294,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_get() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -319,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_have_key() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -331,7 +318,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_get_by_index() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -343,7 +330,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_find_key() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -355,7 +342,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_get_bucket_len() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
@@ -367,7 +354,7 @@ mod tests {
 
     #[test]
     fn test_tree_hash_vec_remove() {
-        let mut vec = TreeHashVec::<usize, usize, 8>::new();
+        let mut vec = TreeHashVec::<usize, usize>::new(8);
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);

@@ -1,8 +1,9 @@
 use crate::core::structs::hash_table::vectors::{
-    hash_vec::{HashVec, Indexes, HashVecStatisticsInternal},
+    hash_vec::{HashVec, Indexes, InternalStatistics},
     key_value::KeyValue,
 };
 use std::marker::PhantomData;
+use std::path::Iter;
 
 /// [`HashVecIterator`] is an iterator for [`HashVec`]
 /// * `K` - key type
@@ -29,7 +30,8 @@ where
     /// * `table` - [`HashVec`] implementation
     /// # Returns
     /// * `Self` - [`HashVecIterator`]
-    pub fn new(table: &'a mut H, size: usize) -> Self {
+    pub fn new(table: &'a mut H) -> Self {
+        let size = table.size();
         HashVecIterator {
             table,
             index: 0,
@@ -43,9 +45,7 @@ where
 
 impl<'a, K, V, H> Iterator for HashVecIterator<'a, K, V, H>
 where
-    H: HashVec<K, V> + Indexes<K, V> + HashVecStatisticsInternal<K, V>,
-    K: Copy,
-    V: Copy,
+    H: HashVec<K, V> + Indexes<K, V>,
 {
     type Item = KeyValue<K, V>;
 
@@ -76,9 +76,9 @@ mod tests {
 
     #[test]
     fn test_hash_vec_iterator_new() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
-        let hash_vec_iterator = HashVecIterator::new(&mut hash_vec, 8);
+        let hash_vec_iterator = HashVecIterator::new(&mut hash_vec);
 
         assert_eq!(hash_vec_iterator.index, 0);
         assert_eq!(hash_vec_iterator.size, 8);
@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn test_hash_vec_iterator_next() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(1, 1, 1);
         hash_vec.push(2, 2, 2);
@@ -97,7 +97,7 @@ mod tests {
         hash_vec.push(6, 6, 6);
         hash_vec.push(7, 7, 7);
 
-        let mut hash_vec_iterator = HashVecIterator::new(&mut hash_vec, 8);
+        let mut hash_vec_iterator = HashVecIterator::new(&mut hash_vec);
 
         assert_eq!(hash_vec_iterator.next().unwrap().value, 1);
         assert_eq!(hash_vec_iterator.next().unwrap().value, 2);

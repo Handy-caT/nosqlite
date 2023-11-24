@@ -4,31 +4,32 @@ use crate::core::{
         hash::{custom_hashable::CustomHash, hash},
         HashTable, ExtendedFunctions, VecFunctions,
         vectors::{
-            hash_vec::{HashVec, Indexes, HashVecStatisticsInternal},
+            hash_vec::{HashVec, Indexes, InternalStatistics},
             key_value::KeyValue,
         },
     },
 };
 use std::marker::PhantomData;
+use crate::core::structs::hash_table::vectors::hash_vec_iterator::HashVecIterator;
 
 /// [`StaticHashTable`] is a hash table with a fixed size.
 /// It is using [`HashVec`] as a storage.
 /// * `K` - key type
 /// * `V` - value type
-/// * `N` - size of the hash table
 /// * `H` - [`HashVec`] implementation
-struct StaticHashTable<K, V, H, const N: usize>
+struct StaticHashTable<K, V, H>
 where
     H: HashVec<K, V>,
 {
     table: H,
+    len: usize,
     size: usize,
     v: PhantomData<V>,
     k: PhantomData<K>,
     hash: fn(&[u8]) -> u64,
 }
 
-impl<K, V, H, const N: usize> StaticHashTable<K, V, H, N>
+impl<K, V, H> StaticHashTable<K, V, H>
 where
     H: HashVec<K, V>,
 {
@@ -38,11 +39,13 @@ where
     /// # Returns
     /// * `Self` - [`StaticHashTable`]
     fn new(table: H) -> Self {
+        let size = table.size();
         StaticHashTable {
             table,
-            size: 0,
+            len: 0,
             v: PhantomData,
             k: PhantomData,
+            size,
             hash,
         }
     }
@@ -54,17 +57,19 @@ where
     /// # Returns
     /// * `Self` - [`StaticHashTable`]
     fn new_with_hash(table: H, hash: fn(&[u8]) -> u64) -> Self {
+        let size = table.size();
         StaticHashTable {
             table,
-            size: 0,
+            len: 0,
             v: PhantomData,
             k: PhantomData,
+            size,
             hash,
         }
     }
 }
 
-impl<K, V, H, const N: usize> HashTable<K, V> for StaticHashTable<K, V, H, N>
+impl<K, V, H> HashTable<K, V> for StaticHashTable<K, V, H>
 where
     H: HashVec<K, V>,
     K: Eq + Copy + CustomHash,
@@ -80,7 +85,7 @@ where
             self.table.update(index, key, value);
         } else {
             self.table.push(index, key, value);
-            self.size += 1;
+            self.len += 1;
         }
 
         Some(value)
@@ -93,7 +98,7 @@ where
         let item = self.table.remove(index, key);
         match item {
             Some(item) => {
-                self.size -= 1;
+                self.len -= 1;
                 Some(item.value)
             }
             None => None,
@@ -109,25 +114,23 @@ where
     }
 
     fn len(&self) -> usize {
-        self.size
+        self.len
     }
 }
 
-impl<K, V, H, const N: usize> VecFunctions<K, V>
-    for StaticHashTable<K, V, H, N>
+impl<K, V, H> VecFunctions<K, V>
+    for StaticHashTable<K, V, H>
 where
-    H: HashVec<K, V> + HashVecStatisticsInternal<K, V> + Indexes<K, V>,
+    H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
     K: Eq + Copy + CustomHash,
     V: Eq + Copy,
 {
     fn get_keys(&mut self) -> Vec<K> {
         let mut keys = Vec::<K>::new();
 
-        for i in 0..self.table.size() {
-            let len = self.table.get_bucket_len(i).unwrap();
-            for j in 0..len {
-                keys.push(self.table.get_by_index(i, j).unwrap().key);
-            }
+        let iter = HashVecIterator::new(&mut self.table);
+        for item in iter {
+            keys.push(item.key);
         }
 
         keys
@@ -136,11 +139,9 @@ where
     fn get_values(&mut self) -> Vec<V> {
         let mut values = Vec::<V>::new();
 
-        for i in 0..self.table.size() {
-            let len = self.table.get_bucket_len(i).unwrap();
-            for j in 0..len {
-                values.push(self.table.get_by_index(i, j).unwrap().value);
-            }
+        let iter = HashVecIterator::new(&mut self.table);
+        for item in iter {
+            values.push(item.value);
         }
 
         values
@@ -149,19 +150,17 @@ where
     fn get_key_values(&mut self) -> Vec<KeyValue<K, V>> {
         let mut values = Vec::<KeyValue<K, V>>::new();
 
-        for i in 0..self.table.size() {
-            let len = self.table.get_bucket_len(i).unwrap();
-            for j in 0..len {
-                values.push(self.table.get_by_index(i, j).unwrap());
-            }
+        let iter = HashVecIterator::new(&mut self.table);
+        for key_value in iter {
+            values.push(key_value);
         }
 
         values
     }
 }
 
-impl<K, V, H, const N: usize> ExtendedFunctions<K, V>
-    for StaticHashTable<K, V, H, N>
+impl<K, V, H> ExtendedFunctions<K, V>
+    for StaticHashTable<K, V, H>
 where
     H: HashVec<K, V>,
     K: Eq + Copy + CustomHash,
@@ -183,15 +182,15 @@ mod tests {
         static_hash_table::StaticHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
     };
+    use crate::core::structs::hash_table::vectors::hash_vec::HashVec;
 
     #[test]
     fn test_static_hash_table_new() {
         let hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         assert_eq!(hash_table.len(), 0);
     }
@@ -201,9 +200,8 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -217,9 +215,8 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -238,9 +235,8 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -265,9 +261,8 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -285,16 +280,17 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         for i in 0..8 {
-            hash_table.insert(i, i);
+            hash_table.insert(i, 20 - i);
         }
 
         let keys = hash_table.get_keys();
         assert_eq!(keys.len(), 8);
+        assert!(keys.contains(&0));
+        assert!(keys.contains(&7));
     }
 
     #[test]
@@ -302,16 +298,17 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         for i in 0..8 {
-            hash_table.insert(i, i);
+            hash_table.insert(i, 20 - i);
         }
 
         let values = hash_table.get_values();
         assert_eq!(values.len(), 8);
+        assert!(values.contains(&13));
+        assert!(values.contains(&20));
     }
 
     #[test]
@@ -319,16 +316,17 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
 
         for i in 0..8 {
-            hash_table.insert(i, i);
+            hash_table.insert(i, 20 - i);
         }
 
         let key_values = hash_table.get_key_values();
         assert_eq!(key_values.len(), 8);
+        assert!(key_values.contains(&KeyValue::new(0, 20)));
+        assert!(key_values.contains(&KeyValue::new(7, 13)));
     }
 
     #[test]
@@ -336,9 +334,8 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
         let key_value = hash_table.insert_key_value(KeyValue::new(0, 0));
         assert_eq!(key_value, Some(0));
 
@@ -351,9 +348,8 @@ mod tests {
         let mut hash_table: StaticHashTable<
             usize,
             usize,
-            StaticHashVec<usize, usize, 8>,
-            8,
-        > = StaticHashTable::new(StaticHashVec::new());
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(StaticHashVec::new(8));
         let tuple = hash_table.insert_tuple((0, 0));
         assert_eq!(tuple, Some(0));
 

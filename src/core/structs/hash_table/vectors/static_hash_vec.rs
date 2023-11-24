@@ -1,6 +1,6 @@
 use crate::core::structs::hash_table::vectors::{
     hash_vec::{
-        HashVec, Indexes, HashVecInternal, HashVecStatisticsInternal,
+        HashVec, Indexes, InternalFunctions, InternalStatistics,
     },
     key_value::KeyValue,
     statistics::{
@@ -14,31 +14,32 @@ use crate::core::structs::hash_table::vectors::{
 /// A static hash table that uses vectors as buckets.
 /// # Arguments
 /// * `V` - Type of the value
-/// * `N` - Number of buckets, must be a power of 2, if it is not,
-/// it will be rounded up to the next power of 2
-pub(crate) struct StaticHashVec<K, V, const N: usize> {
+/// * `K` - Type of the key
+pub(crate) struct StaticHashVec<K, V> {
     /// The data of the hash vector as a vector of vectors.
     data: Vec<Vec<KeyValue<K, V>>>,
+
     /// The size of the hash vector. This is the number of buckets.
     /// It is a power of 2. If N is not a power of 2,
     /// it will be rounded up to the next power of 2.
     pub size: usize,
+
     /// [`Statistics`] of the hash vector
     /// 
     /// [`Statistics`]: hash_vec::Stats
     statistics: hash_vec::Stats,
 }
 
-impl<K: Eq, V: Default + Eq, const N: usize> StaticHashVec<K, V, N> {
-    /// Creates a new [`StaticHashVec`]
-    /// # Returns
-    /// * `StaticHashVec<V, N>` - New [`StaticHashVec`]
-    pub fn new() -> Self {
+/// Implementation of basic [`HashVec`] trait for [`StaticHashVec`].
+impl<K: Eq + Copy + Default, V: Default + Eq + Copy>
+    HashVec<K, V> for StaticHashVec<K, V>
+{
+    fn new(size: usize) -> Self {
         let mut data = Vec::new();
         let mut i = 0;
 
-        let mut pow = N.ilog2();
-        if N > 2usize.pow(pow) {
+        let mut pow = size.ilog2();
+        if size > 2usize.pow(pow) {
             pow += 1;
         }
         let size = 2usize.pow(pow);
@@ -51,15 +52,10 @@ impl<K: Eq, V: Default + Eq, const N: usize> StaticHashVec<K, V, N> {
         StaticHashVec {
             data,
             size,
-            statistics: hash_vec::Stats::new(N),
+            statistics: hash_vec::Stats::new(size),
         }
     }
-}
 
-/// Implementation of basic [`HashVec`] trait for [`StaticHashVec`].
-impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: usize>
-    HashVec<K, V> for StaticHashVec<K, V, N>
-{
     fn push(&mut self, index: usize, key: K, value: V) -> (usize, usize) {
         let data = KeyValue::new(key, value);
 
@@ -122,8 +118,8 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: usize>
 }
 
 /// Implementation of [`Indexes`] trait for [`StaticHashVec`]
-impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: usize>
-    Indexes<K, V> for StaticHashVec<K, V, N>
+impl<K: Eq + Copy + Default, V: Default + Eq + Copy>
+    Indexes<K, V> for StaticHashVec<K, V>
 {
     fn remove_by_index(
         &mut self,
@@ -166,11 +162,11 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy, const N: usize>
     }
 }
 
-impl<K: Eq + Default, V: Default + Eq, const N: usize> HashVecInternal<K, V>
-    for StaticHashVec<K, V, N>
+impl<K: Eq + Default, V: Default + Eq> InternalFunctions<K, V>
+    for StaticHashVec<K, V>
 {
     fn get_vec(&self, index: usize) -> Option<&Vec<KeyValue<K, V>>> {
-        if index >= N {
+        if index >= self.size {
             None
         } else {
             Some(&self.data[index])
@@ -181,7 +177,7 @@ impl<K: Eq + Default, V: Default + Eq, const N: usize> HashVecInternal<K, V>
         &mut self,
         index: usize,
     ) -> Option<&mut Vec<KeyValue<K, V>>> {
-        if index >= N {
+        if index >= self.size {
             None
         } else {
             Some(&mut self.data[index])
@@ -189,8 +185,8 @@ impl<K: Eq + Default, V: Default + Eq, const N: usize> HashVecInternal<K, V>
     }
 }
 
-impl<K: Eq, V: Default + Eq, const N: usize> HashVecStatisticsInternal<K, V>
-    for StaticHashVec<K, V, N>
+impl<K: Eq, V: Default + Eq> InternalStatistics<K, V>
+    for StaticHashVec<K, V>
 {
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
@@ -205,7 +201,7 @@ impl<K: Eq, V: Default + Eq, const N: usize> HashVecStatisticsInternal<K, V>
     }
 
     fn get_bucket_len(&self, index: usize) -> Option<usize> {
-        if index >= N {
+        if index >= self.size {
             None
         } else {
             Some(self.data[index].len())
@@ -217,7 +213,7 @@ impl<K: Eq, V: Default + Eq, const N: usize> HashVecStatisticsInternal<K, V>
 mod tests {
     use crate::core::structs::hash_table::vectors::{
         hash_vec::{
-            HashVec, Indexes, HashVecInternal, HashVecStatisticsInternal,
+            HashVec, Indexes, InternalFunctions, InternalStatistics,
         },
         key_value::KeyValue,
         static_hash_vec::StaticHashVec,
@@ -225,7 +221,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_new() {
-        let hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.statistics.size, 0);
@@ -235,14 +231,14 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_new_sizes() {
-        let hash_vec: StaticHashVec<u64, u64, 10> = StaticHashVec::new();
+        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(10);
 
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.data.len(), 16);
         assert_eq!(hash_vec.size, 16);
         assert_eq!(hash_vec.size(), 16);
 
-        let hash_vec: StaticHashVec<u64, u64, 32> = StaticHashVec::new();
+        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(32);
 
         assert_eq!(hash_vec.len(), 0);
         assert_eq!(hash_vec.data.len(), 32);
@@ -252,7 +248,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_update() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -271,7 +267,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_push() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -292,7 +288,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_have_key() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -304,7 +300,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_find_key() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -316,7 +312,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_remove() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -346,7 +342,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_remove_by_index() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -373,7 +369,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_get_by_index() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -385,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_get_bucket_len() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -397,7 +393,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_get_vec() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);
@@ -414,7 +410,7 @@ mod tests {
 
     #[test]
     fn test_static_hash_vec_get_statistics() {
-        let mut hash_vec: StaticHashVec<u64, u64, 8> = StaticHashVec::new();
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
 
         hash_vec.push(0, 1, 1);
         hash_vec.push(0, 2, 2);

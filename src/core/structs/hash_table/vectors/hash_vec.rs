@@ -4,6 +4,13 @@ use crate::core::structs::hash_table::vectors::{
 
 /// Common trait for [`HashTable`] data
 pub trait HashVec<K, V> {
+    /// Creates a new [`HashVec`]
+    /// # Arguments
+    /// * `size` - Size of [`HashVec`]
+    /// # Returns
+    /// * `StaticHashVec<V, N>` - New [`HashVec`]
+    fn new(size: usize) -> Self;
+
     /// Adds value to the [`HashVec`] by underlying vector index and value itself
     /// # Arguments
     /// * `index` - Index of the underlying vector
@@ -109,7 +116,7 @@ pub trait Indexes<K, V> {
 
 /// Internal trait for [`HashTable`] to get underlying vectors by
 /// underlying vector index
-pub(in crate::core::structs::hash_table) trait HashVecInternal<K, V> {
+pub(in crate::core::structs::hash_table) trait InternalFunctions<K, V> {
     /// Returns reference to the underlying vector from the [`HashVec`] by
     /// underlying vector index
     /// # Arguments
@@ -131,7 +138,7 @@ pub(in crate::core::structs::hash_table) trait HashVecInternal<K, V> {
 }
 
 /// Common trait for [`HashTable`] to get statistics about underlying vectors
-pub(in crate::core::structs::hash_table) trait HashVecStatisticsInternal<K, V> {
+pub(in crate::core::structs::hash_table) trait InternalStatistics<K, V> {
     /// Returns max length of the underlying vectors
     /// # Returns
     /// * `usize` - Max length of the underlying vectors
