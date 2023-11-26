@@ -1,11 +1,9 @@
-mod functions;
 pub mod decoratable;
+mod functions;
 
 use crate::core::structs::tree::{
     object::{
-        balanced_tree::functions::{
-            balance, find_min, remove_min,
-        },
+        balanced_tree::functions::{balance, find_min, remove_min},
         tree::{FindFunctions, Tree, VecFunctions},
     },
     vectors::tree_vec::{Indexes, Levels, TreeVec},
@@ -44,9 +42,9 @@ fn default_compare<T: PartialOrd + Copy>(a: T, b: T) -> Ordering {
 
 /// Functions for the balanced tree
 impl<
-    T: Default + PartialOrd + Copy,
-    M: TreeVec<T> + Levels + Indexes<T> + Sized,
-> BalancedTree<T, M>
+        T: Default + PartialOrd + Copy,
+        M: TreeVec<T> + Levels + Indexes<T> + Sized,
+    > BalancedTree<T, M>
 {
     /// Creates new balanced tree using specified vector
     /// Vector must implement [`TreeVec`] trait
@@ -197,9 +195,9 @@ impl<
 /// It implemented to use [`BalancedTree`] as [`Tree`] and
 /// to use in [`Decoratable`]
 impl<
-    T: Default + PartialOrd + Copy,
-    M: TreeVec<T> + Indexes<T> + Levels + Sized,
-> Tree<T> for BalancedTree<T, M>
+        T: Default + PartialOrd + Copy,
+        M: TreeVec<T> + Indexes<T> + Levels + Sized,
+    > Tree<T> for BalancedTree<T, M>
 {
     fn push(&mut self, value: T) -> usize {
         if self.nodes.len() == 0 {
@@ -279,9 +277,9 @@ impl<
 }
 
 impl<
-    T: Default + PartialOrd + Copy,
-    M: TreeVec<T> + Indexes<T> + Levels + Sized,
-> VecFunctions<T, M> for BalancedTree<T, M>
+        T: Default + PartialOrd + Copy,
+        M: TreeVec<T> + Indexes<T> + Levels + Sized,
+    > VecFunctions<T, M> for BalancedTree<T, M>
 {
     fn get(&mut self, index: usize) -> Option<T> {
         let item = self.nodes.get(index);
@@ -311,7 +309,7 @@ impl<
 }
 
 impl<T: Default + PartialOrd + Copy, M: TreeVec<T> + Indexes<T> + Sized>
-FindFunctions<T> for BalancedTree<T, M>
+    FindFunctions<T> for BalancedTree<T, M>
 {
     fn find_greater_equal(&mut self, value: T) -> Option<(usize, T)> {
         let mut queue: Queue<(Option<usize>, String)> = queue![];
@@ -855,4 +853,3 @@ mod tests {
         assert_eq!(tree.find(350), Some(7));
     }
 }
-

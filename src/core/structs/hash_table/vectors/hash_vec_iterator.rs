@@ -2,8 +2,7 @@ use crate::core::structs::hash_table::vectors::{
     hash_vec::{HashVec, Indexes, InternalStatistics},
     key_value::KeyValue,
 };
-use std::marker::PhantomData;
-use std::path::Iter;
+use std::{marker::PhantomData, path::Iter};
 
 /// [`HashVecIterator`] is an iterator for [`HashVec`]
 /// * `K` - key type

@@ -6,8 +6,8 @@ use crate::core::{
     link_struct::PageLink,
     structs::tree::{
         object::{
-            BalancedTree,
             tree::{FindFunctions, Tree},
+            BalancedTree,
         },
         vectors::tree_vec::{Indexes, Levels, TreeVec},
     },
@@ -69,8 +69,7 @@ where
         if base_obj.len() == 0 {
             return None;
         }
-        let link =
-            base_obj.find_greater_equal(PageLink::new(0, 0, size));
+        let link = base_obj.find_greater_equal(PageLink::new(0, 0, size));
 
         match link {
             Some(link) => {
@@ -111,11 +110,7 @@ mod tests {
         },
         link_struct::PageLink,
         structs::tree::{
-            object::{
-                BalancedTree,
-                balanced_tree::Decoratable,
-                tree::Tree,
-            },
+            object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
             vectors::default_tree_vec::DefaultTreeVec,
         },
     };
@@ -238,6 +233,43 @@ mod tests {
         assert_eq!(link, Some(PageLink::new(0, 0, 100)));
 
         advisor.apply_place(&link.unwrap(), 100);
+
+        assert_eq!(registry.get_data().len(), 1);
+    }
+
+    #[test]
+    fn test_best_fit_advisor_apply_place_bigger_link() {
+        let nodes = DefaultTreeVec::<PageLink>::new();
+        let tree =
+            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
+            ::new_with_compare(
+                nodes,
+                PageLink::compare_by_len,
+            );
+
+        let dec_tree = Decoratable::<
+            PageLink,
+            DefaultTreeVec<PageLink>,
+            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
+        >::new(tree, PageLink::compare_by_index);
+
+        let mut registry = EmptyLinkRegistry::<
+            DefaultTreeVec<PageLink>,
+            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
+        >::new(dec_tree);
+
+        registry.add_link(PageLink::new(0, 0, 200));
+
+        let mut advisor = BestFitAdvisor::new(&mut registry);
+
+        let link = advisor.provide_place(100);
+
+        assert!(link.is_some());
+        let link = link.unwrap();
+
+        assert_eq!(link.len, 200);
+
+        advisor.apply_place(&link, 100);
 
         assert_eq!(registry.get_data().len(), 1);
     }

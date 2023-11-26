@@ -3,22 +3,21 @@ use crate::core::structs::{
         hash_vec::{HashVec, Indexes, InternalStatistics},
         key_value::KeyValue,
         statistics::{
+            functions::{statistics_add_actions, statistics_remove_actions},
             hash_vec,
-            functions::{
-                statistics_add_actions, statistics_remove_actions,
-            },
         },
     },
     tree::{
         object::{
-            BalancedTree,
             tree::{Tree, VecFunctions},
+            BalancedTree,
         },
         vectors::optimized_tree_vec::OptimizedTreeVec,
     },
 };
 
-type TreeBuckets<K, V> = Vec<BalancedTree<KeyValue<K, V>, OptimizedTreeVec<KeyValue<K, V>>>>;
+type TreeBuckets<K, V> =
+    Vec<BalancedTree<KeyValue<K, V>, OptimizedTreeVec<KeyValue<K, V>>>>;
 
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
@@ -28,7 +27,8 @@ pub struct TreeHashVec<
     V: Copy + Default + PartialOrd,
 > {
     /// The data of the hash vector as a vector of trees.
-    /// [`OptimizedTreeVec`] is used as the underlying data structure for the trees.
+    /// [`OptimizedTreeVec`] is used as the underlying data
+    /// structure for the trees.
     data: TreeBuckets<K, V>,
 
     /// The size of the hash vector. This is the number of buckets.

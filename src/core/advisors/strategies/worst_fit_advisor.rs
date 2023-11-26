@@ -5,12 +5,12 @@ use crate::core::{
     },
     link_struct::PageLink,
     structs::tree::{
-        object::BinHeap,
-        vectors::normalized_tree_vec::NormalizedTreeVector,
+        object::BinHeap, vectors::normalized_tree_vec::NormalizedTreeVector,
     },
 };
 
-/// [`WorstFitAdvisor`] is a strategy that provides the worst fit for a given size.
+/// [`WorstFitAdvisor`] is a strategy that provides the worst fit
+/// for a given size.
 /// It uses [`EmptyLinkRegistry`] with [`BinHeap`] as a base structure.
 /// So the getting the biggest length is O(1).
 pub struct WorstFitAdvisor<'a> {
@@ -79,10 +79,7 @@ mod tests {
         },
         link_struct::PageLink,
         structs::tree::{
-            object::{
-                balanced_tree::Decoratable,
-                BinHeap, tree::Tree,
-            },
+            object::{balanced_tree::Decoratable, tree::Tree, BinHeap},
             vectors::normalized_tree_vec::NormalizedTreeVector,
         },
     };

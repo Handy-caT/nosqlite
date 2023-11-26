@@ -58,11 +58,11 @@ impl NormalizedTreeIndex {
 impl From<NormalizedTreeIndex> for Option<TreeIndex> {
     fn from(value: NormalizedTreeIndex) -> Self {
         value.index.map(|index| TreeIndex {
-                index: Some(index),
-                left_index: value.get_left_index(),
-                right_index: value.get_right_index(),
-                height: value.height,
-            })
+            index: Some(index),
+            left_index: value.get_left_index(),
+            right_index: value.get_right_index(),
+            height: value.height,
+        })
     }
 }
 

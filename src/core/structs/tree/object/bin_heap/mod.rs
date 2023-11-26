@@ -56,18 +56,18 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
 
         if left_index < self.data.len()
             && (self.compare)(
-            self.data.get(left_index).unwrap().value,
-            self.data.get(index).unwrap().value,
-        ) == Ordering::Greater
+                self.data.get(left_index).unwrap().value,
+                self.data.get(index).unwrap().value,
+            ) == Ordering::Greater
         {
             largest_index = left_index;
         }
 
         if right_index < self.data.len()
             && (self.compare)(
-            self.data.get(right_index).unwrap().value,
-            self.data.get(largest_index).unwrap().value,
-        ) == Ordering::Greater
+                self.data.get(right_index).unwrap().value,
+                self.data.get(largest_index).unwrap().value,
+            ) == Ordering::Greater
         {
             largest_index = right_index;
         }
@@ -126,9 +126,9 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
 
         while parent_index.is_some()
             && (self.compare)(
-            self.data.get(index).unwrap().value,
-            self.data.get(parent_index.unwrap()).unwrap().value,
-        ) == Ordering::Greater
+                self.data.get(index).unwrap().value,
+                self.data.get(parent_index.unwrap()).unwrap().value,
+            ) == Ordering::Greater
         {
             self.data.swap_indexes(index, parent_index.unwrap());
             index = parent_index.unwrap();
@@ -189,7 +189,7 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
 
 /// Implementation of [`TreeObjectVec`] trait for [`BinHeap`] struct
 impl<T: Default + PartialOrd + Copy> VecFunctions<T, NormalizedTreeVector<T>>
-for BinHeap<T>
+    for BinHeap<T>
 {
     fn get(&mut self, index: usize) -> Option<T> {
         if index < self.data.len() {
@@ -367,4 +367,3 @@ mod tests {
         assert_eq!(heap.push(3), 2);
     }
 }
-

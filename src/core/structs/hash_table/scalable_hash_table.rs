@@ -1,10 +1,18 @@
-use crate::core::structs::hash_table::{ExtendedFunctions, hash::hash, HashTable, VecFunctions, vectors::hash_vec::HashVec};
+//! Scalable hash table implementation.
+
+use crate::core::{
+    base::cast::usize::Usize,
+    structs::hash_table::{
+        hash::{custom_hashable::CustomHash, hash},
+        vectors::{
+            hash_vec::{HashVec, Indexes, InternalStatistics},
+            hash_vec_iterator::HashVecIterator,
+            key_value::KeyValue,
+        },
+        ExtendedFunctions, HashTable, VecFunctions,
+    },
+};
 use std::marker::PhantomData;
-use crate::core::base::cast::usize::Usize;
-use crate::core::structs::hash_table::hash::custom_hashable::CustomHash;
-use crate::core::structs::hash_table::vectors::hash_vec::{Indexes, InternalStatistics};
-use crate::core::structs::hash_table::vectors::hash_vec_iterator::HashVecIterator;
-use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 
 const MAX_BUCKET_LEN: usize = 10;
 
@@ -13,57 +21,31 @@ const MAX_BUCKET_LEN: usize = 10;
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - [`HashVec`] implementation
-struct ScalableHashTable<K, V, H>
-where
-    H: HashVec<K, V>,
-{
+struct ScalableHashTable<K, V, H> {
+    /// [`HashVec`] implementation for storing key-value pairs.
     table: H,
+
+    /// Number of elements in the hash table.
     len: usize,
-    v: PhantomData<V>,
-    k: PhantomData<K>,
+
+    /// Hash function.
     hash: fn(&[u8]) -> u64,
+
+    /// Value type.
+    v: PhantomData<V>,
+
+    /// Key type.
+    k: PhantomData<K>,
 }
 
 impl<K, V, H> ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-    K: Eq + Copy + CustomHash,
-    V: Eq + Copy,
+    K: CustomHash,
 {
-    /// Creates a new [`ScalableHashTable`]
-    /// # Arguments
-    /// * `table` - [`HashVec`] implementation
-    /// # Returns
-    /// * `Self` - [`ScalableHashTable`]
-    fn new(table: H) -> Self {
-        ScalableHashTable {
-            table,
-            len: 0,
-            v: PhantomData,
-            k: PhantomData,
-            hash,
-        }
-    }
-
-    /// Creates a new [`ScalableHashTable`] with a custom hash function
-    /// # Arguments
-    /// * `table` - [`HashVec`] implementation
-    /// * `hash` - Hash function fn(&[u8]) -> u64
-    /// # Returns
-    /// * `Self` - [`ScalableHashTable`]
-    fn new_with_hash(table: H, hash: fn(&[u8]) -> u64) -> Self {
-        ScalableHashTable {
-            table,
-            len: 0,
-            v: PhantomData,
-            k: PhantomData,
-            hash,
-        }
-    }
-
     /// Get max bucket length.
     /// # Returns
-    /// * `usize` - Max bucket length
+    /// * `usize` - Max bucket length.
     fn get_max_bucket_len(&self) -> usize {
         self.table.get_max_len()
     }
@@ -71,9 +53,7 @@ where
     /// Check if bucket length is greater than max bucket length.
     /// If it is, resize the bucket.
     /// # Arguments
-    /// * `index` - Index of the bucket
-    /// # Returns
-    /// * `()` - Nothing
+    /// * `index` - Index of the bucket.
     fn check_bucket_len(&mut self, index: usize) {
         let bucket_len = self.table.get_bucket_len(index).unwrap();
 
@@ -84,9 +64,9 @@ where
 
     fn resize(&mut self, new_size: usize) {
         let mut new_table = H::new(new_size);
-        let mut iter = HashVecIterator::new(&mut self.table);
+        let iter = HashVecIterator::new(&mut self.table);
 
-        while let Some(key_value) = iter.next() {
+        for key_value in iter {
             let key = key_value.key;
             let value = key_value.value;
 
@@ -101,11 +81,21 @@ where
 }
 
 impl<K, V, H> HashTable<K, V> for ScalableHashTable<K, V, H>
-    where
-        H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-        K: Eq + Copy + CustomHash,
-        V: Eq + Copy,
+where
+    H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
+    K: Copy + CustomHash,
+    V: Copy,
 {
+    fn new(size: usize) -> Self {
+        ScalableHashTable {
+            table: H::new(size),
+            len: 0,
+            v: PhantomData,
+            k: PhantomData,
+            hash,
+        }
+    }
+
     fn insert(&mut self, key: K, value: V) -> Option<V> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
@@ -145,16 +135,20 @@ impl<K, V, H> HashTable<K, V> for ScalableHashTable<K, V, H>
         item.map(|item| item.value)
     }
 
+    fn size(&self) -> usize {
+        self.table.size()
+    }
+
     fn len(&self) -> usize {
         self.len
     }
 }
 
 impl<K, V, H> VecFunctions<K, V> for ScalableHashTable<K, V, H>
-    where
-        H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-        K: Eq + Copy + CustomHash,
-        V: Eq + Copy,
+where
+    H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
+    K: Copy + CustomHash,
+    V: Copy,
 {
     fn get_keys(&mut self) -> Vec<K> {
         let mut keys = Vec::new();
@@ -170,7 +164,7 @@ impl<K, V, H> VecFunctions<K, V> for ScalableHashTable<K, V, H>
     fn get_values(&mut self) -> Vec<V> {
         let mut values = Vec::new();
 
-        let mut iter = HashVecIterator::new(&mut self.table);
+        let iter = HashVecIterator::new(&mut self.table);
         for key_value in iter {
             values.push(key_value.value);
         }
@@ -181,7 +175,7 @@ impl<K, V, H> VecFunctions<K, V> for ScalableHashTable<K, V, H>
     fn get_key_values(&mut self) -> Vec<KeyValue<K, V>> {
         let mut key_values = Vec::new();
 
-        let mut iter = HashVecIterator::new(&mut self.table);
+        let iter = HashVecIterator::new(&mut self.table);
         for key_value in iter {
             key_values.push(key_value);
         }
@@ -190,13 +184,22 @@ impl<K, V, H> VecFunctions<K, V> for ScalableHashTable<K, V, H>
     }
 }
 
-impl<K, V, H> ExtendedFunctions<K, V>
-for ScalableHashTable<K, V, H>
-    where
-        H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-        K: Eq + Copy + CustomHash,
-        V: Eq + Copy,
+impl<K, V, H> ExtendedFunctions<K, V> for ScalableHashTable<K, V, H>
+where
+    H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
+    K: Copy + CustomHash,
+    V: Copy,
 {
+    fn new_with_hash(size: usize, hash: fn(&[u8]) -> u64) -> Self {
+        ScalableHashTable {
+            table: H::new(size),
+            len: 0,
+            v: PhantomData,
+            k: PhantomData,
+            hash,
+        }
+    }
+
     fn insert_key_value(&mut self, key_value: KeyValue<K, V>) -> Option<V> {
         self.insert(key_value.key, key_value.value)
     }
@@ -208,14 +211,16 @@ for ScalableHashTable<K, V, H>
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::{ExtendedFunctions, HashTable, scalable_hash_table::ScalableHashTable, VecFunctions, vectors::static_hash_vec::StaticHashVec};
-    use crate::core::structs::hash_table::vectors::hash_vec::HashVec;
-    use crate::core::structs::hash_table::vectors::key_value::KeyValue;
+    use crate::core::structs::hash_table::{
+        scalable_hash_table::ScalableHashTable,
+        vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
+        ExtendedFunctions, HashTable, VecFunctions,
+    };
 
     #[test]
     fn test_scalable_hash_table_new() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let hash_table = ScalableHashTable::new(hash_vec);
+        let hash_table: ScalableHashTable<u64, u64, StaticHashVec<u64, u64>> =
+            ScalableHashTable::new(8);
 
         assert_eq!(hash_table.len, 0);
         assert_eq!(hash_table.table.size, 8);
@@ -223,8 +228,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_insert() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -236,8 +244,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_insert_existing() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -255,8 +266,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_insert_resize() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -271,13 +285,15 @@ mod tests {
 
         assert_eq!(hash_table.len, 80);
         assert_eq!(hash_table.table.size, 16);
-
     }
 
     #[test]
     fn test_scalable_hash_table_remove() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -295,8 +311,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_get() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, i);
@@ -311,8 +330,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_get_keys() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, 20 - i);
@@ -327,8 +349,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_get_values() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, 20 - i);
@@ -343,8 +368,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_get_key_values() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, 20 - i);
@@ -359,8 +387,11 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_insert_key_value() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table: ScalableHashTable<u64, u64, StaticHashVec<u64, u64>> = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         hash_table.insert_key_value(KeyValue::new(0, 0));
 
@@ -370,13 +401,15 @@ mod tests {
 
     #[test]
     fn test_scalable_hash_table_insert_tuple() {
-        let hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
-        let mut hash_table: ScalableHashTable<u64, u64, StaticHashVec<u64, u64>> = ScalableHashTable::new(hash_vec);
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
 
         hash_table.insert_tuple((0, 0));
 
         assert_eq!(hash_table.len, 1);
         assert_eq!(hash_table.table.size, 8);
     }
-
 }

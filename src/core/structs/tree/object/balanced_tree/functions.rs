@@ -16,7 +16,8 @@ pub fn height_from_root(
 pub fn bfactor(indexes: &mut [TreeIndex], root_index: usize) -> i8 {
     let node_indexes = indexes[root_index];
     i8::try_from(height_from_root(indexes, node_indexes.right_index)).unwrap()
-        - i8::try_from(height_from_root(indexes, node_indexes.left_index)).unwrap()
+        - i8::try_from(height_from_root(indexes, node_indexes.left_index))
+            .unwrap()
 }
 
 pub fn fix_height(indexes: &mut [TreeIndex], root_index: usize) {

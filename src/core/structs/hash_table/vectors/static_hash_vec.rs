@@ -1,13 +1,9 @@
 use crate::core::structs::hash_table::vectors::{
-    hash_vec::{
-        HashVec, Indexes, InternalFunctions, InternalStatistics,
-    },
+    hash_vec::{HashVec, Indexes, InternalFunctions, InternalStatistics},
     key_value::KeyValue,
     statistics::{
+        functions::{statistics_add_actions, statistics_remove_actions},
         hash_vec,
-        functions::{
-            statistics_add_actions, statistics_remove_actions,
-        },
     },
 };
 
@@ -25,14 +21,14 @@ pub(crate) struct StaticHashVec<K, V> {
     pub size: usize,
 
     /// [`Statistics`] of the hash vector
-    /// 
+    ///
     /// [`Statistics`]: hash_vec::Stats
     statistics: hash_vec::Stats,
 }
 
 /// Implementation of basic [`HashVec`] trait for [`StaticHashVec`].
-impl<K: Eq + Copy + Default, V: Default + Eq + Copy>
-    HashVec<K, V> for StaticHashVec<K, V>
+impl<K: Eq + Copy + Default, V: Default + Eq + Copy> HashVec<K, V>
+    for StaticHashVec<K, V>
 {
     fn new(size: usize) -> Self {
         let mut data = Vec::new();
@@ -118,8 +114,8 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy>
 }
 
 /// Implementation of [`Indexes`] trait for [`StaticHashVec`]
-impl<K: Eq + Copy + Default, V: Default + Eq + Copy>
-    Indexes<K, V> for StaticHashVec<K, V>
+impl<K: Eq + Copy + Default, V: Default + Eq + Copy> Indexes<K, V>
+    for StaticHashVec<K, V>
 {
     fn remove_by_index(
         &mut self,
@@ -185,9 +181,7 @@ impl<K: Eq + Default, V: Default + Eq> InternalFunctions<K, V>
     }
 }
 
-impl<K: Eq, V: Default + Eq> InternalStatistics<K, V>
-    for StaticHashVec<K, V>
-{
+impl<K: Eq, V: Default + Eq> InternalStatistics<K, V> for StaticHashVec<K, V> {
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
     }
@@ -212,9 +206,7 @@ impl<K: Eq, V: Default + Eq> InternalStatistics<K, V>
 #[cfg(test)]
 mod tests {
     use crate::core::structs::hash_table::vectors::{
-        hash_vec::{
-            HashVec, Indexes, InternalFunctions, InternalStatistics,
-        },
+        hash_vec::{HashVec, Indexes, InternalFunctions, InternalStatistics},
         key_value::KeyValue,
         static_hash_vec::StaticHashVec,
     };

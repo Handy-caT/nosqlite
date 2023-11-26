@@ -11,33 +11,34 @@ pub trait HashVec<K, V> {
     /// * `StaticHashVec<V, N>` - New [`HashVec`]
     fn new(size: usize) -> Self;
 
-    /// Adds value to the [`HashVec`] by underlying vector index and value itself
+    /// Adds value to the [`HashVec`] by underlying vector index
+    /// and value itself.
     /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `key` - Key to add
-    /// * `value` - Value to add
+    /// * `index` - Index of the underlying vector.
+    /// * `key` - Key to add.
+    /// * `value` - Value to add.
     /// # Returns
     /// * `(usize, usize)` - Index of the underlying vector and
-    /// index of the value in the vector
+    /// index of the value in the vector.
     fn push(&mut self, index: usize, key: K, value: V) -> (usize, usize);
 
-    /// Gets value from the [`HashVec`] by underlying vector index and key
+    /// Gets value from the [`HashVec`] by underlying vector index and key.
     /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `key` - Key to get
+    /// * `index` - Index of the underlying vector.
+    /// * `key` - Key to get.
     /// # Returns
     /// * `Option<KeyValue<K, V>>` - Value that was found,
-    /// None if value was not found
+    /// None if value was not found.
     fn get(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>>;
 
-    /// Updates value in the [`HashVec`] by underlying vector index and key
+    /// Updates value in the [`HashVec`] by underlying vector index and key.
     /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `key` - Key to update
-    /// * `value` - Value to update
+    /// * `index` - Index of the underlying vector.
+    /// * `key` - Key to update.
+    /// * `value` - Value to update.
     /// # Returns
     /// * `Option<KeyValue<K, V>>` - Value that was updated,
-    /// None if value was not found
+    /// None if value was not found.
     fn update(
         &mut self,
         index: usize,
@@ -45,36 +46,37 @@ pub trait HashVec<K, V> {
         value: V,
     ) -> Option<KeyValue<K, V>>;
 
-    /// Checks if the [`HashVec`] has key by underlying vector index
+    /// Checks if the [`HashVec`] has key by underlying vector index.
     /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `key` - Key to check
+    /// * `index` - Index of the underlying vector.
+    /// * `key` - Key to check.
     /// # Returns
-    /// * `bool` - True if the [`HashVec`] has key, false otherwise
+    /// * `bool` - True if the [`HashVec`] has key, false otherwise.
     fn have_key(&mut self, index: usize, key: K) -> bool;
 
     /// Removes value from the [`HashVec`] by underlying vector
-    /// index and value itself
+    /// index and value itself.
     /// # Arguments
-    /// * `index` - Index of the underlying vector
-    /// * `value` - Value to remove
+    /// * `index` - Index of the underlying vector.
+    /// * `value` - Value to remove.
     /// # Returns
     /// * `Option<KeyValue<K, V>>` - Value that was removed,
-    /// None if value was not found
+    /// None if value was not found.
     fn remove(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>>;
 
-    /// Returns number of buckets in the [`HashVec`]
+    /// Returns number of buckets in the [`HashVec`].
     /// # Returns
-    /// * `usize` - Number of buckets in the [`HashVec`]
+    /// * `usize` - Number of buckets in the [`HashVec`].
     fn size(&self) -> usize;
 
-    /// Returns length of the [`HashVec`] as sum of lengths of underlying vectors
+    /// Returns length of the [`HashVec`] as sum of lengths
+    /// of underlying vectors.
     /// # Returns
-    /// * `usize` - Length of the [`HashVec`]
+    /// * `usize` - Length of the [`HashVec`].
     fn len(&self) -> usize;
 }
 
-/// Common trait for [`HashTable`] to get values by underlying vector index
+/// Common trait for [`HashTable`] to get values by underlying vector index.
 pub trait Indexes<K, V> {
     /// Removes value from the [`HashVec`] by underlying
     /// vector index and value index

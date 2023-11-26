@@ -1,6 +1,7 @@
-use crate::core::base::cast::usize;
-use crate::core::base::cast::usize::USIZE_SIZE;
-use crate::core::link_struct::PageLink;
+use crate::core::{
+    base::cast::{usize, usize::USIZE_SIZE},
+    link_struct::PageLink,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct PageInfo {
@@ -24,8 +25,11 @@ impl PageInfo {
 
 impl From<[u8; 2 + USIZE_SIZE]> for PageInfo {
     fn from(bytes: [u8; 2 + USIZE_SIZE]) -> Self {
-        let index = usize::from_be_bytes(bytes[0..USIZE_SIZE].try_into().unwrap());
-        let free = u16::from_be_bytes(bytes[USIZE_SIZE..USIZE_SIZE + 2].try_into().unwrap());
+        let index =
+            usize::from_be_bytes(bytes[0..USIZE_SIZE].try_into().unwrap());
+        let free = u16::from_be_bytes(
+            bytes[USIZE_SIZE..USIZE_SIZE + 2].try_into().unwrap(),
+        );
         PageInfo { index, free }
     }
 }
@@ -33,8 +37,9 @@ impl From<[u8; 2 + USIZE_SIZE]> for PageInfo {
 impl From<PageInfo> for [u8; 2 + USIZE_SIZE] {
     fn from(val: PageInfo) -> Self {
         let mut bytes = [0; 2 + USIZE_SIZE];
-        bytes[0.. USIZE_SIZE].copy_from_slice(&val.index.to_be_bytes());
-        bytes[USIZE_SIZE..USIZE_SIZE + 2].copy_from_slice(&val.free.to_be_bytes());
+        bytes[0..USIZE_SIZE].copy_from_slice(&val.index.to_be_bytes());
+        bytes[USIZE_SIZE..USIZE_SIZE + 2]
+            .copy_from_slice(&val.free.to_be_bytes());
         bytes
     }
 }

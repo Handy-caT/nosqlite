@@ -1,12 +1,22 @@
+mod backwards_hash_table;
 pub mod hash;
 mod scalable_hash_table;
 mod static_hash_table;
 pub mod vectors;
 
-use crate::core::structs::hash_table::vectors::key_value::KeyValue;
+use crate::core::structs::hash_table::vectors::{
+    hash_vec::HashVec, key_value::KeyValue,
+};
 
 /// Trait for hash table
 pub trait HashTable<K, V> {
+    /// Creates a new [`HashTable`].
+    /// # Arguments
+    /// * `size` - Number of buckets in the [`HashTable`].
+    /// # Returns
+    /// * `Self` - [`HashTable`].
+    fn new(size: usize) -> Self;
+
     /// Inserts a new value into the hash table
     /// # Arguments
     /// * `key` - key of the value
@@ -30,6 +40,11 @@ pub trait HashTable<K, V> {
     /// * `Option<V>` - The value. None if the key is not in the hash table.
     fn get(&mut self, key: K) -> Option<V>;
 
+    /// Returns number of buckets in the [`HashTable`].
+    /// # Returns
+    /// * `usize` - Number of buckets in the [`HashTable`].
+    fn size(&self) -> usize;
+
     /// Returns the number of elements in the hash table
     /// # Returns
     /// * `usize` - Number of elements in the hash table
@@ -38,6 +53,14 @@ pub trait HashTable<K, V> {
 
 /// Some additional methods for [`HashTable`]
 pub trait ExtendedFunctions<K, V> {
+    /// Creates a new [`HashTable`] with a custom hash function.
+    /// # Arguments
+    /// * `table` - [`HashVec`] implementation.
+    /// * `hash` - Hash function fn(&u8) -> u64.
+    /// # Returns
+    /// * `Self` - [`HashTable`].
+    fn new_with_hash(size: usize, hash: fn(&[u8]) -> u64) -> Self;
+
     /// Pushes key-value pair into the [`HashTable`]
     /// # Arguments
     /// * `key_value` - Key-value pair to push

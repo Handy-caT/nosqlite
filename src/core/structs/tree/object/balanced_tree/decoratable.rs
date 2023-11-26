@@ -1,9 +1,7 @@
 use crate::core::structs::tree::{
     nodes::tree_index::TreeIndex,
     object::{
-        balanced_tree::functions::{
-            balance, find_min, remove_min,
-        },
+        balanced_tree::functions::{balance, find_min, remove_min},
         tree::{Tree, VecFunctions},
     },
     vectors::{
@@ -42,16 +40,14 @@ impl<
         M: Tree<T> + Sized + VecFunctions<T, V>,
     > Decoratable<T, V, M>
 {
-    /// Create new [`Decoratable`] balanced tree with compare function and tree object
+    /// Create new [`Decoratable`] balanced tree with compare function
+    /// and tree object.
     /// # Arguments
-    /// * `tree` - tree object, can contain data
-    /// * `compare` - compare function
+    /// * `tree` - tree object, can contain data.
+    /// * `compare` - compare function.
     /// # Returns
-    /// * `Decoratable` - new [`Decoratable`] balanced tree
-    pub fn new(
-        tree: M,
-        compare: fn(T, T) -> Ordering,
-    ) -> Decoratable<T, V, M> {
+    /// * `Decoratable` - new [`Decoratable`] balanced tree.
+    pub fn new(tree: M, compare: fn(T, T) -> Ordering) -> Decoratable<T, V, M> {
         let additional_index_vec = AdditionalIndexVec::new(tree.get_nodes());
 
         let mut dec_tree = Decoratable {
@@ -326,8 +322,7 @@ impl<
 mod tests {
     use super::*;
     use crate::core::structs::tree::{
-        object::BalancedTree,
-        vectors::default_tree_vec::DefaultTreeVec,
+        object::BalancedTree, vectors::default_tree_vec::DefaultTreeVec,
     };
 
     #[test]

@@ -17,7 +17,7 @@ impl<K: PartialEq, V: PartialEq> PartialEq<Self> for KeyValue<K, V> {
     }
 }
 
-impl<K: Eq + Copy, V: Eq + Copy> KeyValue<K, V> {
+impl<K: Copy, V: Copy> KeyValue<K, V> {
     /// Creates a new [`KeyValue`]
     /// # Arguments
     /// * `key` - key
@@ -39,5 +39,23 @@ impl<K: Eq + Copy, V: Eq + Copy> KeyValue<K, V> {
 impl<K: PartialOrd, V: PartialOrd> PartialOrd for KeyValue<K, V> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.key.partial_cmp(&other.key)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::structs::hash_table::vectors::key_value::KeyValue;
+
+    #[test]
+    fn test_key_value_new() {
+        let key_value = KeyValue::new(1, 2);
+        assert_eq!(key_value.key, 1);
+        assert_eq!(key_value.value, 2);
+    }
+
+    #[test]
+    fn test_key_value_as_tuple() {
+        let key_value = KeyValue::new(1, 2);
+        assert_eq!(key_value.as_tuple(), (1, 2));
     }
 }

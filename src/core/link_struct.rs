@@ -1,8 +1,8 @@
+use crate::core::base::cast::usize::USIZE_SIZE;
 use std::{
     cmp::Ordering,
     fmt::{Debug, Display, Formatter},
 };
-use crate::core::base::cast::usize::USIZE_SIZE;
 
 /// A struct that represents a link to a page.
 #[derive(Debug, Default, Copy, Clone, Eq)]
@@ -45,8 +45,10 @@ impl PageLink {
     /// # Returns
     /// u64 - The raw end of the link.
     pub fn get_raw_end(&self) -> u64 {
-        u64::try_from(self.page_index).unwrap() + u64::from(self.start)
-            + u64::from(self.len) - 1
+        u64::try_from(self.page_index).unwrap()
+            + u64::from(self.start)
+            + u64::from(self.len)
+            - 1
     }
 
     /// Compares two `PageLink`s by their length.
@@ -72,9 +74,14 @@ impl PageLink {
 
 impl From<[u8; 4 + USIZE_SIZE]> for PageLink {
     fn from(bytes: [u8; 4 + USIZE_SIZE]) -> Self {
-        let page = usize::from_be_bytes(bytes[0..USIZE_SIZE].try_into().unwrap());
-        let start = u16::from_be_bytes(bytes[USIZE_SIZE..USIZE_SIZE + 2].try_into().unwrap());
-        let len = u16::from_be_bytes(bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].try_into().unwrap());
+        let page =
+            usize::from_be_bytes(bytes[0..USIZE_SIZE].try_into().unwrap());
+        let start = u16::from_be_bytes(
+            bytes[USIZE_SIZE..USIZE_SIZE + 2].try_into().unwrap(),
+        );
+        let len = u16::from_be_bytes(
+            bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].try_into().unwrap(),
+        );
         PageLink {
             page_index: page,
             start,
@@ -87,8 +94,10 @@ impl From<PageLink> for [u8; 4 + USIZE_SIZE] {
     fn from(val: PageLink) -> Self {
         let mut bytes = [0; 4 + USIZE_SIZE];
         bytes[0..USIZE_SIZE].copy_from_slice(&val.page_index.to_be_bytes());
-        bytes[USIZE_SIZE..USIZE_SIZE + 2].copy_from_slice(&val.start.to_be_bytes());
-        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].copy_from_slice(&val.len.to_be_bytes());
+        bytes[USIZE_SIZE..USIZE_SIZE + 2]
+            .copy_from_slice(&val.start.to_be_bytes());
+        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4]
+            .copy_from_slice(&val.len.to_be_bytes());
         bytes
     }
 }
@@ -144,7 +153,8 @@ mod tests {
         let mut bytes = [0; USIZE_SIZE + 4];
         bytes[0..USIZE_SIZE].copy_from_slice(&page.to_be_bytes());
         bytes[USIZE_SIZE..USIZE_SIZE + 2].copy_from_slice(&start.to_be_bytes());
-        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].copy_from_slice(&len.to_be_bytes());
+        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4]
+            .copy_from_slice(&len.to_be_bytes());
 
         let link = super::PageLink::from(bytes);
         assert_eq!(link.page_index, page);

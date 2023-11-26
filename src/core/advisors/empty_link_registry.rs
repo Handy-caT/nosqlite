@@ -9,7 +9,6 @@ use crate::core::{
     },
 };
 
-
 pub struct EmptyLinkRegistry<V, M>
 where
     V: TreeVec<PageLink> + Sized,
@@ -58,11 +57,7 @@ mod tests {
         advisors::empty_link_registry::EmptyLinkRegistry,
         link_struct::PageLink,
         structs::tree::{
-            object::{
-                BalancedTree,
-                balanced_tree::Decoratable,
-                tree::Tree,
-            },
+            object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
             vectors::default_tree_vec::DefaultTreeVec,
         },
     };
@@ -73,8 +68,7 @@ mod tests {
         let tree =
             BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
 
-        let decoratable_tree =
-            Decoratable::new(tree, PageLink::compare_by_len);
+        let decoratable_tree = Decoratable::new(tree, PageLink::compare_by_len);
 
         let empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 
@@ -87,8 +81,7 @@ mod tests {
         let tree =
             BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
 
-        let decoratable_tree =
-            Decoratable::new(tree, PageLink::compare_by_len);
+        let decoratable_tree = Decoratable::new(tree, PageLink::compare_by_len);
 
         let mut empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 
