@@ -1,12 +1,10 @@
-mod backwards_hash_table;
+pub mod backwards_hash_table;
 pub mod hash;
 mod scalable_hash_table;
 mod static_hash_table;
 pub mod vectors;
 
-use crate::core::structs::hash_table::vectors::{
-    hash_vec::HashVec, key_value::KeyValue,
-};
+use crate::core::structs::hash_table::vectors::key_value::KeyValue;
 
 /// Trait for hash table
 pub trait HashTable<K, V> {
@@ -22,8 +20,8 @@ pub trait HashTable<K, V> {
     /// * `key` - key of the value
     /// * `value` - value to insert
     /// # Returns
-    /// * `Option<V>` - The value inserted
-    fn insert(&mut self, key: K, value: V) -> Option<V>;
+    /// * `Option<KeyValue<K, V>>` - The value that was inserted.
+    fn insert(&mut self, key: K, value: V) -> Option<KeyValue<K, V>>;
 
     /// Removes a value from the hash table
     /// # Arguments
@@ -66,14 +64,17 @@ pub trait ExtendedFunctions<K, V> {
     /// * `key_value` - Key-value pair to push
     /// # Returns
     /// * `Option<V>` - Value that was inserted
-    fn insert_key_value(&mut self, key_value: KeyValue<K, V>) -> Option<V>;
+    fn insert_key_value(
+        &mut self,
+        key_value: KeyValue<K, V>,
+    ) -> Option<KeyValue<K, V>>;
 
     /// Pushes tuple into the [`HashTable`]
     /// # Arguments
     /// * `tuple` - Tuple to push (key, value)
     /// # Returns
     /// * `Option<V>` - Value that was inserted
-    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<V>;
+    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<KeyValue<K, V>>;
 }
 
 /// Trait for [`HashTable`] to get keys, values and key-value pairs

@@ -13,8 +13,6 @@ pub(in crate::core::structs::hash_table) fn statistics_add_actions<K, V, M>(
     hash_vec: &mut M,
     index: usize,
 ) where
-    V: Default + Eq,
-    K: Default + Eq,
     M: HashVec<K, V> + InternalStatistics<K, V>,
 {
     let bucket_len = hash_vec.get_bucket_len(index);
@@ -40,8 +38,6 @@ pub(in crate::core::structs::hash_table) fn statistics_remove_actions<K, V, M>(
     hash_vec: &mut M,
     index: usize,
 ) where
-    V: Default + Eq,
-    K: Default + Eq,
     M: HashVec<K, V> + InternalStatistics<K, V>,
 {
     hash_vec.get_statistics_mut().size -= 1;

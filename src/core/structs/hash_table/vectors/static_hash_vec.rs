@@ -27,9 +27,7 @@ pub(crate) struct StaticHashVec<K, V> {
 }
 
 /// Implementation of basic [`HashVec`] trait for [`StaticHashVec`].
-impl<K: Eq + Copy + Default, V: Default + Eq + Copy> HashVec<K, V>
-    for StaticHashVec<K, V>
-{
+impl<K: Eq + Copy, V: Eq + Copy> HashVec<K, V> for StaticHashVec<K, V> {
     fn new(size: usize) -> Self {
         let mut data = Vec::new();
         let mut i = 0;
@@ -114,9 +112,7 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy> HashVec<K, V>
 }
 
 /// Implementation of [`Indexes`] trait for [`StaticHashVec`]
-impl<K: Eq + Copy + Default, V: Default + Eq + Copy> Indexes<K, V>
-    for StaticHashVec<K, V>
-{
+impl<K: Eq + Copy, V: Eq + Copy> Indexes<K, V> for StaticHashVec<K, V> {
     fn remove_by_index(
         &mut self,
         index: usize,
@@ -158,9 +154,7 @@ impl<K: Eq + Copy + Default, V: Default + Eq + Copy> Indexes<K, V>
     }
 }
 
-impl<K: Eq + Default, V: Default + Eq> InternalFunctions<K, V>
-    for StaticHashVec<K, V>
-{
+impl<K, V> InternalFunctions<K, V> for StaticHashVec<K, V> {
     fn get_vec(&self, index: usize) -> Option<&Vec<KeyValue<K, V>>> {
         if index >= self.size {
             None
@@ -181,7 +175,7 @@ impl<K: Eq + Default, V: Default + Eq> InternalFunctions<K, V>
     }
 }
 
-impl<K: Eq, V: Default + Eq> InternalStatistics<K, V> for StaticHashVec<K, V> {
+impl<K, V> InternalStatistics<K, V> for StaticHashVec<K, V> {
     fn get_max_len(&self) -> usize {
         self.statistics.max_length
     }

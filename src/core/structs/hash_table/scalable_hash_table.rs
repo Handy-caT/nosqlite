@@ -8,6 +8,7 @@ use crate::core::{
             hash_vec::{HashVec, Indexes, InternalStatistics},
             hash_vec_iterator::HashVecIterator,
             key_value::KeyValue,
+            static_hash_vec::StaticHashVec,
         },
         ExtendedFunctions, HashTable, VecFunctions,
     },
@@ -21,7 +22,7 @@ const MAX_BUCKET_LEN: usize = 10;
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - [`HashVec`] implementation
-struct ScalableHashTable<K, V, H> {
+pub struct ScalableHashTable<K, V, H = StaticHashVec<K, V>> {
     /// [`HashVec`] implementation for storing key-value pairs.
     table: H,
 
@@ -96,13 +97,16 @@ where
         }
     }
 
-    fn insert(&mut self, key: K, value: V) -> Option<V> {
+    fn insert(&mut self, key: K, value: V) -> Option<KeyValue<K, V>> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
+        let mut result = KeyValue::new(key, value);
+
         let has_key = self.table.have_key(index, key);
         if has_key {
-            self.table.update(index, key, value);
+            let updated = self.table.update(index, key, value).unwrap().value;
+            result.value = updated;
         } else {
             self.table.push(index, key, value);
             self.len += 1;
@@ -110,7 +114,7 @@ where
 
         self.check_bucket_len(index);
 
-        Some(value)
+        Some(result)
     }
 
     fn remove(&mut self, key: K) -> Option<V> {
@@ -200,11 +204,14 @@ where
         }
     }
 
-    fn insert_key_value(&mut self, key_value: KeyValue<K, V>) -> Option<V> {
+    fn insert_key_value(
+        &mut self,
+        key_value: KeyValue<K, V>,
+    ) -> Option<KeyValue<K, V>> {
         self.insert(key_value.key, key_value.value)
     }
 
-    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<V> {
+    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<KeyValue<K, V>> {
         self.insert(tuple.0, tuple.1)
     }
 }
@@ -257,7 +264,10 @@ mod tests {
         assert_eq!(hash_table.len, 8);
         assert_eq!(hash_table.table.size, 8);
 
-        hash_table.insert(0, 10);
+        let result = hash_table.insert(0, 10);
+
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), KeyValue::new(0, 10));
 
         assert_eq!(hash_table.len, 8);
         assert_eq!(hash_table.table.size, 8);

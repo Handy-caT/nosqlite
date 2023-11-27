@@ -53,20 +53,22 @@ where
         }
     }
 
-    fn insert(&mut self, key: K, value: V) -> Option<V> {
+    fn insert(&mut self, key: K, value: V) -> Option<KeyValue<K, V>> {
         let hash = key.hash(self.hash);
-
         let index = hash.to_usize() & (self.table.size() - 1);
+
+        let mut result = KeyValue::new(key, value);
 
         let has_key = self.table.have_key(index, key);
         if has_key {
-            self.table.update(index, key, value);
+            let updated = self.table.update(index, key, value).unwrap().value;
+            result.value = updated;
         } else {
             self.table.push(index, key, value);
             self.len += 1;
         }
 
-        Some(value)
+        Some(result)
     }
 
     fn remove(&mut self, key: K) -> Option<V> {
@@ -156,11 +158,14 @@ where
         }
     }
 
-    fn insert_key_value(&mut self, key_value: KeyValue<K, V>) -> Option<V> {
+    fn insert_key_value(
+        &mut self,
+        key_value: KeyValue<K, V>,
+    ) -> Option<KeyValue<K, V>> {
         self.insert(key_value.key, key_value.value)
     }
 
-    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<V> {
+    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<KeyValue<K, V>> {
         self.insert(tuple.0, tuple.1)
     }
 }
@@ -213,7 +218,10 @@ mod tests {
 
         assert_eq!(hash_table.len(), 8);
 
-        hash_table.insert(0, 10);
+        let result = hash_table.insert(0, 10);
+
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), KeyValue::new(0, 10));
 
         assert_eq!(hash_table.len(), 8);
         assert_eq!(hash_table.get(0), Some(10));
@@ -326,10 +334,10 @@ mod tests {
             StaticHashVec<usize, usize>,
         > = StaticHashTable::new(8);
         let key_value = hash_table.insert_key_value(KeyValue::new(0, 0));
-        assert_eq!(key_value, Some(0));
+        assert_eq!(key_value, Some(KeyValue::new(0, 0)));
 
         let key_value = hash_table.insert_key_value(KeyValue::new(1, 1));
-        assert_eq!(key_value, Some(1));
+        assert_eq!(key_value, Some(KeyValue::new(1, 1)));
     }
 
     #[test]
@@ -340,9 +348,9 @@ mod tests {
             StaticHashVec<usize, usize>,
         > = StaticHashTable::new(8);
         let tuple = hash_table.insert_tuple((0, 0));
-        assert_eq!(tuple, Some(0));
+        assert_eq!(tuple, Some(KeyValue::new(0, 0)));
 
         let tuple = hash_table.insert_tuple((1, 1));
-        assert_eq!(tuple, Some(1));
+        assert_eq!(tuple, Some(KeyValue::new(1, 1)));
     }
 }

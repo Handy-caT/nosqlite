@@ -1,13 +1,18 @@
 use crate::core::{
     base::vector::optimized_vector::OptimizedVector,
     structs::hash_table::{
-        hash::custom_hashable::CustomHash, vectors::key_value::KeyValue,
-        ExtendedFunctions, HashTable,
+        hash::custom_hashable::CustomHash,
+        scalable_hash_table::ScalableHashTable, vectors::key_value::KeyValue,
+        ExtendedFunctions, HashTable, VecFunctions,
     },
 };
-use crate::core::structs::hash_table::VecFunctions;
 
-pub struct BackwardsHashTable<HK, HV, K, V> {
+pub struct BackwardsHashTable<
+    K,
+    V,
+    HK = ScalableHashTable<K, usize>,
+    HV = ScalableHashTable<V, usize>,
+> {
     /// Vector of key-value pairs.
     key_values: OptimizedVector<KeyValue<K, V>>,
 
@@ -21,7 +26,7 @@ pub struct BackwardsHashTable<HK, HV, K, V> {
     len: usize,
 }
 
-impl<HK, HV, K, V> BackwardsHashTable<HK, HV, K, V>
+impl<K, V, HK, HV> BackwardsHashTable<K, V, HK, HV>
 where
     HK: HashTable<K, usize>,
     HV: HashTable<V, usize>,
@@ -57,7 +62,7 @@ where
     }
 }
 
-impl<HK, HV, K, V> HashTable<K, V> for BackwardsHashTable<HK, HV, K, V>
+impl<K, V, HK, HV> HashTable<K, V> for BackwardsHashTable<K, V, HK, HV>
 where
     HK: HashTable<K, usize>,
     HV: HashTable<V, usize>,
@@ -77,15 +82,32 @@ where
         }
     }
 
-    fn insert(&mut self, key: K, value: V) -> Option<V> {
+    fn insert(&mut self, key: K, value: V) -> Option<KeyValue<K, V>> {
         let index = self.key_values.push(KeyValue::new(key, value));
 
-        self.key_hash_table.insert(key, index);
-        self.value_hash_table.insert(value, index);
+        let result = KeyValue::new(key, value);
 
-        self.len += 1;
+        let key_index = self.key_hash_table.insert(key, index)?.value;
+        let value_index = self.value_hash_table.insert(value, index)?.value;
 
-        Some(value)
+        if key_index == value_index {
+            if key_index != index {
+                self.key_values.remove(key_index);
+            } else {
+                self.len += 1;
+            }
+            Some(result)
+        } else if key_index != index {
+            let updated = self.key_values.remove(key_index)?;
+            self.value_hash_table.remove(updated.value);
+
+            Some(updated)
+        } else {
+            let updated = self.key_values.remove(value_index)?;
+            self.key_hash_table.remove(updated.key);
+
+            Some(updated)
+        }
     }
 
     fn remove(&mut self, key: K) -> Option<V> {
@@ -115,7 +137,7 @@ where
     }
 }
 
-impl<HK, HV, K, V> ExtendedFunctions<K, V> for BackwardsHashTable<HK, HV, K, V>
+impl<K, V, HK, HV> ExtendedFunctions<K, V> for BackwardsHashTable<K, V, HK, HV>
 where
     HK: HashTable<K, usize> + ExtendedFunctions<K, usize>,
     HV: HashTable<V, usize> + ExtendedFunctions<V, usize>,
@@ -135,21 +157,24 @@ where
         }
     }
 
-    fn insert_key_value(&mut self, key_value: KeyValue<K, V>) -> Option<V> {
+    fn insert_key_value(
+        &mut self,
+        key_value: KeyValue<K, V>,
+    ) -> Option<KeyValue<K, V>> {
         self.insert(key_value.key, key_value.value)
     }
 
-    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<V> {
+    fn insert_tuple(&mut self, tuple: (K, V)) -> Option<KeyValue<K, V>> {
         self.insert(tuple.0, tuple.1)
     }
 }
 
-impl<HK, HV, K, V> VecFunctions<K, V> for BackwardsHashTable<HK, HV, K, V>
-    where
-        HK: HashTable<K, usize> + VecFunctions<K, usize>,
-        HV: HashTable<V, usize> + VecFunctions<V, usize>,
-        K: Copy + CustomHash,
-        V: Copy + CustomHash,
+impl<K, V, HK, HV> VecFunctions<K, V> for BackwardsHashTable<K, V, HK, HV>
+where
+    HK: HashTable<K, usize> + VecFunctions<K, usize>,
+    HV: HashTable<V, usize> + VecFunctions<V, usize>,
+    K: Copy + CustomHash,
+    V: Copy + CustomHash,
 {
     fn get_keys(&mut self) -> Vec<K> {
         self.key_hash_table.get_keys()
@@ -166,16 +191,14 @@ impl<HK, HV, K, V> VecFunctions<K, V> for BackwardsHashTable<HK, HV, K, V>
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::{backwards_hash_table::BackwardsHashTable, static_hash_table::StaticHashTable, vectors::key_value::KeyValue, ExtendedFunctions, HashTable, VecFunctions};
+    use crate::core::structs::hash_table::{
+        backwards_hash_table::BackwardsHashTable, vectors::key_value::KeyValue,
+        ExtendedFunctions, HashTable, VecFunctions,
+    };
 
     #[test]
     fn test_backwards_hash_table_new() {
-        let hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         assert_eq!(hash_table.key_values.len(), 0);
         assert_eq!(hash_table.key_hash_table.size(), 16);
@@ -190,16 +213,11 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_insert() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         let value = hash_table.insert(1, 2);
 
-        assert_eq!(value, Some(2));
+        assert_eq!(value, Some(KeyValue::new(1, 2)));
         assert_eq!(hash_table.key_values.len(), 1);
         assert_eq!(hash_table.key_hash_table.size(), 16);
         assert_eq!(hash_table.value_hash_table.size(), 16);
@@ -207,13 +225,30 @@ mod tests {
     }
 
     #[test]
+    fn test_backwards_hash_table_insert_existing() {
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
+
+        hash_table.insert(1, 2);
+        let value = hash_table.insert(1, 2);
+
+        assert_eq!(value, Some(KeyValue::new(1, 2)));
+        assert_eq!(hash_table.key_values.len(), 1);
+        assert_eq!(hash_table.key_hash_table.size(), 16);
+        assert_eq!(hash_table.value_hash_table.size(), 16);
+        assert_eq!(hash_table.len, 1);
+
+        assert_eq!(hash_table.get(1), Some(2));
+
+        let value = hash_table.insert(2, 3);
+
+        assert_eq!(value, Some(KeyValue::new(2, 3)));
+        assert_eq!(hash_table.get(2), Some(3));
+        assert_eq!(hash_table.key_values.len(), 2);
+    }
+
+    #[test]
     fn test_backwards_hash_table_remove() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
         let value = hash_table.remove(1);
@@ -227,12 +262,7 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_remove_by_value() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
         let key = hash_table.remove_by_value(2);
@@ -246,12 +276,7 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_get() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
         let value = hash_table.get(1);
@@ -265,12 +290,7 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_get_by_value() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
         let key = hash_table.get_by_value(2);
@@ -284,16 +304,11 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_insert_key_value() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         let value = hash_table.insert_key_value(KeyValue::new(1, 2));
 
-        assert_eq!(value, Some(2));
+        assert_eq!(value, Some(KeyValue::new(1, 2)));
         assert_eq!(hash_table.key_values.len(), 1);
         assert_eq!(hash_table.key_hash_table.size(), 16);
         assert_eq!(hash_table.value_hash_table.size(), 16);
@@ -302,16 +317,11 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_insert_tuple() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(10);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         let value = hash_table.insert_tuple((1, 2));
 
-        assert_eq!(value, Some(2));
+        assert_eq!(value, Some(KeyValue::new(1, 2)));
         assert_eq!(hash_table.key_values.len(), 1);
         assert_eq!(hash_table.key_hash_table.size(), 16);
         assert_eq!(hash_table.value_hash_table.size(), 16);
@@ -320,12 +330,7 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_get_keys() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(8);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, 20 - i);
@@ -339,12 +344,7 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_get_values() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(8);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, 20 - i);
@@ -358,12 +358,7 @@ mod tests {
 
     #[test]
     fn test_backwards_hash_table_get_key_values() {
-        let mut hash_table = BackwardsHashTable::<
-            StaticHashTable<usize, usize>,
-            StaticHashTable<usize, usize>,
-            usize,
-            usize,
-        >::new(8);
+        let mut hash_table = BackwardsHashTable::<usize, usize>::new(8);
 
         for i in 0..8 {
             hash_table.insert(i, 20 - i);

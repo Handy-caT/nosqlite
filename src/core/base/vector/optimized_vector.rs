@@ -71,7 +71,7 @@ impl<T: Copy> OptimizedVector<T> {
     /// * `Option<T>` - Value at the index,
     /// or `None` if the index is out of bounds or the value is empty.
     pub fn get(&self, index: usize) -> Option<T> {
-        if index >= self.length {
+        if index >= self.data.len() {
             return None;
         }
 
@@ -89,7 +89,7 @@ impl<T: Copy> OptimizedVector<T> {
     /// * `Option<&mut T>` - Mutable value at the index,
     /// or `None` if the index is out of bounds or the value is empty.
     pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
-        if index >= self.length {
+        if index >= self.data.len() {
             return None;
         }
 
@@ -107,7 +107,7 @@ impl<T: Copy> OptimizedVector<T> {
     /// * `Option<T>` - Value at the index,
     /// or `None` if the index is out of bounds or the value is empty.
     pub fn remove(&mut self, index: usize) -> Option<T> {
-        if index >= self.length {
+        if index >= self.data.len() {
             return None;
         }
 
@@ -121,7 +121,7 @@ impl<T: Copy> OptimizedVector<T> {
 
         Some(self.data[index])
     }
-    
+
     /// Gets the data vector.
     /// # Returns
     /// * `&Vec<T>` - Data vector.
