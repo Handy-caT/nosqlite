@@ -15,47 +15,24 @@ pub const INITIAL_LEVELS: u8 = 6;
 /// It allocates memory for a tree level when it is needed.
 /// # Type parameters
 /// * `T`: Type of the data that will be stored in the tree.
-/// # Fields
-/// * `allocated_levels`: Number of levels that are allocated in the tree.
-/// * `max_length`: Maximum number of elements that can be stored in the tree.
-/// * `length`: Number of elements that are stored in the tree.
-/// * `data`: Vector that stores the data of the tree.
-/// * `indexes`: Vector that stores the indexes of the tree.
-/// * `empty`: Vector that stores the indexes of the empty nodes in the tree.
 pub struct OptimizedTreeVec<T> {
+    /// Number of allocated levels.
     allocated_levels: u8,
+
+    /// Maximum length of the vector before the next level is allocated.
     max_length: usize,
+
+    /// Length of the vector.
     length: usize,
 
+    /// Vector that stores the data.
     data: Vec<T>,
+
+    /// Vector that stores the indexes of the nodes.
     indexes: Vec<TreeIndex>,
+
+    /// Vector that stores the empty indexes.
     empty: Vec<usize>,
-}
-
-impl<T: Default + Copy> OptimizedTreeVec<T> {
-    /// Creates a new `OptimizedTreeVec<T>`.
-    /// # Returns
-    /// * `OptimizedTreeVec<T>`: New `OptimizedTreeVec<T>`.
-    pub fn new() -> OptimizedTreeVec<T> {
-        let mut vec = OptimizedTreeVec {
-            allocated_levels: 0,
-            max_length: 0,
-            length: 0,
-            data: Vec::new(),
-            indexes: Vec::new(),
-            empty: Vec::new(),
-        };
-
-        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
-
-        vec.data.reserve(length);
-        vec.indexes.reserve(length);
-
-        vec.max_length = length;
-        vec.allocated_levels = INITIAL_LEVELS;
-
-        vec
-    }
 }
 
 impl<T> Levels for OptimizedTreeVec<T> {
@@ -131,6 +108,27 @@ impl<T: Default + Copy> Indexes<T> for OptimizedTreeVec<T> {
 }
 
 impl<T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
+    fn new() -> OptimizedTreeVec<T> {
+        let mut vec = OptimizedTreeVec {
+            allocated_levels: 0,
+            max_length: 0,
+            length: 0,
+            data: Vec::new(),
+            indexes: Vec::new(),
+            empty: Vec::new(),
+        };
+
+        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
+
+        vec.data.reserve(length);
+        vec.indexes.reserve(length);
+
+        vec.max_length = length;
+        vec.allocated_levels = INITIAL_LEVELS;
+
+        vec
+    }
+
     fn push(&mut self, value: T) -> usize {
         push(self, value)
     }

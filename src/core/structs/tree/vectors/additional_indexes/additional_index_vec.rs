@@ -78,7 +78,8 @@ impl IndexMut<usize> for AdditionalIndexVec {
 mod tests {
     use crate::core::structs::tree::vectors::{
         additional_indexes::additional_index_vec::AdditionalIndexVec,
-        optimized_tree_vec::OptimizedTreeVec, tree_vec::Levels,
+        optimized_tree_vec::OptimizedTreeVec,
+        tree_vec::{Levels, TreeVec},
     };
 
     #[test]

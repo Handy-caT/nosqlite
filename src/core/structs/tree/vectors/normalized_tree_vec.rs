@@ -16,50 +16,29 @@ use std::ops::{Index, IndexMut};
 /// Indexes vector contains indexes of data vector,
 /// so data is independent from indexes.
 /// # Type parameters
-/// * `T` - Type of the data that the vector stores
-/// # Fields
-/// * `allocated_levels` - Number of allocated levels.
-/// * `max_length` - Maximum length of the vector.
-/// * `length` - Current length of the vector.
-/// * `data` - Vector that contains data.
-/// * `indexes` - Vector that contains indexes.
-/// * `empty` - Vector that contains empty indexes.
+/// * `T` - Type of the data that the vector stores.
 pub struct NormalizedTreeVector<T> {
+    /// Number of allocated levels.
     allocated_levels: u8,
+
+    /// Maximum length of the vector before allocation.
     max_length: usize,
+
+    /// Length of the vector.
     length: usize,
 
+    /// Vector that stores the data.
     data: Vec<T>,
+
+    /// Vector that stores the indexes of the data vector.
     indexes: Vec<NormalizedTreeIndex>,
+
+    /// Vector that stores the indexes of the empty spaces.
     empty: Vec<usize>,
 }
 
 /// [`NormalizedTreeVector`] implementation.
 impl<T: Default + Copy> NormalizedTreeVector<T> {
-    /// Creates new [`NormalizedTreeVector`].
-    /// # Returns
-    /// New [`NormalizedTreeVector`].
-    pub fn new() -> NormalizedTreeVector<T> {
-        let mut vec = NormalizedTreeVector {
-            allocated_levels: 0,
-            max_length: 0,
-            length: 0,
-            data: Vec::new(),
-            indexes: Vec::new(),
-            empty: Vec::new(),
-        };
-
-        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
-
-        vec.data.reserve(length);
-        vec.indexes.reserve(length);
-
-        vec.max_length = length;
-        vec.allocated_levels = INITIAL_LEVELS;
-
-        vec
-    }
-
     /// Swaps two indexes.
     /// Indexes must be in bounds.
     /// # Arguments
@@ -129,6 +108,27 @@ impl<T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
 }
 
 impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
+    fn new() -> NormalizedTreeVector<T> {
+        let mut vec = NormalizedTreeVector {
+            allocated_levels: 0,
+            max_length: 0,
+            length: 0,
+            data: Vec::new(),
+            indexes: Vec::new(),
+            empty: Vec::new(),
+        };
+
+        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
+
+        vec.data.reserve(length);
+        vec.indexes.reserve(length);
+
+        vec.max_length = length;
+        vec.allocated_levels = INITIAL_LEVELS;
+
+        vec
+    }
+
     fn push(&mut self, value: T) -> usize {
         let index = self.length;
 

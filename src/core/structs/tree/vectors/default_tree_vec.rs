@@ -8,29 +8,18 @@ use std::ops::{Index, IndexMut};
 /// It has empty spaces that can be filled.
 /// # Type parameters
 /// * `T` - Type of the data that the vector stores
-/// # Fields
-/// * `data` - Vector that stores the data
-/// * `empty` - Vector that stores the indexes of the empty spaces
-/// * `indexes` - Vector that stores the indexes of the nodes
-/// * `length` - Length of the vector
 pub struct DefaultTreeVec<T: Sized> {
+    /// Vector that stores the data
     data: Vec<T>,
+
+    /// Vector that stores the empty indexes
     empty: Vec<usize>,
+
+    /// Vector that stores the indexes of the nodes
     indexes: Vec<TreeIndex>,
 
+    /// Length of the vector
     length: usize,
-}
-
-impl<T: Default + Copy> DefaultTreeVec<T> {
-    /// Creates a new instance of the vector
-    pub fn new() -> DefaultTreeVec<T> {
-        DefaultTreeVec {
-            data: Vec::new(),
-            empty: Vec::new(),
-            indexes: Vec::new(),
-            length: 0,
-        }
-    }
 }
 
 impl<T: Default + Copy> Indexes<T> for DefaultTreeVec<T> {
@@ -48,6 +37,15 @@ impl<T: Default + Copy> Indexes<T> for DefaultTreeVec<T> {
 }
 
 impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
+    fn new() -> DefaultTreeVec<T> {
+        DefaultTreeVec {
+            data: Vec::new(),
+            empty: Vec::new(),
+            indexes: Vec::new(),
+            length: 0,
+        }
+    }
+
     fn push(&mut self, value: T) -> usize {
         let index = if self.empty.is_empty() {
             self.length += 1;

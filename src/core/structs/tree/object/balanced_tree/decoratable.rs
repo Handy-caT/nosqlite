@@ -327,9 +327,9 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_new() {
-        let nodes = DefaultTreeVec::<u64>::new();
 
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
         tree.push(2);
@@ -350,8 +350,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_tree_new_empty() {
-        let nodes = DefaultTreeVec::<u64>::new();
-        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         let dec_tree = Decoratable::<
             u64,
@@ -366,9 +365,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_push() {
-        let nodes = DefaultTreeVec::<u64>::new();
-
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
         tree.push(2);
@@ -394,8 +391,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_tree_push_empty() {
-        let nodes = DefaultTreeVec::<u64>::new();
-        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         let mut dec_tree = Decoratable::<
             u64,
@@ -424,9 +420,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_find() {
-        let nodes = DefaultTreeVec::<u64>::new();
-
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
         tree.push(2);
@@ -445,9 +439,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_remove_by_value() {
-        let nodes = DefaultTreeVec::<u64>::new();
-
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
         tree.push(2);
@@ -466,9 +458,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_remove_by_index() {
-        let nodes = DefaultTreeVec::<u64>::new();
-
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
         tree.push(2);
@@ -489,9 +479,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_remove_root_values() {
-        let nodes = DefaultTreeVec::<u64>::new();
-
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
 
@@ -510,9 +498,7 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_remove_root_indexes() {
-        let nodes = DefaultTreeVec::<u64>::new();
-
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new(nodes);
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
 

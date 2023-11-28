@@ -12,7 +12,7 @@ use crate::core::structs::{
             tree::{Tree, VecFunctions},
             BalancedTree,
         },
-        vectors::optimized_tree_vec::OptimizedTreeVec,
+        vectors::{optimized_tree_vec::OptimizedTreeVec, tree_vec::TreeVec},
     },
 };
 
@@ -60,11 +60,10 @@ impl<
         let size = 2usize.pow(pow);
 
         for _ in 0..size {
-            let nodes = OptimizedTreeVec::new();
             vec.data.push(BalancedTree::<
                 KeyValue<K, V>,
                 OptimizedTreeVec<KeyValue<K, V>>,
-            >::new(nodes));
+            >::new());
         }
 
         vec.size = size;

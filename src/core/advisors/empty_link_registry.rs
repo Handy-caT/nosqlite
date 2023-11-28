@@ -4,10 +4,23 @@ use crate::core::{
         object::{
             balanced_tree::Decoratable,
             tree::{Tree, VecFunctions},
+            BalancedTree, BinHeap,
         },
-        vectors::tree_vec::{Levels, TreeVec},
+        vectors::{
+            normalized_tree_vec::NormalizedTreeVector,
+            optimized_tree_vec::OptimizedTreeVec,
+            tree_vec::{Levels, TreeVec},
+        },
     },
 };
+
+pub type BestFitEmptyLinkRegistry = EmptyLinkRegistry<
+    OptimizedTreeVec<PageLink>,
+    BalancedTree<PageLink, OptimizedTreeVec<PageLink>>,
+>;
+
+pub type WorstFitEmptyLinkRegistry =
+    EmptyLinkRegistry<NormalizedTreeVector<PageLink>, BinHeap<PageLink>>;
 
 pub struct EmptyLinkRegistry<V, M>
 where
@@ -58,15 +71,14 @@ mod tests {
         link_struct::PageLink,
         structs::tree::{
             object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
-            vectors::default_tree_vec::DefaultTreeVec,
+            vectors::{default_tree_vec::DefaultTreeVec, tree_vec::TreeVec},
         },
     };
 
     #[test]
     fn test_empty_link_registry_new() {
-        let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
-            BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
+            BalancedTree::<_, DefaultTreeVec<_>>::new_with_compare(PageLink::compare_by_index);
 
         let decoratable_tree = Decoratable::new(tree, PageLink::compare_by_len);
 
@@ -79,7 +91,7 @@ mod tests {
     fn test_empty_link_registry_add_link() {
         let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
-            BalancedTree::new_with_compare(nodes, PageLink::compare_by_index);
+            BalancedTree::<_, DefaultTreeVec<_>>::new_with_compare(PageLink::compare_by_index);
 
         let decoratable_tree = Decoratable::new(tree, PageLink::compare_by_len);
 

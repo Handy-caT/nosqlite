@@ -111,17 +111,15 @@ mod tests {
         link_struct::PageLink,
         structs::tree::{
             object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
-            vectors::default_tree_vec::DefaultTreeVec,
+            vectors::{default_tree_vec::DefaultTreeVec, tree_vec::TreeVec},
         },
     };
 
     #[test]
     fn test_best_fit_advisor_new() {
-        let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
             BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
             ::new_with_compare(
-            nodes,
             PageLink::compare_by_len,
         );
 
@@ -142,11 +140,9 @@ mod tests {
 
     #[test]
     fn test_best_fit_advisor_provide_place() {
-        let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
             BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
             ::new_with_compare(
-            nodes,
             PageLink::compare_by_len,
         );
 
@@ -177,11 +173,9 @@ mod tests {
 
     #[test]
     fn test_best_fit_advisor_provide_place_with_empty_registry() {
-        let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
             BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
             ::new_with_compare(
-            nodes,
             PageLink::compare_by_len,
         );
 
@@ -204,11 +198,9 @@ mod tests {
 
     #[test]
     fn test_best_fit_advisor_apply_place() {
-        let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
             BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
             ::new_with_compare(
-            nodes,
             PageLink::compare_by_len,
         );
 
@@ -239,11 +231,9 @@ mod tests {
 
     #[test]
     fn test_best_fit_advisor_apply_place_bigger_link() {
-        let nodes = DefaultTreeVec::<PageLink>::new();
         let tree =
             BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
             ::new_with_compare(
-                nodes,
                 PageLink::compare_by_len,
             );
 

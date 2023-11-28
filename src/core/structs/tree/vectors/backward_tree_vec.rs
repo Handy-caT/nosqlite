@@ -10,40 +10,31 @@ use crate::core::structs::tree::{
 };
 use std::ops::{Index, IndexMut};
 
+/// Struct that represents a vector that stores tree nodes that also
+/// stores the parents of the nodes.
+/// # Type parameters
+/// * `T` - Type of the data that the vector stores
 pub struct BackwardsTreeVec<T> {
+    /// Number of allocated levels.
     allocated_levels: u8,
+
+    /// Maximum length of the vector.
     max_length: usize,
+
+    /// Length of the vector.
     length: usize,
 
+    /// Vector that stores the data.
     data: Vec<T>,
+
+    /// Vector that stores the indexes of the nodes.
     indexes: Vec<TreeIndex>,
+
+    /// Vector that stores the empty indexes.
     empty: Vec<usize>,
 
+    /// Vector that stores the parents of the nodes.
     parents: Vec<usize>,
-}
-
-impl<T: Default + Copy> BackwardsTreeVec<T> {
-    pub fn new() -> BackwardsTreeVec<T> {
-        let mut vec = BackwardsTreeVec {
-            allocated_levels: 0,
-            max_length: 0,
-            length: 0,
-            data: Vec::new(),
-            indexes: Vec::new(),
-            empty: Vec::new(),
-            parents: Vec::new(),
-        };
-
-        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
-
-        vec.data.reserve(length);
-        vec.indexes.reserve(length);
-
-        vec.max_length = length;
-        vec.allocated_levels = INITIAL_LEVELS;
-
-        vec
-    }
 }
 
 impl<T: Default + Copy> Levels for BackwardsTreeVec<T> {
@@ -105,6 +96,28 @@ impl<T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
 }
 
 impl<T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
+    fn new() -> BackwardsTreeVec<T> {
+        let mut vec = BackwardsTreeVec {
+            allocated_levels: 0,
+            max_length: 0,
+            length: 0,
+            data: Vec::new(),
+            indexes: Vec::new(),
+            empty: Vec::new(),
+            parents: Vec::new(),
+        };
+
+        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
+
+        vec.data.reserve(length);
+        vec.indexes.reserve(length);
+
+        vec.max_length = length;
+        vec.allocated_levels = INITIAL_LEVELS;
+
+        vec
+    }
+
     fn push(&mut self, value: T) -> usize {
         let index = push(self, value);
         if index == self.length - 1 {
