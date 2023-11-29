@@ -71,16 +71,18 @@ mod tests {
         link_struct::PageLink,
         structs::tree::{
             object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
-            vectors::{default_tree_vec::DefaultTreeVec, tree_vec::TreeVec},
+            vectors::default_tree_vec::DefaultTreeVec,
         },
     };
 
     #[test]
     fn test_empty_link_registry_new() {
-        let tree =
-            BalancedTree::<_, DefaultTreeVec<_>>::new_with_compare(PageLink::compare_by_index);
+        let tree = BalancedTree::<_, DefaultTreeVec<_>>::new_with_compare(
+            PageLink::compare_by_index,
+        );
 
-        let decoratable_tree = Decoratable::new(tree, PageLink::compare_by_len);
+        let decoratable_tree =
+            Decoratable::new_with_existing(tree, PageLink::compare_by_len);
 
         let empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 
@@ -89,11 +91,12 @@ mod tests {
 
     #[test]
     fn test_empty_link_registry_add_link() {
-        let nodes = DefaultTreeVec::<PageLink>::new();
-        let tree =
-            BalancedTree::<_, DefaultTreeVec<_>>::new_with_compare(PageLink::compare_by_index);
+        let tree = BalancedTree::<_, DefaultTreeVec<_>>::new_with_compare(
+            PageLink::compare_by_index,
+        );
 
-        let decoratable_tree = Decoratable::new(tree, PageLink::compare_by_len);
+        let decoratable_tree =
+            Decoratable::new_with_existing(tree, PageLink::compare_by_len);
 
         let mut empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
 

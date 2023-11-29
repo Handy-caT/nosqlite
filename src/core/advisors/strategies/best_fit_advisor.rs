@@ -123,16 +123,12 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = Decoratable::<
-            PageLink,
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(tree, PageLink::compare_by_index);
+        let dec_tree = Decoratable::<PageLink, _, _>::new_with_existing(
+            tree,
+            PageLink::compare_by_index,
+        );
 
-        let mut registry = EmptyLinkRegistry::<
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(dec_tree);
+        let mut registry = EmptyLinkRegistry::<_, _>::new(dec_tree);
         let advisor = BestFitAdvisor::new(&mut registry);
 
         assert_eq!(advisor.get_name(), "BestFitAdvisor".to_string());
@@ -146,11 +142,12 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = Decoratable::<
-            PageLink,
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(tree, PageLink::compare_by_index);
+        let dec_tree =
+            Decoratable::<
+                PageLink,
+                DefaultTreeVec<PageLink>,
+                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
+            >::new_with_existing(tree, PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             DefaultTreeVec<PageLink>,
@@ -179,11 +176,12 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = Decoratable::<
-            PageLink,
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(tree, PageLink::compare_by_index);
+        let dec_tree =
+            Decoratable::<
+                PageLink,
+                DefaultTreeVec<PageLink>,
+                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
+            >::new_with_existing(tree, PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             DefaultTreeVec<PageLink>,
@@ -204,11 +202,12 @@ mod tests {
             PageLink::compare_by_len,
         );
 
-        let dec_tree = Decoratable::<
-            PageLink,
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(tree, PageLink::compare_by_index);
+        let dec_tree =
+            Decoratable::<
+                PageLink,
+                DefaultTreeVec<PageLink>,
+                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
+            >::new_with_existing(tree, PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             DefaultTreeVec<PageLink>,
@@ -237,11 +236,12 @@ mod tests {
                 PageLink::compare_by_len,
             );
 
-        let dec_tree = Decoratable::<
-            PageLink,
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(tree, PageLink::compare_by_index);
+        let dec_tree =
+            Decoratable::<
+                PageLink,
+                DefaultTreeVec<PageLink>,
+                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
+            >::new_with_existing(tree, PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             DefaultTreeVec<PageLink>,

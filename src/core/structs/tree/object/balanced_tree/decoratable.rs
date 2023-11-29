@@ -47,8 +47,12 @@ impl<
     /// * `compare` - compare function.
     /// # Returns
     /// * `Decoratable` - new [`Decoratable`] balanced tree.
-    pub fn new(tree: M, compare: fn(T, T) -> Ordering) -> Decoratable<T, V, M> {
-        let additional_index_vec = AdditionalIndexVec::new(tree.get_nodes());
+    pub fn new_with_existing(
+        tree: M,
+        compare: fn(T, T) -> Ordering,
+    ) -> Decoratable<T, V, M> {
+        let additional_index_vec =
+            AdditionalIndexVec::new_with_existing(tree.get_nodes());
 
         let mut dec_tree = Decoratable {
             base: tree,
@@ -207,11 +211,43 @@ impl<
 }
 
 impl<
-        T: Default + Copy,
+        T: Default + Copy + Ord,
         V: TreeVec<T> + Levels + Sized,
         M: Tree<T> + Sized + VecFunctions<T, V>,
     > Tree<T> for Decoratable<T, V, M>
 {
+    fn new() -> Self {
+        let additional_index_vec = AdditionalIndexVec::new();
+
+        let mut dec_tree = Decoratable {
+            base: M::new(),
+            root: None,
+            indexes: additional_index_vec,
+            compare: |a, b| a.cmp(&b),
+            v: std::marker::PhantomData,
+        };
+
+        dec_tree.fill_indexes();
+
+        dec_tree
+    }
+
+    fn new_with_compare(compare: fn(T, T) -> Ordering) -> Self {
+        let additional_index_vec = AdditionalIndexVec::new();
+
+        let mut dec_tree = Decoratable {
+            base: M::new(),
+            root: None,
+            indexes: additional_index_vec,
+            compare,
+            v: std::marker::PhantomData,
+        };
+
+        dec_tree.fill_indexes();
+
+        dec_tree
+    }
+
     fn push(&mut self, value: T) -> usize {
         let index = self.base.push(value);
         self.push_index(index);
@@ -279,7 +315,7 @@ impl<
 }
 
 impl<
-        T: Default + Copy,
+        T: Default + Copy + Ord,
         V: TreeVec<T> + Indexes<T> + Levels + Sized,
         M: Tree<T> + Sized + VecFunctions<T, V>,
     > VecFunctions<T, V> for Decoratable<T, V, M>
@@ -327,8 +363,6 @@ mod tests {
 
     #[test]
     fn test_decoratable_balanced_tree_new() {
-
-
         let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
 
         tree.push(1);
@@ -339,7 +373,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_existing(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.base.len(), 3);
         assert_eq!(dec_tree.indexes.len(), 3);
@@ -350,13 +384,11 @@ mod tests {
 
     #[test]
     fn test_decoratable_tree_new_empty() {
-        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
-
         let dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new();
 
         assert_eq!(dec_tree.base.len(), 0);
         assert_eq!(dec_tree.indexes.len(), 0);
@@ -374,7 +406,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_existing(tree, |a, b| b.cmp(&a));
 
         dec_tree.push(3);
 
@@ -391,13 +423,11 @@ mod tests {
 
     #[test]
     fn test_decoratable_tree_push_empty() {
-        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
-
         let mut dec_tree = Decoratable::<
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_compare(|a, b| b.cmp(&a));
 
         dec_tree.push(3);
 
@@ -430,7 +460,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_existing(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.find(1), Some(0));
         assert_eq!(dec_tree.find(2), Some(1));
@@ -449,7 +479,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_existing(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_value(1), Some(1));
         assert_eq!(dec_tree.remove_by_value(2), Some(2));
@@ -468,7 +498,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_existing(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_index(0), Some(1));
         assert_eq!(dec_tree.remove_by_index(1), Some(2));
@@ -487,7 +517,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_existing(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_value(1), Some(1));
         assert_eq!(dec_tree.len(), 0);
@@ -506,7 +536,7 @@ mod tests {
             u64,
             DefaultTreeVec<u64>,
             BalancedTree<u64, DefaultTreeVec<u64>>,
-        >::new(tree, |a, b| b.cmp(&a));
+        >::new_with_existing(tree, |a, b| b.cmp(&a));
 
         assert_eq!(dec_tree.remove_by_index(0), Some(1));
         assert_eq!(dec_tree.len(), 0);

@@ -16,7 +16,10 @@ mod tests {
         heap.push(3);
 
         let tree =
-            Decoratable::<u64, NormalizedTreeVector<u64>, BinHeap<u64>>::new(
+            Decoratable::<u64,
+                NormalizedTreeVector<u64>,
+                BinHeap<u64>
+            >::new_with_existing(
                 heap,
                 |a, b| b.cmp(&a),
             );
@@ -36,7 +39,7 @@ mod tests {
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,
-        >::new(heap, |a, b| b.cmp(&a));
+        >::new_with_existing(heap, |a, b| b.cmp(&a));
 
         tree.push(4);
 
@@ -55,7 +58,7 @@ mod tests {
             u64,
             NormalizedTreeVector<u64>,
             BinHeap<u64>,
-        >::new(heap, |a, b| b.cmp(&a));
+        >::new_with_existing(heap, |a, b| b.cmp(&a));
 
         tree.remove_by_value(2);
 

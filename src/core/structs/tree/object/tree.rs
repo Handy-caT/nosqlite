@@ -1,8 +1,27 @@
-use crate::core::structs::tree::vectors::tree_vec::TreeVec;
+use crate::core::structs::tree::{
+    object::BalancedTree, vectors::tree_vec::TreeVec,
+};
+use std::cmp::Ordering;
 
 /// [`Tree`] is a trait that defines the basic operations that
 /// a tree object must implement.
 pub trait Tree<T> {
+    /// Creates new [`Tree`] using specified vector.
+    /// Vector must implement [`TreeVec`] trait.
+    /// # Arguments
+    /// * `vec` - Vector to be used as a tree.
+    /// # Returns
+    /// * `BalancedTree<T, M>` - New [`Tree`].
+    fn new() -> Self;
+
+    /// Creates new [`Tree`] using specified vector and compare function
+    /// # Arguments
+    /// * `vec` - Vector to be used as a tree.
+    /// * `compare` - Compare function.
+    /// # Returns
+    /// * `BalancedTree<T, M>` - New [`Tree`].
+    fn new_with_compare(compare: fn(T, T) -> Ordering) -> Self;
+
     /// Pushes a value into the tree. Returns the index of the value.
     /// # Arguments
     /// * `value` - The value to be pushed.

@@ -21,29 +21,6 @@ pub struct BinHeap<T> {
 
 /// Implementation of [`BinHeap`] struct
 impl<T: Default + PartialOrd + Copy> BinHeap<T> {
-    /// Creates a new [`BinHeap`] struct
-    /// With default compare function
-    /// So by default `[BinHeap`] is max heap
-    pub fn new() -> Self {
-        BinHeap {
-            data: NormalizedTreeVector::new(),
-            compare: |a, b| a.partial_cmp(&b).unwrap(),
-        }
-    }
-
-    /// Creates a new [`BinHeap`] struct
-    /// With custom compare function
-    /// # Arguments
-    /// * `compare` - Compare function that is used to compare the nodes
-    /// # Returns
-    /// * `BinHeap` - New [`BinHeap`] struct
-    pub fn new_with_compare(compare: fn(T, T) -> Ordering) -> Self {
-        BinHeap {
-            data: NormalizedTreeVector::new(),
-            compare,
-        }
-    }
-
     /// Function that heapifies the object
     /// It is used when we remove the root node
     /// # Arguments
@@ -112,6 +89,20 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
 /// Implementation of [`Tree`] trait for [`BinHeap`] struct
 /// It is used for tree operations and to use as part of [`TreeDecorator`]
 impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
+    fn new() -> Self {
+        BinHeap {
+            data: NormalizedTreeVector::new(),
+            compare: |a, b| a.partial_cmp(&b).unwrap(),
+        }
+    }
+
+    fn new_with_compare(compare: fn(T, T) -> Ordering) -> Self {
+        BinHeap {
+            data: NormalizedTreeVector::new(),
+            compare,
+        }
+    }
+
     fn push(&mut self, value: T) -> usize {
         if self.data.len() == 0 {
             let index = self.data.push(value);

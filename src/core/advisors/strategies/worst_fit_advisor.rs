@@ -86,13 +86,11 @@ mod tests {
 
     #[test]
     fn test_worst_fit_advisor_new() {
-        let heap =
-            BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
         let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
-        >::new(heap, PageLink::compare_by_index);
+        >::new_with_compare(PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             NormalizedTreeVector<PageLink>,
@@ -106,13 +104,11 @@ mod tests {
 
     #[test]
     fn test_worst_fit_advisor_provide_place() {
-        let heap =
-            BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
         let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
-        >::new(heap, PageLink::compare_by_index);
+        >::new_with_compare(PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             NormalizedTreeVector<PageLink>,
@@ -135,13 +131,11 @@ mod tests {
 
     #[test]
     fn test_worst_fit_advisor_provide_place_with_empty_registry() {
-        let heap =
-            BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
         let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
-        >::new(heap, PageLink::compare_by_index);
+        >::new_with_compare(PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             NormalizedTreeVector<PageLink>,
@@ -157,13 +151,11 @@ mod tests {
 
     #[test]
     fn test_worst_fit_advisor_apply_place() {
-        let heap =
-            BinHeap::<PageLink>::new_with_compare(PageLink::compare_by_len);
         let tree = Decoratable::<
             PageLink,
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
-        >::new(heap, PageLink::compare_by_index);
+        >::new_with_compare(PageLink::compare_by_index);
 
         let mut registry = EmptyLinkRegistry::<
             NormalizedTreeVector<PageLink>,

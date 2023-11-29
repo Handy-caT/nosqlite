@@ -49,38 +49,6 @@ impl<
         M: TreeVec<T> + Levels + Indexes<T> + Sized,
     > BalancedTree<T, M>
 {
-    /// Creates new balanced tree using specified vector
-    /// Vector must implement [`TreeVec`] trait
-    /// # Arguments
-    /// * `vec` - Vector to be used as a tree
-    /// # Returns
-    /// * `BalancedTree<T, M>` - New balanced tree
-    pub fn new() -> BalancedTree<T, M> {
-        BalancedTree {
-            root: None,
-            nodes: M::new(),
-            compare: default_compare,
-            len: 0,
-        }
-    }
-
-    /// Creates new balanced tree using specified vector and compare function
-    /// # Arguments
-    /// * `vec` - Vector to be used as a tree
-    /// * `compare` - Compare function
-    /// # Returns
-    /// * `BalancedTree<T, M>` - New balanced tree
-    pub fn new_with_compare(
-        compare: fn(T, T) -> Ordering,
-    ) -> BalancedTree<T, M> {
-        BalancedTree {
-            root: None,
-            nodes: M::new(),
-            compare,
-            len: 0,
-        }
-    }
-
     /// Function to add value to the tree from it's root
     /// It returns index of the root in case the root was changed
     /// # Arguments
@@ -201,6 +169,24 @@ impl<
         M: TreeVec<T> + Indexes<T> + Levels + Sized,
     > Tree<T> for BalancedTree<T, M>
 {
+    fn new() -> BalancedTree<T, M> {
+        BalancedTree {
+            root: None,
+            nodes: M::new(),
+            compare: default_compare,
+            len: 0,
+        }
+    }
+
+    fn new_with_compare(compare: fn(T, T) -> Ordering) -> BalancedTree<T, M> {
+        BalancedTree {
+            root: None,
+            nodes: M::new(),
+            compare,
+            len: 0,
+        }
+    }
+
     fn push(&mut self, value: T) -> usize {
         if self.nodes.len() == 0 {
             self.root = Some(self.nodes.push(value));

@@ -11,7 +11,22 @@ pub struct AdditionalIndexVec {
 }
 
 impl AdditionalIndexVec {
-    pub fn new<T: Default + Copy, M: TreeVec<T> + Levels + Sized>(
+    pub fn new() -> AdditionalIndexVec {
+        let mut vec = AdditionalIndexVec {
+            indexes: Vec::new(),
+            allocated_levels: 0,
+            max_length: 0,
+        };
+
+        vec.allocate_level();
+
+        vec
+    }
+
+    pub fn new_with_existing<
+        T: Default + Copy,
+        M: TreeVec<T> + Levels + Sized,
+    >(
         tree_vec: &M,
     ) -> AdditionalIndexVec {
         let mut vec = AdditionalIndexVec {
@@ -86,7 +101,7 @@ mod tests {
     fn test_additional_index_vec() {
         let optimized_tree_vec = OptimizedTreeVec::<u64>::new();
 
-        let vec = AdditionalIndexVec::new(&optimized_tree_vec);
+        let vec = AdditionalIndexVec::new_with_existing(&optimized_tree_vec);
 
         assert_eq!(vec.len(), 0);
         assert_eq!(
