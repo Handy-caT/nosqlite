@@ -303,7 +303,7 @@ mod tests {
         let mut registry = Registry::<NumericIdGenerator>::new();
 
         let link = PageLink::new(1, 0, 100);
-        let id = registry.add_link(link);
+        let _id = registry.add_link(link);
 
         let link = registry.get_link(NumericId::new(2));
 

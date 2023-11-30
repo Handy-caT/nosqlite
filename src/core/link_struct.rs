@@ -229,10 +229,10 @@ mod tests {
         let link2 = super::PageLink::new(0, 0, 20);
         let link3 = super::PageLink::new(0, 10, 20);
 
-        assert_eq!(link1.eq(&link1), true);
-        assert_eq!(link1.eq(&link2), true);
+        assert!(link1.eq(&link1));
+        assert!(link1.eq(&link2));
 
-        assert_eq!(link1.eq(&link3), false);
-        assert_eq!(link2.eq(&link3), false);
+        assert!(!link1.eq(&link3));
+        assert!(!link2.eq(&link3));
     }
 }

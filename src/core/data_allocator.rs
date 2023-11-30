@@ -26,7 +26,7 @@ pub struct DataAllocator {
 }
 
 impl DataAllocator {
-    pub fn new(page_controller: Rc<PageController>) -> Self {
+    pub fn new(_page_controller: Rc<PageController>) -> Self {
         // Self {
         //     strategy: PlaceAdvisorStrategyType::BestFit,
         //

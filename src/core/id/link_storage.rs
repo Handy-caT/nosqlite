@@ -88,10 +88,7 @@ impl LinkStorage {
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        id::{
-            link_storage::LinkStorage,
-            numeric_id_generator::{NumericId, NumericIdGenerator},
-        },
+        id::{link_storage::LinkStorage, numeric_id_generator::NumericId},
         link_struct::PageLink,
         structs::hash_table::HashTable,
     };

@@ -5,14 +5,10 @@ use crate::core::{
     advisors::empty_link_registry::registry::Registry,
     link_struct::PageLink,
     structs::tree::{
-        object::{
-            tree::{Tree, VecFunctions},
-            BalancedTree, BinHeap,
-        },
+        object::{BalancedTree, BinHeap},
         vectors::{
             normalized_tree_vec::NormalizedTreeVector,
             optimized_tree_vec::OptimizedTreeVec,
-            tree_vec::{Levels, TreeVec},
         },
     },
 };

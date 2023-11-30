@@ -61,7 +61,7 @@ impl<
         value: T,
         root_index: usize,
     ) -> Option<(usize, usize)> {
-        let mut pushed_index;
+        let pushed_index;
         if let Some(node_value) = self.nodes.get_value_mut(root_index) {
             if (self.compare)(value, *node_value) == Ordering::Less {
                 if self.nodes.get_index_mut(root_index).left_index.is_none() {

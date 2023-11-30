@@ -71,8 +71,7 @@ mod tests {
         advisors::{
             empty_link_registry::{
                 factory::{
-                    BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
-                    WorstFitEmptyLinkRegistryFactory,
+                    EmptyLinkRegistryFactory, WorstFitEmptyLinkRegistryFactory,
                 },
                 EmptyLinkRegistry,
             },
@@ -82,9 +81,7 @@ mod tests {
             },
         },
         link_struct::PageLink,
-        structs::tree::object::{
-            balanced_tree::Decoratable, tree::Tree, BinHeap,
-        },
+        structs::tree::object::tree::Tree,
     };
 
     #[test]

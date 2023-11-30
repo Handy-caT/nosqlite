@@ -1,5 +1,3 @@
-use std::mem;
-
 // /// A base trait for converting a value to a byte array in big-endian order.
 // pub trait ToBeBytes<T>
 //     where

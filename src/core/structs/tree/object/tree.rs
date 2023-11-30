@@ -1,6 +1,4 @@
-use crate::core::structs::tree::{
-    object::BalancedTree, vectors::tree_vec::TreeVec,
-};
+use crate::core::structs::tree::vectors::tree_vec::TreeVec;
 use std::cmp::Ordering;
 
 /// [`Tree`] is a trait that defines the basic operations that

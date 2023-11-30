@@ -122,7 +122,7 @@ mod tests {
         let EmptyLinkRegistry::BestFit(mut registry) = registry else {
             panic!("Wrong type of registry");
         };
-        let mut advisor: BestFitAdvisor<'_, OptimizedTreeVec<PageLink>> =
+        let advisor: BestFitAdvisor<'_, OptimizedTreeVec<PageLink>> =
             BestFitAdvisor::<'_, OptimizedTreeVec<PageLink>>::new(
                 &mut registry,
             );
