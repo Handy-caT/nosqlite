@@ -1,6 +1,6 @@
 use crate::core::{
     advisors::{
-        empty_link_registry::EmptyLinkRegistry,
+        empty_link_registry::registry::Registry,
         strategies::place_advisor_strategy::PlaceAdvisorStrategy,
     },
     link_struct::PageLink,
@@ -14,15 +14,14 @@ use crate::core::{
 };
 
 /// [`BestFitAdvisor`] is a strategy that finds the best fit for a given size.
-/// It uses [`EmptyLinkRegistry`] with [`BalancedTree`] as a data structure.
+/// It uses [`Registry`] with [`BalancedTree`] as a data structure.
 /// So the getting the best fit is O(log n).
 pub struct BestFitAdvisor<'a, V>
 where
     V: TreeVec<PageLink> + Sized + Indexes<PageLink> + Levels,
 {
-    /// Link to the [`EmptyLinkRegistry`]
-    empty_link_registry:
-        &'a mut EmptyLinkRegistry<V, BalancedTree<PageLink, V>>,
+    /// Link to the [`Registry`]
+    empty_link_registry: &'a mut Registry<V, BalancedTree<PageLink, V>>,
 }
 
 impl<'a, V> BestFitAdvisor<'a, V>
@@ -31,14 +30,11 @@ where
 {
     /// Creates a new [`BestFitAdvisor`]
     /// # Arguments
-    /// * `empty_link_registry` - Link to the [`EmptyLinkRegistry`]
+    /// * `empty_link_registry` - Link to the [`Registry`]
     /// # Returns
     /// * `BestFitAdvisor` - New [`BestFitAdvisor`]
     pub fn new(
-        empty_link_registry: &'a mut EmptyLinkRegistry<
-            V,
-            BalancedTree<PageLink, V>,
-        >,
+        empty_link_registry: &'a mut Registry<V, BalancedTree<PageLink, V>>,
     ) -> Self {
         BestFitAdvisor {
             empty_link_registry,
@@ -47,13 +43,13 @@ where
 
     pub fn get_empty_link_registry(
         &self,
-    ) -> &EmptyLinkRegistry<V, BalancedTree<PageLink, V>> {
+    ) -> &Registry<V, BalancedTree<PageLink, V>> {
         self.empty_link_registry
     }
 
     pub fn get_empty_link_registry_mut(
         &mut self,
-    ) -> &mut EmptyLinkRegistry<V, BalancedTree<PageLink, V>> {
+    ) -> &mut Registry<V, BalancedTree<PageLink, V>> {
         self.empty_link_registry
     }
 }
@@ -102,7 +98,12 @@ where
 mod tests {
     use crate::core::{
         advisors::{
-            empty_link_registry::EmptyLinkRegistry,
+            empty_link_registry::{
+                factory::{
+                    BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+                },
+                EmptyLinkRegistry,
+            },
             strategies::{
                 best_fit_advisor::BestFitAdvisor,
                 place_advisor_strategy::PlaceAdvisorStrategy,
@@ -110,54 +111,40 @@ mod tests {
         },
         link_struct::PageLink,
         structs::tree::{
-            object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
-            vectors::{default_tree_vec::DefaultTreeVec, tree_vec::TreeVec},
+            object::tree::Tree, vectors::optimized_tree_vec::OptimizedTreeVec,
         },
     };
 
     #[test]
     fn test_best_fit_advisor_new() {
-        let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
-            ::new_with_compare(
-            PageLink::compare_by_len,
-        );
-
-        let dec_tree = Decoratable::<PageLink, _, _>::new_with_existing(
-            tree,
-            PageLink::compare_by_index,
-        );
-
-        let mut registry = EmptyLinkRegistry::<_, _>::new(dec_tree);
-        let advisor = BestFitAdvisor::new(&mut registry);
+        let registry =
+            BestFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::BestFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
+        let mut advisor: BestFitAdvisor<'_, OptimizedTreeVec<PageLink>> =
+            BestFitAdvisor::<'_, OptimizedTreeVec<PageLink>>::new(
+                &mut registry,
+            );
 
         assert_eq!(advisor.get_name(), "BestFitAdvisor".to_string());
     }
 
     #[test]
     fn test_best_fit_advisor_provide_place() {
-        let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
-            ::new_with_compare(
-            PageLink::compare_by_len,
-        );
-
-        let dec_tree =
-            Decoratable::<
-                PageLink,
-                DefaultTreeVec<PageLink>,
-                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-            >::new_with_existing(tree, PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(dec_tree);
+        let registry =
+            BestFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::BestFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
 
         registry.add_link(PageLink::new(0, 0, 100));
         registry.add_link(PageLink::new(0, 100, 200));
 
-        let mut advisor = BestFitAdvisor::new(&mut registry);
+        let mut advisor: BestFitAdvisor<'_, OptimizedTreeVec<PageLink>> =
+            BestFitAdvisor::<'_, OptimizedTreeVec<PageLink>>::new(
+                &mut registry,
+            );
 
         let link = advisor.provide_place(100);
 
@@ -170,24 +157,15 @@ mod tests {
 
     #[test]
     fn test_best_fit_advisor_provide_place_with_empty_registry() {
-        let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
-            ::new_with_compare(
-            PageLink::compare_by_len,
-        );
-
-        let dec_tree =
-            Decoratable::<
-                PageLink,
-                DefaultTreeVec<PageLink>,
-                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-            >::new_with_existing(tree, PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(dec_tree);
-        let mut advisor = BestFitAdvisor::new(&mut registry);
+        let registry =
+            BestFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::BestFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
+        let mut advisor: BestFitAdvisor<'_, OptimizedTreeVec<PageLink>> =
+            BestFitAdvisor::<'_, OptimizedTreeVec<PageLink>>::new(
+                &mut registry,
+            );
 
         let link = advisor.provide_place(100);
 
@@ -196,28 +174,19 @@ mod tests {
 
     #[test]
     fn test_best_fit_advisor_apply_place() {
-        let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
-            ::new_with_compare(
-            PageLink::compare_by_len,
-        );
-
-        let dec_tree =
-            Decoratable::<
-                PageLink,
-                DefaultTreeVec<PageLink>,
-                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-            >::new_with_existing(tree, PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(dec_tree);
+        let registry =
+            BestFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::BestFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
 
         registry.add_link(PageLink::new(0, 0, 100));
         registry.add_link(PageLink::new(0, 100, 200));
 
-        let mut advisor = BestFitAdvisor::new(&mut registry);
+        let mut advisor: BestFitAdvisor<'_, OptimizedTreeVec<PageLink>> =
+            BestFitAdvisor::<'_, OptimizedTreeVec<PageLink>>::new(
+                &mut registry,
+            );
 
         let link = advisor.provide_place(100);
 
@@ -230,27 +199,18 @@ mod tests {
 
     #[test]
     fn test_best_fit_advisor_apply_place_bigger_link() {
-        let tree =
-            BalancedTree::<PageLink, DefaultTreeVec<PageLink>>
-            ::new_with_compare(
-                PageLink::compare_by_len,
-            );
-
-        let dec_tree =
-            Decoratable::<
-                PageLink,
-                DefaultTreeVec<PageLink>,
-                BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-            >::new_with_existing(tree, PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            DefaultTreeVec<PageLink>,
-            BalancedTree<PageLink, DefaultTreeVec<PageLink>>,
-        >::new(dec_tree);
+        let registry =
+            BestFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::BestFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
 
         registry.add_link(PageLink::new(0, 0, 200));
 
-        let mut advisor = BestFitAdvisor::new(&mut registry);
+        let mut advisor: BestFitAdvisor<'_, OptimizedTreeVec<PageLink>> =
+            BestFitAdvisor::<'_, OptimizedTreeVec<PageLink>>::new(
+                &mut registry,
+            );
 
         let link = advisor.provide_place(100);
 

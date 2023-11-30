@@ -1,6 +1,6 @@
 use crate::core::{
     advisors::{
-        empty_link_registry::EmptyLinkRegistry,
+        empty_link_registry::registry::Registry,
         strategies::place_advisor_strategy::PlaceAdvisorStrategy,
     },
     link_struct::PageLink,
@@ -11,24 +11,22 @@ use crate::core::{
 
 /// [`WorstFitAdvisor`] is a strategy that provides the worst fit
 /// for a given size.
-/// It uses [`EmptyLinkRegistry`] with [`BinHeap`] as a base structure.
+/// It uses [`Registry`] with [`BinHeap`] as a base structure.
 /// So the getting the biggest length is O(1).
 pub struct WorstFitAdvisor<'a> {
-    /// Link to the [`EmptyLinkRegistry`]
-    empty_link_registry: &'a mut EmptyLinkRegistry<
-        NormalizedTreeVector<PageLink>,
-        BinHeap<PageLink>,
-    >,
+    /// Link to the [`Registry`]
+    empty_link_registry:
+        &'a mut Registry<NormalizedTreeVector<PageLink>, BinHeap<PageLink>>,
 }
 
 impl<'a> WorstFitAdvisor<'a> {
     /// Creates a new [`WorstFitAdvisor`]
     /// # Arguments
-    /// * `empty_link_registry` - Link to the [`EmptyLinkRegistry`]
+    /// * `empty_link_registry` - Link to the [`Registry`]
     /// # Returns
     /// * `WorstFitAdvisor` - New [`WorstFitAdvisor`]
     pub fn new(
-        empty_link_registry: &'a mut EmptyLinkRegistry<
+        empty_link_registry: &'a mut Registry<
             NormalizedTreeVector<PageLink>,
             BinHeap<PageLink>,
         >,
@@ -71,31 +69,31 @@ impl<'a> PlaceAdvisorStrategy for WorstFitAdvisor<'a> {
 mod tests {
     use crate::core::{
         advisors::{
-            empty_link_registry::EmptyLinkRegistry,
+            empty_link_registry::{
+                factory::{
+                    BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+                    WorstFitEmptyLinkRegistryFactory,
+                },
+                EmptyLinkRegistry,
+            },
             strategies::{
                 place_advisor_strategy::PlaceAdvisorStrategy,
                 worst_fit_advisor::WorstFitAdvisor,
             },
         },
         link_struct::PageLink,
-        structs::tree::{
-            object::{balanced_tree::Decoratable, tree::Tree, BinHeap},
-            vectors::normalized_tree_vec::NormalizedTreeVector,
+        structs::tree::object::{
+            balanced_tree::Decoratable, tree::Tree, BinHeap,
         },
     };
 
     #[test]
     fn test_worst_fit_advisor_new() {
-        let tree = Decoratable::<
-            PageLink,
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new_with_compare(PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new(tree);
+        let registry =
+            WorstFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::WorstFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
 
         let advisor = WorstFitAdvisor::new(&mut registry);
 
@@ -104,16 +102,11 @@ mod tests {
 
     #[test]
     fn test_worst_fit_advisor_provide_place() {
-        let tree = Decoratable::<
-            PageLink,
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new_with_compare(PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new(tree);
+        let registry =
+            WorstFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::WorstFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
 
         registry.add_link(PageLink::new(0, 0, 100));
         registry.add_link(PageLink::new(0, 100, 200));
@@ -131,16 +124,11 @@ mod tests {
 
     #[test]
     fn test_worst_fit_advisor_provide_place_with_empty_registry() {
-        let tree = Decoratable::<
-            PageLink,
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new_with_compare(PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new(tree);
+        let registry =
+            WorstFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::WorstFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
 
         let mut advisor = WorstFitAdvisor::new(&mut registry);
 
@@ -151,16 +139,11 @@ mod tests {
 
     #[test]
     fn test_worst_fit_advisor_apply_place() {
-        let tree = Decoratable::<
-            PageLink,
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new_with_compare(PageLink::compare_by_index);
-
-        let mut registry = EmptyLinkRegistry::<
-            NormalizedTreeVector<PageLink>,
-            BinHeap<PageLink>,
-        >::new(tree);
+        let registry =
+            WorstFitEmptyLinkRegistryFactory::create_empty_link_registry();
+        let EmptyLinkRegistry::WorstFit(mut registry) = registry else {
+            panic!("Wrong type of registry");
+        };
 
         registry.add_link(PageLink::new(0, 0, 100));
         registry.add_link(PageLink::new(0, 100, 200));

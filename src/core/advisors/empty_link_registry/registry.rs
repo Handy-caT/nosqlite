@@ -4,25 +4,12 @@ use crate::core::{
         object::{
             balanced_tree::Decoratable,
             tree::{Tree, VecFunctions},
-            BalancedTree, BinHeap,
         },
-        vectors::{
-            normalized_tree_vec::NormalizedTreeVector,
-            optimized_tree_vec::OptimizedTreeVec,
-            tree_vec::{Levels, TreeVec},
-        },
+        vectors::tree_vec::{Levels, TreeVec},
     },
 };
 
-pub type BestFitEmptyLinkRegistry = EmptyLinkRegistry<
-    OptimizedTreeVec<PageLink>,
-    BalancedTree<PageLink, OptimizedTreeVec<PageLink>>,
->;
-
-pub type WorstFitEmptyLinkRegistry =
-    EmptyLinkRegistry<NormalizedTreeVector<PageLink>, BinHeap<PageLink>>;
-
-pub struct EmptyLinkRegistry<V, M>
+pub struct Registry<V, M>
 where
     V: TreeVec<PageLink> + Sized,
     M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
@@ -30,13 +17,15 @@ where
     data: Decoratable<PageLink, V, M>,
 }
 
-impl<V, M> EmptyLinkRegistry<V, M>
+impl<V, M> Registry<V, M>
 where
     V: TreeVec<PageLink> + Levels + Sized,
     M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
 {
-    pub fn new(data: Decoratable<PageLink, V, M>) -> Self {
-        EmptyLinkRegistry { data }
+    pub(in crate::core::advisors::empty_link_registry) fn new(
+        data: Decoratable<PageLink, V, M>,
+    ) -> Self {
+        Registry { data }
     }
 
     pub fn add_link(&mut self, link: PageLink) {
@@ -67,7 +56,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        advisors::empty_link_registry::EmptyLinkRegistry,
+        advisors::empty_link_registry::registry::Registry,
         link_struct::PageLink,
         structs::tree::{
             object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
@@ -84,7 +73,7 @@ mod tests {
         let decoratable_tree =
             Decoratable::new_with_existing(tree, PageLink::compare_by_len);
 
-        let empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
+        let empty_link_registry = Registry::new(decoratable_tree);
 
         assert_eq!(empty_link_registry.data.len(), 0);
     }
@@ -98,7 +87,7 @@ mod tests {
         let decoratable_tree =
             Decoratable::new_with_existing(tree, PageLink::compare_by_len);
 
-        let mut empty_link_registry = EmptyLinkRegistry::new(decoratable_tree);
+        let mut empty_link_registry = Registry::new(decoratable_tree);
 
         empty_link_registry.add_link(PageLink::new(0, 0, 20));
 
