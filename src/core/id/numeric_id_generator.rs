@@ -14,7 +14,7 @@ pub struct NumericIdGenerator {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct NumericId(u64);
+pub struct NumericId(pub(crate) u64);
 
 impl IdGenerator<NumericId> for NumericIdGenerator {
     fn new() -> NumericIdGenerator {

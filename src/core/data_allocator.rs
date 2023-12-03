@@ -25,25 +25,18 @@ pub struct DataAllocator {
     /// [`EmptyLinkRegistry`] that is used to find empty places.
     empty_link_registry: EmptyLinkRegistry,
 
-    /// Link to the [`PageController`] that is used to
-    /// allocate and deallocate pages.
-    page_controller: Rc<PageController>,
-
     /// Lin to the first free space in memory.
     tail_link: PageLink,
 }
 
 impl DataAllocator {
     /// Creates a new [`DataAllocator`].
-    /// # Arguments
-    /// * `page_controller` - Link to the [`PageController`]
     /// # Returns
     /// * `DataAllocator` - New [`DataAllocator`]
-    pub fn new(page_controller: Rc<PageController>) -> Self {
+    pub fn new() -> Self {
         Self {
             empty_link_registry:
                 BestFitEmptyLinkRegistryFactory::create_empty_link_registry(),
-            page_controller,
             tail_link: PageLink::new(0, 0, PAGE_SIZE),
         }
     }
@@ -82,14 +75,14 @@ impl DataAllocator {
     /// * `size` - Size of data that should be allocated.
     /// # Returns
     /// * `Option<PageLink>` - Link to the allocated memory.
-    pub fn allocate(&mut self, size: u16) -> Option<PageLink> {
+    pub fn allocate(&mut self, size: u16) -> PageLink {
         let advisor = self.get_place_advisor();
 
         let link = advisor.provide_place(size);
 
         if let Some(link) = link {
             advisor.apply_place(&link, size);
-            Some(link)
+            link
         } else {
             let link =
                 PageLink::new_from_raw(self.tail_link.get_raw_index(), size);
@@ -97,7 +90,7 @@ impl DataAllocator {
             self.tail_link = PageLink::new_from_raw(link.get_raw_end(), 0);
             self.tail_link.len = self.tail_link.get_len_till_end();
 
-            Some(link)
+            link
         }
     }
 
@@ -126,8 +119,7 @@ mod tests {
 
     #[test]
     fn test_data_allocator_new() {
-        let page_controller = Rc::new(PageController::new());
-        let data_allocator = DataAllocator::new(page_controller);
+        let data_allocator = DataAllocator::new();
 
         assert_eq!(data_allocator.empty_link_registry.get_name(), "BestFit");
         assert_eq!(data_allocator.tail_link, PageLink::new(0, 0, 0));
@@ -136,12 +128,11 @@ mod tests {
 
     #[test]
     fn test_data_allocator_allocate() {
-        let page_controller = Rc::new(PageController::new());
-        let mut data_allocator = DataAllocator::new(page_controller);
+        let mut data_allocator = DataAllocator::new();
 
         let link = data_allocator.allocate(10);
 
-        assert_eq!(link, Some(PageLink::new(0, 0, 10)));
+        assert_eq!(link, PageLink::new(0, 0, 10));
         assert_eq!(
             data_allocator.tail_link,
             PageLink::new(0, 10, PAGE_SIZE - 10)
@@ -151,12 +142,11 @@ mod tests {
 
     #[test]
     fn test_data_allocator_allocate_end_of_page() {
-        let page_controller = Rc::new(PageController::new());
-        let mut data_allocator = DataAllocator::new(page_controller);
+        let mut data_allocator = DataAllocator::new();
 
         let link = data_allocator.allocate(PAGE_SIZE - 10);
 
-        assert_eq!(link, Some(PageLink::new(0, 0, PAGE_SIZE - 10)));
+        assert_eq!(link, PageLink::new(0, 0, PAGE_SIZE - 10));
         assert_eq!(
             data_allocator.tail_link,
             PageLink::new(0, PAGE_SIZE - 10, 0)
@@ -164,7 +154,7 @@ mod tests {
 
         let link = data_allocator.allocate(20);
 
-        assert_eq!(link, Some(PageLink::new(0, PAGE_SIZE - 10, 20)));
+        assert_eq!(link, PageLink::new(0, PAGE_SIZE - 10, 20));
         assert_eq!(
             data_allocator.tail_link,
             PageLink::new(1, 10, PAGE_SIZE - 10)
@@ -173,12 +163,11 @@ mod tests {
 
     #[test]
     fn test_data_allocator_remove() {
-        let page_controller = Rc::new(PageController::new());
-        let mut data_allocator = DataAllocator::new(page_controller);
+        let mut data_allocator = DataAllocator::new();
 
         let link = data_allocator.allocate(10);
 
-        assert_eq!(link, Some(PageLink::new(0, 0, 10)));
+        assert_eq!(link, PageLink::new(0, 0, 10));
         assert_eq!(
             data_allocator.tail_link,
             PageLink::new(0, 10, PAGE_SIZE - 10)
@@ -196,12 +185,11 @@ mod tests {
 
     #[test]
     fn test_data_allocator_add_after_remove() {
-        let page_controller = Rc::new(PageController::new());
-        let mut data_allocator = DataAllocator::new(page_controller);
+        let mut data_allocator = DataAllocator::new();
 
         let link = data_allocator.allocate(10);
 
-        assert_eq!(link, Some(PageLink::new(0, 0, 10)));
+        assert_eq!(link, PageLink::new(0, 0, 10));
         assert_eq!(
             data_allocator.tail_link,
             PageLink::new(0, 10, PAGE_SIZE - 10)
@@ -217,7 +205,7 @@ mod tests {
 
         let link = data_allocator.allocate(10);
 
-        assert_eq!(link, Some(PageLink::new(0, 0, 10)));
+        assert_eq!(link, PageLink::new(0, 0, 10));
         assert_eq!(
             data_allocator.tail_link,
             PageLink::new(0, 10, PAGE_SIZE - 10)

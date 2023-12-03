@@ -1,6 +1,9 @@
 mod link_storage;
 pub mod numeric_id_generator;
-mod registry;
+pub mod registry;
+
+pub use numeric_id_generator::NumericId;
+pub use registry::Registry;
 
 pub trait IdGenerator<Id> {
     /// Creates a new [`IdGenerator`].

@@ -9,7 +9,7 @@ use crate::core::{
 
 /// A registry for [`Id`]s.
 /// It can be used to store [`Id`]s and retrieve them.
-struct Registry<G = NumericIdGenerator> {
+pub struct Registry<G = NumericIdGenerator> {
     id_generator: G,
     link_storage: LinkStorage,
 }
@@ -66,6 +66,24 @@ where
         }
     }
 
+    /// Removes a [`PageLink`] from the [`Registry`] by [`NumericId`].
+    /// # Arguments
+    /// * `id` - The [`NumericId`] of the [`PageLink`] to remove.
+    /// # Returns
+    /// * `Result<(), RegistryError>` - Ok if the [`PageLink`] was removed.
+    /// Err if the [`NumericId`] was not found.
+    pub fn remove_id(&mut self, id: NumericId) -> Result<(), RegistryError> {
+        let result = self.link_storage.remove_by_id(id);
+
+        match result {
+            Some(_) => {
+                self.id_generator.retrieve_id(id);
+                Ok(())
+            }
+            None => Err(RegistryError::IdNotFound),
+        }
+    }
+
     /// Updates a [`PageLink`] in the [`Registry`] by [`NumericId`].
     /// # Arguments
     /// * `id` - The [`NumericId`] of the [`PageLink`] to update.
@@ -109,6 +127,13 @@ where
     /// None if the [`PageLink`] was not found.
     pub fn get_id(&mut self, link: PageLink) -> Option<NumericId> {
         self.link_storage.get_id(link)
+    }
+
+    /// Gets the number of [`PageLink`]s in the [`Registry`].
+    /// # Returns
+    /// * `usize` - The number of [`PageLink`]s in the [`Registry`].
+    pub fn get_id_count(&self) -> u64 {
+        self.id_generator.get_id_count()
     }
 }
 
