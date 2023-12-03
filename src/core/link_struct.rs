@@ -1,14 +1,31 @@
-use std::cmp::Ordering;
-use std::fmt::{Debug, Display, Formatter};
+use crate::core::{base::cast::usize::USIZE_SIZE, page_struct::PAGE_SIZE};
+use std::{
+    cmp::Ordering,
+    fmt::{Debug, Display, Formatter},
+};
 
+/// A struct that represents a link to a page.
+#[derive(Debug, Default, Copy, Clone, Eq)]
 pub struct PageLink {
-    page_index: u64,
-    start: u32,
-    len: u32,
+    /// The index of the page.
+    pub page_index: usize,
+
+    /// The start index of the link on a page.
+    pub start: u16,
+
+    /// The length of the link.
+    pub len: u16,
 }
 
 impl PageLink {
-    pub fn new(page: u64, start: u32, len: u32) -> PageLink {
+    /// Creates a new [`PageLink`] with the given parameters.
+    /// # Arguments
+    /// * `page` - The index of the page.
+    /// * `start` - The start index of the link on a page.
+    /// * `len` - The length of the link.
+    /// # Returns
+    /// A new [`PageLink`] with the given parameters.
+    pub fn new(page: usize, start: u16, len: u16) -> Self {
         PageLink {
             page_index: page,
             start,
@@ -16,52 +33,81 @@ impl PageLink {
         }
     }
 
-    pub fn get_page_index(&self) -> u64 {
-        self.page_index
+    /// Creates a new [`PageLink`] from the given raw index and length.
+    /// # Arguments
+    /// * `index` - The raw index of the link.
+    /// * `len` - The length of the link.
+    /// # Returns
+    /// A new [`PageLink`] from the given raw index and length.
+    pub fn new_from_raw(index: u64, len: u16) -> Self {
+        let page_index = (index / u64::from(PAGE_SIZE)) as usize;
+        let start = (index % u64::from(PAGE_SIZE)) as u16;
+
+        PageLink {
+            page_index,
+            start,
+            len,
+        }
     }
 
-    pub fn get_start(&self) -> u32 {
-        self.start
-    }
-
-    pub fn get_len(&self) -> u32 {
-        self.len
-    }
-
+    /// Returns the raw index of the link.
+    /// Raw index is the index from the start of the file.
+    /// # Returns
+    /// u64 - The raw index of the link.
     pub fn get_raw_index(&self) -> u64 {
-        self.page_index * 4096 + self.start as u64
+        u64::try_from(self.page_index).unwrap() * u64::from(PAGE_SIZE)
+            + u64::from(self.start)
     }
 
+    /// Returns the raw end of the link.
+    /// Raw end is the index from the start of the file plus
+    /// the length of the link.
+    /// # Returns
+    /// u64 - The raw end of the link.
     pub fn get_raw_end(&self) -> u64 {
-        self.page_index * 4096 + self.start as u64 + self.len as u64 - 1
+        u64::try_from(self.page_index).unwrap() * u64::from(PAGE_SIZE)
+            + u64::from(self.start)
+            + u64::from(self.len)
     }
 
-    pub fn compare_by_len(a: &PageLink, b: &PageLink) -> Ordering {
-        if a.get_len() < b.get_len() {
-            Ordering::Less
-        } else if a.get_len() > b.get_len() {
-            Ordering::Greater
-        } else {
-            Ordering::Equal
-        }
+    /// Compares two `PageLink`s by their length.
+    /// # Arguments
+    /// * `a` - The first `PageLink` to compare.
+    /// * `b` - The second `PageLink` to compare.
+    /// # Returns
+    /// Ordering - The ordering of the two `PageLink`s.
+    pub fn compare_by_len(a: PageLink, b: PageLink) -> Ordering {
+        a.len.cmp(&b.len)
     }
 
-    pub fn compare_by_index(a: &PageLink, b: &PageLink) -> Ordering {
-        if a.get_raw_index() < b.get_raw_index() {
-            Ordering::Less
-        } else if a.get_raw_index() > b.get_raw_index() {
-            Ordering::Greater
-        } else {
-            Ordering::Equal
-        }
+    /// Compares two `PageLink`s by their index.
+    /// # Arguments
+    /// * `a` - The first `PageLink` to compare.
+    /// * `b` - The second `PageLink` to compare.
+    /// # Returns
+    /// Ordering - The ordering of the two `PageLink`s.
+    pub fn compare_by_index(a: PageLink, b: PageLink) -> Ordering {
+        a.get_raw_index().cmp(&b.get_raw_index())
+    }
+
+    /// Returns the length of the link till the end of the page.
+    /// # Returns
+    /// u16 - The length of the link till the end of the page.
+    pub fn get_len_till_end(&self) -> u16 {
+        PAGE_SIZE - self.start
     }
 }
 
-impl From<[u8; 16]> for PageLink {
-    fn from(bytes: [u8; 16]) -> Self {
-        let page = u64::from_be_bytes(bytes[0..8].try_into().unwrap());
-        let start = u32::from_be_bytes(bytes[8..12].try_into().unwrap());
-        let len = u32::from_be_bytes(bytes[12..16].try_into().unwrap());
+impl From<[u8; 4 + USIZE_SIZE]> for PageLink {
+    fn from(bytes: [u8; 4 + USIZE_SIZE]) -> Self {
+        let page =
+            usize::from_be_bytes(bytes[0..USIZE_SIZE].try_into().unwrap());
+        let start = u16::from_be_bytes(
+            bytes[USIZE_SIZE..USIZE_SIZE + 2].try_into().unwrap(),
+        );
+        let len = u16::from_be_bytes(
+            bytes[USIZE_SIZE + 2..USIZE_SIZE + 4].try_into().unwrap(),
+        );
         PageLink {
             page_index: page,
             start,
@@ -70,51 +116,21 @@ impl From<[u8; 16]> for PageLink {
     }
 }
 
-impl Into<[u8; 16]> for PageLink {
-    fn into(self) -> [u8; 16] {
-        let mut bytes = [0; 16];
-        bytes[0..8].copy_from_slice(&self.page_index.to_be_bytes());
-        bytes[8..12].copy_from_slice(&self.start.to_be_bytes());
-        bytes[12..16].copy_from_slice(&self.len.to_be_bytes());
+impl From<PageLink> for [u8; 4 + USIZE_SIZE] {
+    fn from(val: PageLink) -> Self {
+        let mut bytes = [0; 4 + USIZE_SIZE];
+        bytes[0..USIZE_SIZE].copy_from_slice(&val.page_index.to_be_bytes());
+        bytes[USIZE_SIZE..USIZE_SIZE + 2]
+            .copy_from_slice(&val.start.to_be_bytes());
+        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4]
+            .copy_from_slice(&val.len.to_be_bytes());
         bytes
     }
 }
 
-
-impl Clone for PageLink {
-    fn clone(&self) -> Self {
-        PageLink {
-            page_index: self.page_index,
-            start: self.start,
-            len: self.len,
-        }
-    }
-}
-
-impl Copy for PageLink {}
-
-impl Default for PageLink {
-    fn default() -> Self {
-        return PageLink::new(0,0,0)
-    }
-}
-
-impl Eq for PageLink {}
-
-
-impl PartialEq<Self> for PageLink {
-    fn eq(&self, other: &Self) -> bool {
-        self.page_index == other.page_index && self.start == other.start && self.len == other.len
-    }
-}
-
-impl Debug for PageLink {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("PageLink")
-            .field("page_index", &self.page_index)
-            .field("start", &self.start)
-            .field("len", &self.len)
-            .finish()
+impl PartialEq for PageLink {
+    fn eq(&self, other: &PageLink) -> bool {
+        self.page_index == other.page_index && self.start == other.start
     }
 }
 
@@ -132,13 +148,18 @@ impl PartialOrd for PageLink {
 
 impl Display for PageLink {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "PageLink {{ page_index: {}, start: {}, len: {} }}", self.page_index, self.start, self.len)
+        write!(
+            f,
+            "PageLink {{ page_index: {}, start: {}, len: {} }}",
+            self.page_index, self.start, self.len
+        )
     }
 }
 
-
 #[cfg(test)]
 mod tests {
+    use crate::core::base::cast::usize::USIZE_SIZE;
+
     #[test]
     fn test_page_link_new() {
         let link = super::PageLink::new(0, 0, 10);
@@ -146,19 +167,20 @@ mod tests {
         assert_eq!(link.start, 0);
         assert_eq!(link.len, 10);
         assert_eq!(link.get_raw_index(), 0);
-        assert_eq!(link.get_raw_end(), 9);
+        assert_eq!(link.get_raw_end(), 10);
     }
 
     #[test]
     fn test_page_link_from() {
-        let page: u64 = 2;
-        let start: u32 = 10;
-        let len: u32 = 20;
+        let page: usize = 2;
+        let start: u16 = 10;
+        let len: u16 = 20;
 
-        let mut bytes = [0; 16];
-        bytes[0..8].copy_from_slice(&page.to_be_bytes());
-        bytes[8..12].copy_from_slice(&start.to_be_bytes());
-        bytes[12..16].copy_from_slice(&len.to_be_bytes());
+        let mut bytes = [0; USIZE_SIZE + 4];
+        bytes[0..USIZE_SIZE].copy_from_slice(&page.to_be_bytes());
+        bytes[USIZE_SIZE..USIZE_SIZE + 2].copy_from_slice(&start.to_be_bytes());
+        bytes[USIZE_SIZE + 2..USIZE_SIZE + 4]
+            .copy_from_slice(&len.to_be_bytes());
 
         let link = super::PageLink::from(bytes);
         assert_eq!(link.page_index, page);
@@ -168,22 +190,25 @@ mod tests {
 
     #[test]
     fn test_page_link_into() {
-        let page: u64 = 2;
-        let start: u32 = 10;
-        let len: u32 = 20;
+        let page: usize = 2;
+        let start: u16 = 10;
+        let len: u16 = 20;
 
         let link = super::PageLink::new(page, start, len);
-        let bytes: [u8; 16] = link.into();
+        let bytes: [u8; USIZE_SIZE + 4] = link.into();
 
-        assert_eq!(bytes[0..8], page.to_be_bytes());
-        assert_eq!(bytes[8..12], start.to_be_bytes());
-        assert_eq!(bytes[12..16], len.to_be_bytes());
+        assert_eq!(bytes[0..USIZE_SIZE], page.to_be_bytes());
+        assert_eq!(bytes[USIZE_SIZE..USIZE_SIZE + 2], start.to_be_bytes());
+        assert_eq!(bytes[USIZE_SIZE + 2..USIZE_SIZE + 4], len.to_be_bytes());
     }
 
     #[test]
     fn test_page_link_display() {
         let link = super::PageLink::new(0, 0, 10);
-        assert_eq!(format!("{}", link), "PageLink { page_index: 0, start: 0, len: 10 }");
+        assert_eq!(
+            format!("{}", link),
+            "PageLink { page_index: 0, start: 0, len: 10 }"
+        );
     }
 
     #[test]
@@ -191,9 +216,18 @@ mod tests {
         let link1 = super::PageLink::new(0, 0, 10);
         let link2 = super::PageLink::new(0, 0, 20);
 
-        assert_eq!(super::PageLink::compare_by_len(&link1, &link2), std::cmp::Ordering::Less);
-        assert_eq!(super::PageLink::compare_by_len(&link2, &link1), std::cmp::Ordering::Greater);
-        assert_eq!(super::PageLink::compare_by_len(&link1, &link1), std::cmp::Ordering::Equal);
+        assert_eq!(
+            super::PageLink::compare_by_len(link1, link2),
+            std::cmp::Ordering::Less
+        );
+        assert_eq!(
+            super::PageLink::compare_by_len(link2, link1),
+            std::cmp::Ordering::Greater
+        );
+        assert_eq!(
+            super::PageLink::compare_by_len(link1, link1),
+            std::cmp::Ordering::Equal
+        );
     }
 
     #[test]
@@ -201,9 +235,30 @@ mod tests {
         let link1 = super::PageLink::new(0, 0, 10);
         let link2 = super::PageLink::new(0, 10, 20);
 
-        assert_eq!(super::PageLink::compare_by_index(&link1, &link2), std::cmp::Ordering::Less);
-        assert_eq!(super::PageLink::compare_by_index(&link2, &link1), std::cmp::Ordering::Greater);
-        assert_eq!(super::PageLink::compare_by_index(&link1, &link1), std::cmp::Ordering::Equal);
+        assert_eq!(
+            super::PageLink::compare_by_index(link1, link2),
+            std::cmp::Ordering::Less
+        );
+        assert_eq!(
+            super::PageLink::compare_by_index(link2, link1),
+            std::cmp::Ordering::Greater
+        );
+        assert_eq!(
+            super::PageLink::compare_by_index(link1, link1),
+            std::cmp::Ordering::Equal
+        );
     }
 
+    #[test]
+    fn test_page_link_eq() {
+        let link1 = super::PageLink::new(0, 0, 10);
+        let link2 = super::PageLink::new(0, 0, 20);
+        let link3 = super::PageLink::new(0, 10, 20);
+
+        assert!(link1.eq(&link1));
+        assert!(link1.eq(&link2));
+
+        assert!(!link1.eq(&link3));
+        assert!(!link2.eq(&link3));
+    }
 }

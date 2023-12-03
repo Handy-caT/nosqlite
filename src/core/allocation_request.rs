@@ -7,7 +7,6 @@ pub enum AllocationStatus {
     Used,
 }
 
-
 pub struct AllocationRequest {
     links: Vec<PageLink>,
     status: AllocationStatus,

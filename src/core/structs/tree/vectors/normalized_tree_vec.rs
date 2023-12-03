@@ -1,22 +1,114 @@
+use crate::core::structs::tree::{
+    nodes::{
+        normalized_tree_index::NormalizedTreeIndex, tree_index::TreeIndex,
+        tree_node::TreeNode,
+    },
+    vectors::{
+        optimized_tree_vec::INITIAL_LEVELS,
+        tree_vec::{Levels, NormalizedIndexes, OptimizedFunctions, TreeVec},
+    },
+};
 use std::ops::{Index, IndexMut};
-use crate::core::structs::tree::nodes::normalized_tree_index::NormalizedTreeIndex;
-use crate::core::structs::tree::nodes::tree_index::TreeIndex;
-use crate::core::structs::tree::nodes::tree_node::TreeNode;
-use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-use crate::core::structs::tree::vectors::tree_vec::{NormalizedTreeVecIndexes, OptimizedFunctions, TreeVec, TreeVecLevels};
 
+/// Struct that represents normalized tree vector.
+/// In this vector child indexes are 2i+1 and 2i+2.
+/// This vector has empty vector to contain empty indexes.
+/// Indexes vector contains indexes of data vector,
+/// so data is independent from indexes.
+/// # Type parameters
+/// * `T` - Type of the data that the vector stores.
 pub struct NormalizedTreeVector<T> {
+    /// Number of allocated levels.
     allocated_levels: u8,
-    max_length: u64,
-    length: u64,
 
+    /// Maximum length of the vector before allocation.
+    max_length: usize,
+
+    /// Length of the vector.
+    length: usize,
+
+    /// Vector that stores the data.
     data: Vec<T>,
+
+    /// Vector that stores the indexes of the data vector.
     indexes: Vec<NormalizedTreeIndex>,
-    empty: Vec<u64>,
+
+    /// Vector that stores the indexes of the empty spaces.
+    empty: Vec<usize>,
 }
 
-impl <T: Default + Copy> NormalizedTreeVector<T> {
-    pub fn new() -> NormalizedTreeVector<T> {
+/// [`NormalizedTreeVector`] implementation.
+impl<T: Default + Copy> NormalizedTreeVector<T> {
+    /// Swaps two indexes.
+    /// Indexes must be in bounds.
+    /// # Arguments
+    /// * `index1` - First index.
+    /// * `index2` - Second index.
+    pub fn swap_indexes(&mut self, index1: usize, index2: usize) {
+        let index1_new = self.indexes[index1].index;
+        let index2_new = self.indexes[index2].index;
+
+        self.indexes[index1].index = index2_new;
+        self.indexes[index2].index = index1_new;
+    }
+
+    /// Function to get parent index of given index.
+    /// Index must be more than 0 to have parent.
+    /// # Arguments
+    /// * `index` - Index to get parent index.
+    /// # Returns
+    /// Parent index of given index.
+    pub fn get_parent_index(index: usize) -> Option<usize> {
+        if index == 0 {
+            None
+        } else {
+            let parent_index = (index - 1) / 2;
+            Some(parent_index)
+        }
+    }
+}
+
+/// [`Levels`] implementation for [`NormalizedTreeVector`].
+impl<T> Levels for NormalizedTreeVector<T> {
+    fn get_allocated_levels(&self) -> u8 {
+        self.allocated_levels
+    }
+
+    fn get_max_length(&self) -> usize {
+        self.max_length
+    }
+}
+
+impl<T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
+    fn get_allocated_levels_mut(&mut self) -> &mut u8 {
+        &mut self.allocated_levels
+    }
+
+    fn get_max_length_mut(&mut self) -> &mut usize {
+        &mut self.max_length
+    }
+
+    fn get_length(&self) -> usize {
+        self.length
+    }
+
+    fn get_length_mut(&mut self) -> &mut usize {
+        &mut self.length
+    }
+
+    fn allocate_level(&mut self) {
+        let length = 2usize.pow(u32::from(self.allocated_levels)) - 1;
+
+        self.data.reserve(length);
+        self.indexes.reserve(length);
+
+        self.max_length += length;
+        self.allocated_levels += 1;
+    }
+}
+
+impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
+    fn new() -> NormalizedTreeVector<T> {
         let mut vec = NormalizedTreeVector {
             allocated_levels: 0,
             max_length: 0,
@@ -26,10 +118,10 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
             empty: Vec::new(),
         };
 
-        let length = 2u64.pow(INITIAL_LEVELS as u32) - 1;
+        let length = 2usize.pow(u32::from(INITIAL_LEVELS)) - 1;
 
-        vec.data.reserve(length as usize);
-        vec.indexes.reserve(length as usize);
+        vec.data.reserve(length);
+        vec.indexes.reserve(length);
 
         vec.max_length = length;
         vec.allocated_levels = INITIAL_LEVELS;
@@ -37,103 +129,46 @@ impl <T: Default + Copy> NormalizedTreeVector<T> {
         vec
     }
 
-    pub fn swap_indexes(&mut self, index1: i32, index2: i32) {
-        let index1_new = self.indexes[index1 as usize].index;
-        let index2_new = self.indexes[index2 as usize].index;
-
-        self.indexes[index1 as usize].index = index2_new;
-        self.indexes[index2 as usize].index = index1_new;
-    }
-
-    pub fn get_parent_index(index: i32) -> i32 {
-        if index == 0 {
-            return -1;
-        } else {
-            let parent_index = (index - 1) / 2;
-            parent_index as i32
-        }
-    }
-}
-
-impl <T> TreeVecLevels for NormalizedTreeVector<T> {
-    fn get_allocated_levels(&self) -> u8 {
-        self.allocated_levels
-    }
-
-    fn get_max_length(&self) -> u64 {
-        self.max_length
-    }
-}
-
-impl <T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
-    fn get_allocated_levels_mut(&mut self) -> &mut u8 {
-        &mut self.allocated_levels
-    }
-
-    fn get_max_length_mut(&mut self) -> &mut u64 {
-        &mut self.max_length
-    }
-
-    fn get_length(&self) -> u64 {
-        self.length
-    }
-
-    fn get_length_mut(&mut self) -> &mut u64 {
-        &mut self.length
-    }
-
-    fn allocate_level(&mut self) {
-        let length = 2u64.pow(self.allocated_levels as u32) - 1;
-
-        self.data.reserve(length as usize);
-        self.indexes.reserve(length as usize);
-
-        self.max_length += length;
-        self.allocated_levels += 1;
-    }
-}
-
-impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
-    fn push(&mut self, value: T) -> i32 {
+    fn push(&mut self, value: T) -> usize {
         let index = self.length;
 
-        let data_index = if !self.empty.is_empty() {
-            self.empty.pop().unwrap()
-        } else {
+        let data_index = if self.empty.is_empty() {
             index
+        } else {
+            self.empty.pop().unwrap()
         };
 
         if index == self.max_length {
             self.allocate_level();
         }
 
-        if data_index != index {
-            self.data[data_index as usize] = value;
-        } else {
+        if data_index == index {
             self.data.push(value);
+        } else {
+            self.data[data_index] = value;
         }
 
         let tree_index = NormalizedTreeIndex {
-            index: data_index as i32,
-            height: NormalizedTreeIndex::find_height(index as i32),
+            index: Some(data_index),
+            height: NormalizedTreeIndex::find_height(index),
         };
         self.indexes.push(tree_index);
         self.length += 1;
 
-        index as i32
+        index
     }
 
-    fn get(&mut self, index: i32) -> Option<TreeNode<T>> {
-        if index >= self.length as i32 || index < 0 {
+    fn get(&self, index: usize) -> Option<TreeNode<T>> {
+        if index >= self.length {
             None
         } else {
             let tree_index = TreeIndex {
-                index: self.indexes[index as usize].index,
-                left_index: 2 * index + 1,
-                right_index: 2 * index + 2,
-                height: self.indexes[index as usize].height,
+                index: self.indexes[index].index,
+                left_index: Some(2 * index + 1),
+                right_index: Some(2 * index + 2),
+                height: self.indexes[index].height,
             };
-            let data = self.data[tree_index.index as usize];
+            let data = self.data[tree_index.index.unwrap()];
 
             let node = TreeNode {
                 value: data,
@@ -144,59 +179,62 @@ impl <T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
         }
     }
 
-    fn remove(&mut self, index: i32) -> Option<TreeNode<T>> {
-        if index < 0 || index >= self.length as i32 {
-            None
+    fn get_value_mut(&mut self, index: usize) -> Option<&mut T> {
+        if index < self.length {
+            Some(&mut self.data[index])
         } else {
-            if index == (self.length - 1) as i32 {
-                let item  = self.indexes.pop().unwrap();
-                let data_index = item.index;
-                let height = item.height;
+            None
+        }
+    }
 
-                let data = self.data[data_index as usize];
-                if data_index != index {
-                    self.empty.push(data_index as u64);
-                } else {
-                    self.data.pop();
-                }
+    fn remove(&mut self, index: usize) -> Option<TreeNode<T>> {
+        if index >= self.length {
+            None
+        } else if index == self.length - 1 {
+            let item = self.indexes.pop().unwrap();
+            // We can unwrap because index is always Some
+            let data_index = item.index.unwrap();
+            let height = item.height;
 
-                self.length -= 1;
-
-                let tree_index = TreeIndex {
-                    index: data_index,
-                    left_index: 2 * index + 1,
-                    right_index: 2 * index + 2,
-                    height,
-                };
-
-                let node = TreeNode {
-                    value: data,
-                    indexes: tree_index,
-                };
-
-                Some(node)
+            let data = self.data[data_index];
+            if data_index == index {
+                self.data.pop();
             } else {
-                None
+                self.empty.push(data_index);
             }
+
+            self.length -= 1;
+
+            let tree_index = TreeIndex {
+                index: Some(data_index),
+                left_index: Some(2 * index + 1),
+                right_index: Some(2 * index + 2),
+                height,
+            };
+
+            let node = TreeNode {
+                value: data,
+                indexes: tree_index,
+            };
+
+            Some(node)
+        } else {
+            None
         }
     }
 
     fn len(&self) -> usize {
-        self.length as usize
+        self.length
     }
 }
 
-impl <T: Default + Copy> NormalizedTreeVecIndexes<T> for NormalizedTreeVector<T> {
-    fn get_value_mut(&mut self, index: i32) -> &mut T {
-        &mut self.data[index as usize]
+impl<T: Default + Copy> NormalizedIndexes<T> for NormalizedTreeVector<T> {
+    fn get_index_mut(&mut self, index: usize) -> &mut NormalizedTreeIndex {
+        &mut self.indexes[index]
     }
 
-    fn get_index_mut(&mut self, index: i32) -> &mut NormalizedTreeIndex {
-        &mut self.indexes[index as usize]
-    }
-
-    fn get_index(&self, index: i32) -> &NormalizedTreeIndex {
-        &self.indexes[index as usize]
+    fn get_index(&self, index: usize) -> &NormalizedTreeIndex {
+        &self.indexes[index]
     }
 
     fn get_indexes(&mut self) -> &mut Vec<NormalizedTreeIndex> {
@@ -204,25 +242,27 @@ impl <T: Default + Copy> NormalizedTreeVecIndexes<T> for NormalizedTreeVector<T>
     }
 }
 
-impl <T: Default + Copy> Index<i32> for NormalizedTreeVector<T> {
+impl<T: Default + Copy> Index<usize> for NormalizedTreeVector<T> {
     type Output = T;
 
-    fn index(&self, index: i32) -> &Self::Output {
-        &self.data[index as usize]
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
     }
 }
 
-impl <T: Default + Copy> IndexMut<i32> for NormalizedTreeVector<T> {
-    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
-        &mut self.data[index as usize]
+impl<T: Default + Copy> IndexMut<usize> for NormalizedTreeVector<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.data[index]
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::tree::vectors::normalized_tree_vec::NormalizedTreeVector;
-    use crate::core::structs::tree::vectors::optimized_tree_vec::INITIAL_LEVELS;
-    use crate::core::structs::tree::vectors::tree_vec::{TreeVec, TreeVecLevels};
+    use crate::core::structs::tree::vectors::{
+        normalized_tree_vec::NormalizedTreeVector,
+        optimized_tree_vec::INITIAL_LEVELS,
+        tree_vec::{Levels, TreeVec},
+    };
 
     #[test]
     fn test_normalized_tree_vector_new() {
@@ -230,7 +270,7 @@ mod tests {
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.get_allocated_levels(), INITIAL_LEVELS);
-        assert_eq!(vec.get_max_length(), 2u64.pow(INITIAL_LEVELS as u32) - 1);
+        assert_eq!(vec.get_max_length(), 2usize.pow(INITIAL_LEVELS as u32) - 1);
     }
 
     #[test]
@@ -247,7 +287,7 @@ mod tests {
         assert_eq!(vec[2], 3);
 
         assert_eq!(vec.get_allocated_levels(), INITIAL_LEVELS);
-        assert_eq!(vec.get_max_length(), 2u64.pow(INITIAL_LEVELS as u32) - 1);
+        assert_eq!(vec.get_max_length(), 2usize.pow(INITIAL_LEVELS as u32) - 1);
         assert_eq!(vec.indexes[0].height, 1);
         assert_eq!(vec.indexes[2].height, 2);
     }
@@ -262,7 +302,7 @@ mod tests {
 
         assert_eq!(vec.len(), 3);
 
-        assert_eq!(vec.get(0).is_some(), true);
+        assert!(vec.get(0).is_some());
         assert_eq!(vec.get(0).unwrap().value, 1)
     }
 
@@ -278,8 +318,8 @@ mod tests {
 
         vec.swap_indexes(0, 2);
 
-        assert_eq!(vec.get(0).unwrap().indexes.index, 2);
-        assert_eq!(vec.get(2).unwrap().indexes.index, 0);
+        assert_eq!(vec.get(0).unwrap().indexes.index, Some(2));
+        assert_eq!(vec.get(2).unwrap().indexes.index, Some(0));
 
         assert_eq!(vec.get(0).unwrap().indexes.height, 1);
         assert_eq!(vec.get(0).unwrap().value, 3);
@@ -289,9 +329,9 @@ mod tests {
 
     #[test]
     fn test_normalized_tree_vector_get_parent() {
-        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(0), -1);
-        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(1), 0);
-        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(5), 2);
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(0), None);
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(1), Some(0));
+        assert_eq!(NormalizedTreeVector::<u64>::get_parent_index(5), Some(2));
     }
 
     #[test]
@@ -306,7 +346,7 @@ mod tests {
         assert_eq!(vec.len(), 3);
 
         let node = vec.remove(2);
-        assert_eq!(node.is_some(), true);
+        assert!(node.is_some());
         assert_eq!(node.unwrap().value, 3);
         assert_eq!(vec.len(), 2);
         assert_eq!(vec.empty.len(), 0);
@@ -324,19 +364,18 @@ mod tests {
 
         vec.swap_indexes(0, 2);
         let node = vec.remove(2);
-        assert_eq!(node.is_some(), true);
+        assert!(node.is_some());
 
         assert_eq!(node.unwrap().value, 1);
         assert_eq!(vec.empty.len(), 1);
 
         vec.push(4);
         let node = vec.get(2);
-        assert_eq!(node.is_some(), true);
+        assert!(node.is_some());
 
         let node = node.unwrap();
         assert_eq!(node.value, 4);
-        assert_eq!(node.indexes.index, 0);
+        assert_eq!(node.indexes.index, Some(0));
         assert_eq!(vec.empty.len(), 0);
     }
 }
-
