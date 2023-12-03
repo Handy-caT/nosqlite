@@ -4,6 +4,7 @@ use crate::core::{
             factory::{
                 BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
             },
+            registry::EmptyLinkStorage,
             EmptyLinkRegistry,
         },
         strategies::{
@@ -17,7 +18,6 @@ use crate::core::{
     page_struct::PAGE_SIZE,
 };
 use std::rc::Rc;
-use crate::core::advisors::empty_link_registry::registry::EmptyLinkStorage;
 
 /// [`DataAllocator`] is a struct that is responsible for allocating and
 /// deallocating memory.
@@ -72,12 +72,8 @@ impl DataAllocator {
     /// used to store empty links.
     fn get_empty_link_registry(&mut self) -> &mut dyn EmptyLinkStorage {
         match self.empty_link_registry {
-            EmptyLinkRegistry::BestFit(ref mut registry) => {
-                registry
-            }
-            EmptyLinkRegistry::WorstFit(ref mut registry) => {
-                registry
-            }
+            EmptyLinkRegistry::BestFit(ref mut registry) => registry,
+            EmptyLinkRegistry::WorstFit(ref mut registry) => registry,
         }
     }
 
@@ -95,7 +91,8 @@ impl DataAllocator {
             advisor.apply_place(&link, size);
             Some(link)
         } else {
-            let link = PageLink::new_from_raw(self.tail_link.get_raw_index(), size);
+            let link =
+                PageLink::new_from_raw(self.tail_link.get_raw_index(), size);
 
             self.tail_link = PageLink::new_from_raw(link.get_raw_end(), 0);
             self.tail_link.len = self.tail_link.get_len_till_end();
@@ -123,10 +120,9 @@ impl DataAllocator {
 mod tests {
     use crate::core::{
         data_allocator::DataAllocator, link_struct::PageLink,
-        page_controller::PageController,
+        page_controller::PageController, page_struct::PAGE_SIZE,
     };
     use std::rc::Rc;
-    use crate::core::page_struct::PAGE_SIZE;
 
     #[test]
     fn test_data_allocator_new() {
@@ -146,7 +142,10 @@ mod tests {
         let link = data_allocator.allocate(10);
 
         assert_eq!(link, Some(PageLink::new(0, 0, 10)));
-        assert_eq!(data_allocator.tail_link, PageLink::new(0, 10, PAGE_SIZE - 10));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(0, 10, PAGE_SIZE - 10)
+        );
         assert_eq!(data_allocator.allocated_size(), 10);
     }
 
@@ -158,12 +157,18 @@ mod tests {
         let link = data_allocator.allocate(PAGE_SIZE - 10);
 
         assert_eq!(link, Some(PageLink::new(0, 0, PAGE_SIZE - 10)));
-        assert_eq!(data_allocator.tail_link, PageLink::new(0, PAGE_SIZE - 10, 0));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(0, PAGE_SIZE - 10, 0)
+        );
 
         let link = data_allocator.allocate(20);
 
         assert_eq!(link, Some(PageLink::new(0, PAGE_SIZE - 10, 20)));
-        assert_eq!(data_allocator.tail_link, PageLink::new(1, 10, PAGE_SIZE - 10));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(1, 10, PAGE_SIZE - 10)
+        );
     }
 
     #[test]
@@ -174,11 +179,17 @@ mod tests {
         let link = data_allocator.allocate(10);
 
         assert_eq!(link, Some(PageLink::new(0, 0, 10)));
-        assert_eq!(data_allocator.tail_link, PageLink::new(0, 10, PAGE_SIZE - 10));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(0, 10, PAGE_SIZE - 10)
+        );
 
         data_allocator.remove(PageLink::new(0, 0, 10));
 
-        assert_eq!(data_allocator.tail_link, PageLink::new(0, 10, PAGE_SIZE - 10));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(0, 10, PAGE_SIZE - 10)
+        );
         assert_eq!(data_allocator.empty_link_registry.len(), 1);
         assert_eq!(data_allocator.allocated_size(), 10);
     }
@@ -191,17 +202,26 @@ mod tests {
         let link = data_allocator.allocate(10);
 
         assert_eq!(link, Some(PageLink::new(0, 0, 10)));
-        assert_eq!(data_allocator.tail_link, PageLink::new(0, 10, PAGE_SIZE - 10));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(0, 10, PAGE_SIZE - 10)
+        );
 
         data_allocator.remove(PageLink::new(0, 0, 10));
 
-        assert_eq!(data_allocator.tail_link, PageLink::new(0, 10, PAGE_SIZE - 10));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(0, 10, PAGE_SIZE - 10)
+        );
         assert_eq!(data_allocator.empty_link_registry.len(), 1);
 
         let link = data_allocator.allocate(10);
 
         assert_eq!(link, Some(PageLink::new(0, 0, 10)));
-        assert_eq!(data_allocator.tail_link, PageLink::new(0, 10, PAGE_SIZE - 10));
+        assert_eq!(
+            data_allocator.tail_link,
+            PageLink::new(0, 10, PAGE_SIZE - 10)
+        );
         assert_eq!(data_allocator.empty_link_registry.len(), 0);
     }
 }

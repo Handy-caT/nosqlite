@@ -1,9 +1,8 @@
-use crate::core::base::cast::usize::USIZE_SIZE;
+use crate::core::{base::cast::usize::USIZE_SIZE, page_struct::PAGE_SIZE};
 use std::{
     cmp::Ordering,
     fmt::{Debug, Display, Formatter},
 };
-use crate::core::page_struct::PAGE_SIZE;
 
 /// A struct that represents a link to a page.
 #[derive(Debug, Default, Copy, Clone, Eq)]
@@ -56,7 +55,8 @@ impl PageLink {
     /// # Returns
     /// u64 - The raw index of the link.
     pub fn get_raw_index(&self) -> u64 {
-        u64::try_from(self.page_index).unwrap() * u64::from(PAGE_SIZE) + u64::from(self.start)
+        u64::try_from(self.page_index).unwrap() * u64::from(PAGE_SIZE)
+            + u64::from(self.start)
     }
 
     /// Returns the raw end of the link.

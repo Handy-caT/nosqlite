@@ -1,6 +1,6 @@
 use crate::core::{
     advisors::{
-        empty_link_registry::registry::Registry,
+        empty_link_registry::registry::{EmptyLinkStorage, Registry},
         strategies::place_advisor_strategy::PlaceAdvisorStrategy,
     },
     link_struct::PageLink,
@@ -8,7 +8,6 @@ use crate::core::{
         object::BinHeap, vectors::normalized_tree_vec::NormalizedTreeVector,
     },
 };
-use crate::core::advisors::empty_link_registry::registry::EmptyLinkStorage;
 
 /// [`WorstFitAdvisor`] is a strategy that provides the worst fit
 /// for a given size.
@@ -74,6 +73,7 @@ mod tests {
                 factory::{
                     EmptyLinkRegistryFactory, WorstFitEmptyLinkRegistryFactory,
                 },
+                registry::EmptyLinkStorage as _,
                 EmptyLinkRegistry,
             },
             strategies::{
@@ -84,7 +84,6 @@ mod tests {
         link_struct::PageLink,
         structs::tree::object::tree::Tree,
     };
-    use crate::core::advisors::empty_link_registry::registry::EmptyLinkStorage as _;
 
     #[test]
     fn test_worst_fit_advisor_new() {

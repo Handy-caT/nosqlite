@@ -88,14 +88,13 @@ where
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        advisors::empty_link_registry::registry::Registry,
+        advisors::empty_link_registry::registry::{EmptyLinkStorage, Registry},
         link_struct::PageLink,
         structs::tree::{
             object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
             vectors::default_tree_vec::DefaultTreeVec,
         },
     };
-    use crate::core::advisors::empty_link_registry::registry::EmptyLinkStorage;
 
     #[test]
     fn test_empty_link_registry_new() {
