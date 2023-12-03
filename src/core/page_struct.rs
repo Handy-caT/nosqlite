@@ -3,6 +3,8 @@ use crate::core::{
     link_struct::PageLink,
 };
 
+pub const PAGE_SIZE: u16 = 4096;
+
 #[derive(Clone, Copy, Debug)]
 pub struct PageInfo {
     index: usize,
@@ -11,7 +13,10 @@ pub struct PageInfo {
 
 impl PageInfo {
     pub fn new(index: usize) -> PageInfo {
-        PageInfo { index, free: 4096 }
+        PageInfo {
+            index,
+            free: PAGE_SIZE,
+        }
     }
 
     pub fn get_index(self) -> usize {
@@ -47,7 +52,7 @@ impl From<PageInfo> for [u8; 2 + USIZE_SIZE] {
 #[derive(Clone, Copy, Debug)]
 pub struct Page {
     info: PageInfo,
-    data: [u8; 4096],
+    data: [u8; PAGE_SIZE as usize],
 }
 
 impl Page {
@@ -59,7 +64,7 @@ impl Page {
     }
 
     pub fn get_data(&self) -> &[u8] {
-        &self.data[0..(4096 - self.info.free as usize)]
+        &self.data[0..(PAGE_SIZE as usize - self.info.free as usize)]
     }
 
     pub fn get_free(&self) -> u16 {
@@ -71,7 +76,7 @@ impl Page {
     }
 
     pub fn get_first_free(&self) -> u16 {
-        4096 - self.info.free
+        PAGE_SIZE - self.info.free
     }
 
     pub fn can_fit(&self, len: u16) -> bool {
@@ -82,7 +87,7 @@ impl Page {
         let mut i = 0;
 
         while i < info.len() {
-            self.data[4096 - self.info.free as usize] = info[i];
+            self.data[PAGE_SIZE as usize - self.info.free as usize] = info[i];
             self.info.free -= 1;
             i += 1;
         }
@@ -122,13 +127,13 @@ impl Page {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::base::cast::usize::USIZE_SIZE;
+    use crate::core::{base::cast::usize::USIZE_SIZE, page_struct::PAGE_SIZE};
 
     #[test]
     fn test_page_info_new() {
         let info = super::PageInfo::new(0);
         assert_eq!(info.index, 0);
-        assert_eq!(info.free, 4096);
+        assert_eq!(info.free, PAGE_SIZE);
     }
 
     #[test]
@@ -164,7 +169,7 @@ mod tests {
     fn test_page_new() {
         let page = super::Page::new(0);
         assert_eq!(page.info.index, 0);
-        assert_eq!(page.info.free, 4096);
+        assert_eq!(page.info.free, PAGE_SIZE);
     }
 
     #[test]
@@ -180,7 +185,7 @@ mod tests {
         let mut page = super::Page::new(0);
         let info = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         page.attach_data(&info);
-        assert_eq!(page.info.free, 4096 - info.len() as u16);
+        assert_eq!(page.info.free, PAGE_SIZE - info.len() as u16);
     }
 
     #[test]
@@ -192,7 +197,7 @@ mod tests {
         page.attach_data(&info2);
         assert_eq!(
             page.info.free,
-            4096 - info.len() as u16 - info2.len() as u16
+            PAGE_SIZE - info.len() as u16 - info2.len() as u16
         );
         let mut expected: [u8; 20] = [0; 20];
         expected[0..10].copy_from_slice(&info);
@@ -210,7 +215,7 @@ mod tests {
         let link = super::PageLink::new(0, 0, 10);
 
         page.update_data(&data, link).unwrap();
-        assert_eq!(page.info.free, 4096 - info.len() as u16);
+        assert_eq!(page.info.free, PAGE_SIZE - info.len() as u16);
         assert_eq!(page.get_data(), &data);
     }
 
@@ -223,7 +228,7 @@ mod tests {
         let link = super::PageLink::new(0, 0, 5);
 
         page.erase_data(link);
-        assert_eq!(page.info.free, 4096 - info.len() as u16);
+        assert_eq!(page.info.free, PAGE_SIZE - info.len() as u16);
         assert_eq!(page.get_data(), &[0, 0, 0, 0, 0, 6, 7, 8, 9, 10]);
     }
 

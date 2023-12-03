@@ -3,29 +3,49 @@ use std::{
     cmp::Ordering,
     fmt::{Debug, Display, Formatter},
 };
+use crate::core::page_struct::PAGE_SIZE;
 
 /// A struct that represents a link to a page.
 #[derive(Debug, Default, Copy, Clone, Eq)]
 pub struct PageLink {
     /// The index of the page.
     pub page_index: usize,
+
     /// The start index of the link on a page.
     pub start: u16,
+
     /// The length of the link.
     pub len: u16,
 }
 
 impl PageLink {
-    /// Creates a new `PageLink` with the given parameters.
+    /// Creates a new [`PageLink`] with the given parameters.
     /// # Arguments
     /// * `page` - The index of the page.
     /// * `start` - The start index of the link on a page.
     /// * `len` - The length of the link.
     /// # Returns
-    /// A new `PageLink` with the given parameters.
-    pub fn new(page: usize, start: u16, len: u16) -> PageLink {
+    /// A new [`PageLink`] with the given parameters.
+    pub fn new(page: usize, start: u16, len: u16) -> Self {
         PageLink {
             page_index: page,
+            start,
+            len,
+        }
+    }
+
+    /// Creates a new [`PageLink`] from the given raw index and length.
+    /// # Arguments
+    /// * `index` - The raw index of the link.
+    /// * `len` - The length of the link.
+    /// # Returns
+    /// A new [`PageLink`] from the given raw index and length.
+    pub fn new_from_raw(index: u64, len: u16) -> Self {
+        let page_index = (index / u64::from(PAGE_SIZE)) as usize;
+        let start = (index % u64::from(PAGE_SIZE)) as u16;
+
+        PageLink {
+            page_index,
             start,
             len,
         }
@@ -36,7 +56,7 @@ impl PageLink {
     /// # Returns
     /// u64 - The raw index of the link.
     pub fn get_raw_index(&self) -> u64 {
-        u64::try_from(self.page_index).unwrap() * 4096 + u64::from(self.start)
+        u64::try_from(self.page_index).unwrap() * u64::from(PAGE_SIZE) + u64::from(self.start)
     }
 
     /// Returns the raw end of the link.
@@ -45,10 +65,9 @@ impl PageLink {
     /// # Returns
     /// u64 - The raw end of the link.
     pub fn get_raw_end(&self) -> u64 {
-        u64::try_from(self.page_index).unwrap()
+        u64::try_from(self.page_index).unwrap() * u64::from(PAGE_SIZE)
             + u64::from(self.start)
             + u64::from(self.len)
-            - 1
     }
 
     /// Compares two `PageLink`s by their length.
@@ -69,6 +88,13 @@ impl PageLink {
     /// Ordering - The ordering of the two `PageLink`s.
     pub fn compare_by_index(a: PageLink, b: PageLink) -> Ordering {
         a.get_raw_index().cmp(&b.get_raw_index())
+    }
+
+    /// Returns the length of the link till the end of the page.
+    /// # Returns
+    /// u16 - The length of the link till the end of the page.
+    pub fn get_len_till_end(&self) -> u16 {
+        PAGE_SIZE - self.start
     }
 }
 
@@ -141,7 +167,7 @@ mod tests {
         assert_eq!(link.start, 0);
         assert_eq!(link.len, 10);
         assert_eq!(link.get_raw_index(), 0);
-        assert_eq!(link.get_raw_end(), 9);
+        assert_eq!(link.get_raw_end(), 10);
     }
 
     #[test]

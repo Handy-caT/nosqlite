@@ -32,3 +32,25 @@ pub enum EmptyLinkRegistry {
     /// Is used with [`WorstFitAdvisor`].
     WorstFit(WorstFitEmptyLinkRegistry),
 }
+
+impl EmptyLinkRegistry {
+    /// Gets the name of the registry.
+    /// # Returns
+    /// * `String` - Name of the registry.
+    pub fn get_name(&self) -> String {
+        match self {
+            EmptyLinkRegistry::BestFit(_) => "BestFit".to_string(),
+            EmptyLinkRegistry::WorstFit(_) => "WorstFit".to_string(),
+        }
+    }
+
+    /// Gets the length of the registry.
+    /// # Returns
+    /// * `usize` - Length of the registry.
+    pub fn len(&self) -> usize {
+        match self {
+            EmptyLinkRegistry::BestFit(registry) => registry.len(),
+            EmptyLinkRegistry::WorstFit(registry) => registry.len(),
+        }
+    }
+}

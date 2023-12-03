@@ -9,6 +9,25 @@ use crate::core::{
     },
 };
 
+/// Trait for empty link registry.
+pub trait EmptyLinkStorage {
+    /// Adds a link to the registry.
+    /// # Arguments
+    /// * `link` - Link to add.
+    fn add_link(&mut self, link: PageLink);
+
+    /// Removes a link from the registry.
+    /// # Arguments
+    /// * `link` - Link to remove.
+    fn remove_link(&mut self, link: PageLink);
+
+    /// Pops a link from the registry. It deletes the link
+    /// from the registry without any order.
+    /// # Returns
+    /// * `Option<PageLink>` - Link that was popped.
+    fn pop(&mut self) -> Option<PageLink>;
+}
+
 pub struct Registry<V, M>
 where
     V: TreeVec<PageLink> + Sized,
@@ -28,18 +47,6 @@ where
         Registry { data }
     }
 
-    pub fn add_link(&mut self, link: PageLink) {
-        self.data.push(link);
-    }
-
-    pub fn remove_link(&mut self, link: PageLink) {
-        self.data.remove_by_value(link);
-    }
-
-    pub fn pop(&mut self) -> Option<PageLink> {
-        todo!()
-    }
-
     pub(in crate::core::advisors) fn get_data(
         &self,
     ) -> &Decoratable<PageLink, V, M> {
@@ -50,6 +57,31 @@ where
         &mut self,
     ) -> &mut Decoratable<PageLink, V, M> {
         &mut self.data
+    }
+
+    /// Gets the length of the registry.
+    /// # Returns
+    /// * `usize` - Length of the registry.
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+}
+
+impl<V, M> EmptyLinkStorage for Registry<V, M>
+where
+    V: TreeVec<PageLink> + Levels + Sized,
+    M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
+{
+    fn add_link(&mut self, link: PageLink) {
+        self.data.push(link);
+    }
+
+    fn remove_link(&mut self, link: PageLink) {
+        self.data.remove_by_value(link);
+    }
+
+    fn pop(&mut self) -> Option<PageLink> {
+        todo!()
     }
 }
 
@@ -63,6 +95,7 @@ mod tests {
             vectors::default_tree_vec::DefaultTreeVec,
         },
     };
+    use crate::core::advisors::empty_link_registry::registry::EmptyLinkStorage;
 
     #[test]
     fn test_empty_link_registry_new() {
