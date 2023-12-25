@@ -1,9 +1,4 @@
 use crate::core::{
-    advisors::{
-        empty_link_registry::registry::{EmptyLinkStorage, Registry},
-        strategies::place_advisor_strategy::PlaceAdvisorStrategy,
-    },
-    link_struct::PageLink,
     structs::tree::{
         object::{
             tree::{FindFunctions, Tree},
@@ -12,6 +7,11 @@ use crate::core::{
         vectors::tree_vec::{Indexes, Levels, TreeVec},
     },
 };
+use crate::data::advisors::{
+    empty_link_registry::registry::{EmptyLinkStorage, Registry},
+    strategies::place_advisor_strategy::PlaceAdvisorStrategy,
+};
+use crate::page::link_struct::PageLink;
 
 /// [`BestFitAdvisor`] is a strategy that finds the best fit for a given size.
 /// It uses [`Registry`] with [`BalancedTree`] as a data structure.
@@ -97,24 +97,24 @@ where
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        advisors::{
-            empty_link_registry::{
-                factory::{
-                    BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
-                },
-                registry::EmptyLinkStorage as _,
-                EmptyLinkRegistry,
-            },
-            strategies::{
-                best_fit_advisor::BestFitAdvisor,
-                place_advisor_strategy::PlaceAdvisorStrategy,
-            },
-        },
-        link_struct::PageLink,
         structs::tree::{
             object::tree::Tree, vectors::optimized_tree_vec::OptimizedTreeVec,
         },
     };
+    use crate::data::advisors::{
+        empty_link_registry::{
+            factory::{
+                BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+            },
+            registry::EmptyLinkStorage as _,
+            EmptyLinkRegistry,
+        },
+        strategies::{
+            best_fit_advisor::BestFitAdvisor,
+            place_advisor_strategy::PlaceAdvisorStrategy,
+        },
+    };
+    use crate::page::link_struct::PageLink;
 
     #[test]
     fn test_best_fit_advisor_new() {

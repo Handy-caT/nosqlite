@@ -1,10 +1,10 @@
 use crate::core::{
-    id::numeric_id_generator::NumericId,
-    link_struct::PageLink,
     structs::hash_table::{
         backwards_hash_table::BackwardsHashTable, HashTable,
     },
 };
+use crate::data::id::numeric_id_generator::NumericId;
+use crate::page::link_struct::PageLink;
 
 /// A registry for getting [`NumericId`]s from [`PageLink`]s
 /// and vice versa.
@@ -88,10 +88,10 @@ impl LinkStorage {
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        id::{link_storage::LinkStorage, numeric_id_generator::NumericId},
-        link_struct::PageLink,
         structs::hash_table::HashTable,
     };
+    use crate::data::id::{link_storage::LinkStorage, numeric_id_generator::NumericId};
+    use crate::page::link_struct::PageLink;
 
     #[test]
     fn test_link_registry_new() {

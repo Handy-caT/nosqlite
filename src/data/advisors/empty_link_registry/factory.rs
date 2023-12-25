@@ -1,11 +1,7 @@
 use crate::core::{
-    advisors::empty_link_registry::{
-        registry::Registry, BestFitEmptyLinkRegistry, EmptyLinkRegistry,
-    },
-    link_struct::PageLink,
     structs::tree::{
         object::{
-            balanced_tree::Decoratable, tree::Tree, BalancedTree, BinHeap,
+            balanced_tree::Decoratable, tree::Tree as _, BalancedTree, BinHeap,
         },
         vectors::{
             normalized_tree_vec::NormalizedTreeVector,
@@ -13,6 +9,10 @@ use crate::core::{
         },
     },
 };
+use crate::data::advisors::empty_link_registry::{
+    registry::Registry, BestFitEmptyLinkRegistry, EmptyLinkRegistry,
+};
+use crate::page::link_struct::PageLink;
 
 /// [`EmptyLinkRegistryFactory`] is a trait that is used to create
 /// [`EmptyLinkRegistry`] instances.
@@ -64,7 +64,7 @@ impl EmptyLinkRegistryFactory for WorstFitEmptyLinkRegistryFactory {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::advisors::empty_link_registry::{
+    use crate::data::advisors::empty_link_registry::{
         factory::{
             BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
             WorstFitEmptyLinkRegistryFactory,

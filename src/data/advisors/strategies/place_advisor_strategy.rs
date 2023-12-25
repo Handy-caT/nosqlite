@@ -1,4 +1,4 @@
-use crate::core::link_struct::PageLink;
+use crate::page::link_struct::PageLink;
 
 /// Trait that is used for place advisor strategies.
 /// Place advisor strategy is used to provide place for new data.

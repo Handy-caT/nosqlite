@@ -2,8 +2,6 @@ pub mod factory;
 pub mod registry;
 
 use crate::core::{
-    advisors::empty_link_registry::registry::Registry,
-    link_struct::PageLink,
     structs::tree::{
         object::{BalancedTree, BinHeap},
         vectors::{
@@ -12,6 +10,8 @@ use crate::core::{
         },
     },
 };
+use crate::data::advisors::empty_link_registry::registry::Registry;
+use crate::page::link_struct::PageLink;
 
 pub type BestFitEmptyLinkRegistry = Registry<
     OptimizedTreeVec<PageLink>,

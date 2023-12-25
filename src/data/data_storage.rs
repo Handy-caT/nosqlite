@@ -1,6 +1,6 @@
-use crate::core::{
-    data_allocator::DataAllocator, id, page_controller::PageController,
-};
+use crate::page::page_controller::PageController;
+use crate::data::data_allocator::DataAllocator;
+use crate::data::id;
 
 /// [`DataStorage`] is a struct that is used to store various data.
 pub struct DataStorage {
@@ -115,7 +115,7 @@ pub enum DataStorageError {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::data_storage::DataStorage;
+    use crate::data::data_storage::DataStorage;
 
     #[test]
     fn test_data_storage_new() {

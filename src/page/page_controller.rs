@@ -1,4 +1,4 @@
-use crate::core::page_struct::Page;
+use crate::page::page_struct::Page;
 
 pub struct PageController {
     pages: Vec<Page>,
@@ -35,7 +35,7 @@ impl PageController {
 
 #[cfg(test)]
 mod test {
-    use crate::core::page_controller::PageController;
+    use crate::page::page_controller::PageController;
 
     #[test]
     fn test_page_controller_new() {

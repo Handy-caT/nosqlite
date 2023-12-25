@@ -1,23 +1,21 @@
-use crate::core::{
-    advisors::{
-        empty_link_registry::{
-            factory::{
-                BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
-            },
-            registry::EmptyLinkStorage,
-            EmptyLinkRegistry,
-        },
-        strategies::{
-            best_fit_advisor::BestFitAdvisor,
-            place_advisor_strategy::PlaceAdvisorStrategy,
-            worst_fit_advisor::WorstFitAdvisor,
-        },
-    },
+use crate::page::{
     link_struct::PageLink,
-    page_controller::PageController,
     page_struct::PAGE_SIZE,
 };
-use std::rc::Rc;
+use crate::data::advisors::{
+    empty_link_registry::{
+        factory::{
+            BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+        },
+        registry::EmptyLinkStorage,
+        EmptyLinkRegistry,
+    },
+    strategies::{
+        best_fit_advisor::BestFitAdvisor,
+        place_advisor_strategy::PlaceAdvisorStrategy,
+        worst_fit_advisor::WorstFitAdvisor,
+    },
+};
 
 /// [`DataAllocator`] is a struct that is responsible for allocating and
 /// deallocating memory.
@@ -111,11 +109,11 @@ impl DataAllocator {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::{
-        data_allocator::DataAllocator, link_struct::PageLink,
-        page_controller::PageController, page_struct::PAGE_SIZE,
+    use crate::page::{
+        link_struct::PageLink,
+        page_struct::PAGE_SIZE,
     };
-    use std::rc::Rc;
+    use crate::data::data_allocator::DataAllocator;
 
     #[test]
     fn test_data_allocator_new() {

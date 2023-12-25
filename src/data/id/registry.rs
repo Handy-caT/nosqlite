@@ -1,10 +1,8 @@
-use crate::core::{
-    id::{
-        link_storage::LinkStorage,
-        numeric_id_generator::{NumericId, NumericIdGenerator},
-        IdGenerator,
-    },
-    link_struct::PageLink,
+use crate::page::link_struct::PageLink;
+use crate::data::id::{
+    IdGenerator,
+    link_storage::LinkStorage,
+    numeric_id_generator::{NumericId, NumericIdGenerator},
 };
 
 /// A registry for [`Id`]s.
@@ -145,13 +143,11 @@ pub enum RegistryError {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::{
-        id::{
-            numeric_id_generator::{NumericId, NumericIdGenerator},
-            registry::Registry,
-            IdGenerator,
-        },
-        link_struct::PageLink,
+    use crate::page::link_struct::PageLink;
+    use crate::data::id::{
+        IdGenerator,
+        numeric_id_generator::{NumericId, NumericIdGenerator},
+        registry::Registry,
     };
 
     #[test]

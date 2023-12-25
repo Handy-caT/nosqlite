@@ -1,5 +1,4 @@
 use crate::core::{
-    link_struct::PageLink,
     structs::tree::{
         object::{
             balanced_tree::Decoratable,
@@ -8,6 +7,7 @@ use crate::core::{
         vectors::tree_vec::{Levels, TreeVec},
     },
 };
+use crate::page::link_struct::PageLink;
 
 /// Trait for empty link registry.
 pub trait EmptyLinkStorage {
@@ -41,19 +41,19 @@ where
     V: TreeVec<PageLink> + Levels + Sized,
     M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
 {
-    pub(in crate::core::advisors::empty_link_registry) fn new(
+    pub(crate) fn new(
         data: Decoratable<PageLink, V, M>,
     ) -> Self {
         Registry { data }
     }
 
-    pub(in crate::core::advisors) fn get_data(
+    pub(crate) fn get_data(
         &self,
     ) -> &Decoratable<PageLink, V, M> {
         &self.data
     }
 
-    pub(in crate::core::advisors) fn get_data_mut(
+    pub(crate) fn get_data_mut(
         &mut self,
     ) -> &mut Decoratable<PageLink, V, M> {
         &mut self.data
@@ -88,13 +88,13 @@ where
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        advisors::empty_link_registry::registry::{EmptyLinkStorage, Registry},
-        link_struct::PageLink,
         structs::tree::{
             object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
             vectors::default_tree_vec::DefaultTreeVec,
         },
     };
+    use crate::data::advisors::empty_link_registry::registry::{EmptyLinkStorage, Registry};
+    use crate::page::link_struct::PageLink;
 
     #[test]
     fn test_empty_link_registry_new() {
