@@ -1,5 +1,5 @@
-use crate::core::{
-    structs::tree::{
+use crate::{
+    core::structs::tree::{
         object::{
             balanced_tree::Decoratable, tree::Tree as _, BalancedTree, BinHeap,
         },
@@ -8,11 +8,11 @@ use crate::core::{
             optimized_tree_vec::OptimizedTreeVec,
         },
     },
+    data::advisors::empty_link_registry::{
+        registry::Registry, BestFitEmptyLinkRegistry, EmptyLinkRegistry,
+    },
+    page::link_struct::PageLink,
 };
-use crate::data::advisors::empty_link_registry::{
-    registry::Registry, BestFitEmptyLinkRegistry, EmptyLinkRegistry,
-};
-use crate::page::link_struct::PageLink;
 
 /// [`EmptyLinkRegistryFactory`] is a trait that is used to create
 /// [`EmptyLinkRegistry`] instances.

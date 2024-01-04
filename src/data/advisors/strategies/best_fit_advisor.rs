@@ -1,17 +1,17 @@
-use crate::core::{
-    structs::tree::{
+use crate::{
+    core::structs::tree::{
         object::{
             tree::{FindFunctions, Tree},
             BalancedTree,
         },
         vectors::tree_vec::{Indexes, Levels, TreeVec},
     },
+    data::advisors::{
+        empty_link_registry::registry::{EmptyLinkStorage, Registry},
+        strategies::place_advisor_strategy::PlaceAdvisorStrategy,
+    },
+    page::link_struct::PageLink,
 };
-use crate::data::advisors::{
-    empty_link_registry::registry::{EmptyLinkStorage, Registry},
-    strategies::place_advisor_strategy::PlaceAdvisorStrategy,
-};
-use crate::page::link_struct::PageLink;
 
 /// [`BestFitAdvisor`] is a strategy that finds the best fit for a given size.
 /// It uses [`Registry`] with [`BalancedTree`] as a data structure.
@@ -96,25 +96,25 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::core::{
-        structs::tree::{
+    use crate::{
+        core::structs::tree::{
             object::tree::Tree, vectors::optimized_tree_vec::OptimizedTreeVec,
         },
-    };
-    use crate::data::advisors::{
-        empty_link_registry::{
-            factory::{
-                BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+        data::advisors::{
+            empty_link_registry::{
+                factory::{
+                    BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+                },
+                registry::EmptyLinkStorage as _,
+                EmptyLinkRegistry,
             },
-            registry::EmptyLinkStorage as _,
-            EmptyLinkRegistry,
+            strategies::{
+                best_fit_advisor::BestFitAdvisor,
+                place_advisor_strategy::PlaceAdvisorStrategy,
+            },
         },
-        strategies::{
-            best_fit_advisor::BestFitAdvisor,
-            place_advisor_strategy::PlaceAdvisorStrategy,
-        },
+        page::link_struct::PageLink,
     };
-    use crate::page::link_struct::PageLink;
 
     #[test]
     fn test_best_fit_advisor_new() {

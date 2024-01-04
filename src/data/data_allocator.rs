@@ -1,20 +1,19 @@
-use crate::page::{
-    link_struct::PageLink,
-    page_struct::PAGE_SIZE,
-};
-use crate::data::advisors::{
-    empty_link_registry::{
-        factory::{
-            BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+use crate::{
+    data::advisors::{
+        empty_link_registry::{
+            factory::{
+                BestFitEmptyLinkRegistryFactory, EmptyLinkRegistryFactory,
+            },
+            registry::EmptyLinkStorage,
+            EmptyLinkRegistry,
         },
-        registry::EmptyLinkStorage,
-        EmptyLinkRegistry,
+        strategies::{
+            best_fit_advisor::BestFitAdvisor,
+            place_advisor_strategy::PlaceAdvisorStrategy,
+            worst_fit_advisor::WorstFitAdvisor,
+        },
     },
-    strategies::{
-        best_fit_advisor::BestFitAdvisor,
-        place_advisor_strategy::PlaceAdvisorStrategy,
-        worst_fit_advisor::WorstFitAdvisor,
-    },
+    page::{link_struct::PageLink, page_struct::PAGE_SIZE},
 };
 
 /// [`DataAllocator`] is a struct that is responsible for allocating and
@@ -109,11 +108,10 @@ impl DataAllocator {
 
 #[cfg(test)]
 mod tests {
-    use crate::page::{
-        link_struct::PageLink,
-        page_struct::PAGE_SIZE,
+    use crate::{
+        data::data_allocator::DataAllocator,
+        page::{link_struct::PageLink, page_struct::PAGE_SIZE},
     };
-    use crate::data::data_allocator::DataAllocator;
 
     #[test]
     fn test_data_allocator_new() {

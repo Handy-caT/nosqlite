@@ -1,9 +1,9 @@
 #![feature(core_intrinsics)]
-#![feature(return_position_impl_trait_in_trait)]
 
 mod core;
 mod data;
 mod page;
+mod schema;
 
 fn main() {
     // let bytes: [u8; 8] = [0, 0, 0, 0, 0, 0, 1, 125];

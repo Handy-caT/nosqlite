@@ -1,6 +1,7 @@
-use crate::page::page_controller::PageController;
-use crate::data::data_allocator::DataAllocator;
-use crate::data::id;
+use crate::{
+    data::{data_allocator::DataAllocator, id},
+    page::page_controller::PageController,
+};
 
 /// [`DataStorage`] is a struct that is used to store various data.
 pub struct DataStorage {

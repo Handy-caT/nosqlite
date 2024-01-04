@@ -1,8 +1,7 @@
-use crate::core::{
-    structs::hash_table::hash::custom_hashable::CustomHash,
+use crate::{
+    core::structs::hash_table::hash::custom_hashable::CustomHash,
+    data::id::IdGenerator, page::link_struct::PageLink,
 };
-use crate::data::id::IdGenerator;
-use crate::page::link_struct::PageLink;
 
 /// Struct that generates [`Id`]s
 #[derive(Debug)]
@@ -74,7 +73,7 @@ impl CustomHash for PageLink {
 #[cfg(test)]
 mod tests {
     use crate::data::id::{
-        IdGenerator, numeric_id_generator::NumericIdGenerator,
+        numeric_id_generator::NumericIdGenerator, IdGenerator,
     };
 
     #[test]
