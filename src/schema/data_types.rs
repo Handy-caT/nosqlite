@@ -35,9 +35,7 @@ impl<const N: u16> TryFrom<String> for VarChar<N> {
         if value.len() > usize::from(N) {
             Err("Value exceeds maximum length")
         } else {
-            Ok(Self {
-                value,
-            })
+            Ok(Self { value })
         }
     }
 }
