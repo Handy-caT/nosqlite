@@ -8,11 +8,21 @@ use crate::{
 
 /// Description of an integer for encoding.
 #[derive(Default, Debug, Clone)]
-pub struct IntegerDescription(Vec<u8>);
+pub struct IntegerDescription {
+    /// Bytes of the description.
+    bytes: Vec<u8>,
+
+    /// Type name of the integer.
+    name: String,
+}
 
 impl Description for IntegerDescription {
     fn get_bytes(&self) -> Vec<u8> {
-        self.0.clone()
+        self.bytes.clone()
+    }
+
+    fn get_name(&self) -> String {
+        self.name.clone()
     }
 }
 
@@ -45,7 +55,7 @@ impl IntegerDescriptor {
 impl<T: StorableInteger> Descriptor<T, IntegerDescription>
     for IntegerDescriptor
 {
-    fn describe(&self, value: T) -> Option<IntegerDescription> {
+    fn describe(_: T) -> Option<IntegerDescription> {
         let type_name = get_type_name::<T>();
 
         let byte: u8 = match type_name {
@@ -64,7 +74,10 @@ impl<T: StorableInteger> Descriptor<T, IntegerDescription>
             _ => return None,
         };
 
-        Some(IntegerDescription(vec![byte]))
+        Some(IntegerDescription {
+            bytes: vec![byte],
+            name: type_name.to_string(),
+        })
     }
 }
 
@@ -87,36 +100,59 @@ mod tests {
         let i128_val: i128 = 1;
         let isize_val: isize = 0;
 
-        let u8_desc = IntegerDescriptor.describe(u8_val).unwrap();
-        let u16_desc = IntegerDescriptor.describe(u16_val).unwrap();
-        let u32_desc = IntegerDescriptor.describe(u32_val).unwrap();
-        let u64_desc = IntegerDescriptor.describe(u64_val).unwrap();
-        let u128_desc = IntegerDescriptor.describe(u128_val).unwrap();
-        let usize_desc = IntegerDescriptor.describe(usize_val).unwrap();
-        let i8_desc = IntegerDescriptor.describe(i8_val).unwrap();
-        let i16_desc = IntegerDescriptor.describe(i16_val).unwrap();
-        let i32_desc = IntegerDescriptor.describe(i32_val).unwrap();
-        let i64_desc = IntegerDescriptor.describe(i64_val).unwrap();
-        let i128_desc = IntegerDescriptor.describe(i128_val).unwrap();
-        let isize_desc = IntegerDescriptor.describe(isize_val).unwrap();
+        let u8_desc = IntegerDescriptor::describe(u8_val).unwrap();
+        let u16_desc = IntegerDescriptor::describe(u16_val).unwrap();
+        let u32_desc = IntegerDescriptor::describe(u32_val).unwrap();
+        let u64_desc = IntegerDescriptor::describe(u64_val).unwrap();
+        let u128_desc = IntegerDescriptor::describe(u128_val).unwrap();
+        let usize_desc = IntegerDescriptor::describe(usize_val).unwrap();
+        let i8_desc = IntegerDescriptor::describe(i8_val).unwrap();
+        let i16_desc = IntegerDescriptor::describe(i16_val).unwrap();
+        let i32_desc = IntegerDescriptor::describe(i32_val).unwrap();
+        let i64_desc = IntegerDescriptor::describe(i64_val).unwrap();
+        let i128_desc = IntegerDescriptor::describe(i128_val).unwrap();
+        let isize_desc = IntegerDescriptor::describe(isize_val).unwrap();
 
         assert_eq!(u8_desc.get_bytes(), vec![1]);
+        assert_eq!(u8_desc.get_name(), "u8");
+
         assert_eq!(u16_desc.get_bytes(), vec![2]);
+        assert_eq!(u16_desc.get_name(), "u16");
+
         assert_eq!(u32_desc.get_bytes(), vec![3]);
+        assert_eq!(u32_desc.get_name(), "u32");
+
         assert_eq!(u64_desc.get_bytes(), vec![4]);
+        assert_eq!(u64_desc.get_name(), "u64");
+
         assert_eq!(u128_desc.get_bytes(), vec![5]);
+        assert_eq!(u128_desc.get_name(), "u128");
+
         assert_eq!(
             usize_desc.get_bytes(),
             vec![IntegerDescriptor::get_usize_description()]
         );
+        assert_eq!(usize_desc.get_name(), "usize");
+
         assert_eq!(i8_desc.get_bytes(), vec![1 | 0b0100_0000]);
+        assert_eq!(i8_desc.get_name(), "i8");
+
         assert_eq!(i16_desc.get_bytes(), vec![2 | 0b0100_0000]);
+        assert_eq!(i16_desc.get_name(), "i16");
+
         assert_eq!(i32_desc.get_bytes(), vec![3 | 0b0100_0000]);
+        assert_eq!(i32_desc.get_name(), "i32");
+
         assert_eq!(i64_desc.get_bytes(), vec![4 | 0b0100_0000]);
+        assert_eq!(i64_desc.get_name(), "i64");
+
         assert_eq!(i128_desc.get_bytes(), vec![5 | 0b0100_0000]);
+        assert_eq!(i128_desc.get_name(), "i128");
+
         assert_eq!(
             isize_desc.get_bytes(),
             vec![IntegerDescriptor::get_isize_description()]
         );
+        assert_eq!(isize_desc.get_name(), "isize");
     }
 }

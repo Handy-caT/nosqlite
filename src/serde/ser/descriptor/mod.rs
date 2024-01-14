@@ -1,13 +1,17 @@
-mod integer;
+pub mod integer;
 
 /// [`Descriptor`] of a type for encoding.
 pub trait Descriptor<T, D: Description> {
-    fn describe(&self, value: T) -> Option<D>;
+    fn describe(value: T) -> Option<D>;
 }
 
 /// [`Description`] of a type for encoding.
 pub trait Description {
+    /// Get the bytes of the description.
     fn get_bytes(&self) -> Vec<u8>;
+
+    /// Get the name of the type.
+    fn get_name(&self) -> String;
 }
 
 /// Get the type name of a type.
