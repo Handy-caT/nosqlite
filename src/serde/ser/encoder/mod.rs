@@ -7,6 +7,7 @@ pub use storable_integer::StorableInteger;
 use crate::serde::error::Error;
 use crate::serde::ser::descriptor::{Description, Descriptor as _};
 use crate::serde::ser::descriptor::integer::{IntegerDescriptor};
+use crate::serde::ser::descriptor::r#type::{BoolDescription, StringDescription};
 
 /// Output bytes after encoding.
 #[derive(Default, Debug, Clone)]
@@ -77,6 +78,7 @@ impl StorageEncoder {
         <Self as Default>::default()
     }
 
+    /// Encode an [`StorableInteger`] and append it to the output.
     pub fn emit_int<T: StorableInteger>(&mut self, value: T) -> Result<(), Error>{
         self.output.append(value.get_storable());
 
@@ -84,6 +86,31 @@ impl StorageEncoder {
         let description = IntegerDescriptor::describe(value).unwrap();
 
         self.descriptor.append(description);
+
+        Ok(())
+    }
+
+    /// Encode a [`String`] and append it to the output.
+    pub fn emit_str<S: AsRef<str>>(&mut self, value: S) -> Result<(), Error> {
+        let bytes = value.as_ref().as_bytes().to_vec();
+        self.output.append(bytes);
+
+        let description = StringDescription::new(value.as_ref().len());
+        self.descriptor.append(description);
+
+        Ok(())
+    }
+
+    /// Encode a [`bool`] and append it to the output.
+    pub fn emit_bool(&mut self, value: bool) -> Result<(), Error> {
+        let bytes = if value {
+            vec![1]
+        } else {
+            vec![0]
+        };
+
+        self.output.append(bytes);
+        self.descriptor.append(BoolDescription::new());
 
         Ok(())
     }
@@ -107,5 +134,31 @@ mod tests {
 
         let descriptor = encoder.descriptor.get_name();
         assert_eq!(descriptor, "|u32|");
+    }
+
+    #[test]
+    fn test_string() {
+        let value = "Hello, world!";
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_str(value);
+        assert!(res.is_ok());
+
+        let descriptor = encoder.descriptor.get_name();
+        assert_eq!(descriptor, "|str13|");
+    }
+
+    #[test]
+    fn test_bool() {
+        let value = true;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_bool(value);
+        assert!(res.is_ok());
+
+        let descriptor = encoder.descriptor.get_name();
+        assert_eq!(descriptor, "|bool|");
     }
 }

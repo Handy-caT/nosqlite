@@ -1,4 +1,5 @@
 pub mod integer;
+pub mod r#type;
 
 /// [`Descriptor`] of a type for encoding.
 pub trait Descriptor<T, D: Description> {
