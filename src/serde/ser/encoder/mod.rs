@@ -2,12 +2,16 @@ mod single_item;
 mod storable;
 pub mod storable_integer;
 
+use crate::serde::{
+    error::Error,
+    ser::descriptor::{
+        integer::IntegerDescriptor,
+        r#type::{BoolDescription, BytesDescription, StringDescription},
+        Description, Descriptor as _,
+    },
+};
 use smart_default::SmartDefault;
 pub use storable_integer::StorableInteger;
-use crate::serde::error::Error;
-use crate::serde::ser::descriptor::{Description, Descriptor as _};
-use crate::serde::ser::descriptor::integer::{IntegerDescriptor};
-use crate::serde::ser::descriptor::r#type::{BoolDescription, StringDescription};
 
 /// Output bytes after encoding.
 #[derive(Default, Debug, Clone)]
@@ -79,7 +83,10 @@ impl StorageEncoder {
     }
 
     /// Encode an [`StorableInteger`] and append it to the output.
-    pub fn emit_int<T: StorableInteger>(&mut self, value: T) -> Result<(), Error>{
+    pub fn emit_int<T: StorableInteger>(
+        &mut self,
+        value: T,
+    ) -> Result<(), Error> {
         self.output.append(value.get_storable());
 
         // Unwrap is safe because the value is always a valid integer.
@@ -103,14 +110,19 @@ impl StorageEncoder {
 
     /// Encode a [`bool`] and append it to the output.
     pub fn emit_bool(&mut self, value: bool) -> Result<(), Error> {
-        let bytes = if value {
-            vec![1]
-        } else {
-            vec![0]
-        };
+        let bytes = if value { vec![1] } else { vec![0] };
 
         self.output.append(bytes);
         self.descriptor.append(BoolDescription::new());
+
+        Ok(())
+    }
+
+    /// Encode a [`Vec<u8>`] and append it to the output.
+    pub fn emit_bytes(&mut self, value: Vec<u8>) -> Result<(), Error> {
+        self.descriptor
+            .append(BytesDescription::new(value.as_slice()));
+        self.output.append(value);
 
         Ok(())
     }
@@ -160,5 +172,18 @@ mod tests {
 
         let descriptor = encoder.descriptor.get_name();
         assert_eq!(descriptor, "|bool|");
+    }
+
+    #[test]
+    fn test_bytes() {
+        let value = vec![1, 2, 3, 4];
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_bytes(value);
+        assert!(res.is_ok());
+
+        let descriptor = encoder.descriptor.get_name();
+        assert_eq!(descriptor, "|byte4|");
     }
 }
