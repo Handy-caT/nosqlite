@@ -2,7 +2,7 @@ mod single_item;
 mod storable;
 pub mod storable_integer;
 
-use crate::serde::{
+use crate::{
     error::Error,
     ser::descriptor::{
         integer::IntegerDescriptor,
@@ -12,6 +12,8 @@ use crate::serde::{
 };
 use smart_default::SmartDefault;
 pub use storable_integer::StorableInteger;
+use crate::ser::encoder::single_item::SingleItemEncoder;
+use crate::ser::encoder::storable::Storable;
 
 /// Output bytes after encoding.
 #[derive(Default, Debug, Clone)]
@@ -37,12 +39,8 @@ impl OutputBytes {
 /// Descriptor bytes after encoding.
 #[derive(SmartDefault, Debug, Clone)]
 pub struct OutputDescriptor {
-    /// Bytes of the description.
-    bytes: Vec<u8>,
-
-    /// String representation of desciption.
-    #[default("|".to_string())]
-    name: String,
+    /// List of descriptor of encoded values.
+    descriptors: Vec<(Vec<u8>, String)>,
 }
 
 impl OutputDescriptor {
@@ -51,22 +49,14 @@ impl OutputDescriptor {
         <Self as Default>::default()
     }
 
-    /// Get the bytes from the [`OutputDescriptor`].
-    pub fn get_bytes(self) -> Vec<u8> {
-        self.bytes.clone()
-    }
-
-    /// Get the name of the type.
-    pub fn get_name(self) -> String {
-        self.name.clone()
+    pub fn get_descriptors<'a>(&self) -> Vec<(Vec<u8>, String)> {
+        self.descriptors.clone()
     }
 
     /// Append a description to the [`OutputDescriptor`].
     pub fn append<D: Description>(&mut self, description: D) {
-        self.bytes.append(&mut description.get_bytes().clone());
-
-        self.name.push_str(&description.get_name());
-        self.name.push('|');
+        self.descriptors
+            .push((description.get_bytes(), description.get_name()));
     }
 }
 
@@ -80,6 +70,29 @@ impl StorageEncoder {
     /// Create a new [`StorageEncoder`].
     pub fn new() -> Self {
         <Self as Default>::default()
+    }
+
+    pub fn emit<T: Storable>(&mut self, value: T) -> Result<(), Error> {
+        self.emit_with(|encoder| value.encode(encoder))
+    }
+
+    pub fn emit_with<F>(&mut self, value_cb: F) -> Result<(), Error>
+    where
+        F: FnOnce(SingleItemEncoder) -> Result<(), Error>,
+    {
+        let mut written = false;
+        let encoder = SingleItemEncoder {
+            encoder: self,
+            value_written: &mut written,
+        };
+
+        value_cb(encoder)?;
+
+        if !written {
+            return Err(Error::NoValueWritten);
+        }
+
+        Ok(())
     }
 
     /// Encode an [`StorableInteger`] and append it to the output.
@@ -108,7 +121,7 @@ impl StorageEncoder {
         Ok(())
     }
 
-    /// Encode a [`bool`] and append it to the output.
+    /// Encode a `bool` and append it to the output.
     pub fn emit_bool(&mut self, value: bool) -> Result<(), Error> {
         let bytes = if value { vec![1] } else { vec![0] };
 
@@ -118,11 +131,11 @@ impl StorageEncoder {
         Ok(())
     }
 
-    /// Encode a [`Vec<u8>`] and append it to the output.
-    pub fn emit_bytes(&mut self, value: Vec<u8>) -> Result<(), Error> {
+    /// Encode a `&[u8]` and append it to the output.
+    pub fn emit_bytes(&mut self, value: &[u8]) -> Result<(), Error> {
         self.descriptor
-            .append(BytesDescription::new(value.as_slice()));
-        self.output.append(value);
+            .append(BytesDescription::new(value));
+        self.output.append(value.to_vec());
 
         Ok(())
     }
@@ -144,8 +157,10 @@ mod tests {
         let bytes = encoder.output.get_bytes();
         assert_eq!(bytes, vec![0, 0, 0, 1]);
 
-        let descriptor = encoder.descriptor.get_name();
-        assert_eq!(descriptor, "|u32|");
+        let descriptor = encoder.descriptor.get_descriptors();
+
+        assert_eq!(descriptor.len(), 1);
+        assert_eq!(descriptor[0].1, "u32");
     }
 
     #[test]
@@ -157,8 +172,9 @@ mod tests {
         let res = encoder.emit_str(value);
         assert!(res.is_ok());
 
-        let descriptor = encoder.descriptor.get_name();
-        assert_eq!(descriptor, "|str13|");
+        let descriptor = encoder.descriptor.get_descriptors();
+        assert_eq!(descriptor.len(), 1);
+        assert_eq!(descriptor[0].1, "str13");
     }
 
     #[test]
@@ -170,8 +186,9 @@ mod tests {
         let res = encoder.emit_bool(value);
         assert!(res.is_ok());
 
-        let descriptor = encoder.descriptor.get_name();
-        assert_eq!(descriptor, "|bool|");
+        let descriptor = encoder.descriptor.get_descriptors();
+        assert_eq!(descriptor.len(), 1);
+        assert_eq!(descriptor[0].1, "bool");
     }
 
     #[test]
@@ -180,10 +197,11 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_bytes(value);
+        let res = encoder.emit_bytes(value.as_slice());
         assert!(res.is_ok());
 
-        let descriptor = encoder.descriptor.get_name();
-        assert_eq!(descriptor, "|byte4|");
+        let descriptor = encoder.descriptor.get_descriptors();
+        assert_eq!(descriptor.len(), 1);
+        assert_eq!(descriptor[0].1, "byte4");
     }
 }

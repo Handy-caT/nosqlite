@@ -19,8 +19,8 @@ impl_integer!(u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
 
 #[cfg(test)]
 mod tests {
+    use crate::USIZE_SIZE;
     use super::*;
-    use crate::core::base::cast::usize::USIZE_SIZE;
 
     #[test]
     fn test_storable_integer() {

@@ -2,7 +2,7 @@ mod descriptor;
 mod encoder;
 mod r#struct;
 
-use crate::serde::error::Error;
+use crate::error::Error;
 use serde::{ser, Serialize};
 //
 // pub struct StorageSerializer {

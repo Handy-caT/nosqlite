@@ -1,6 +1,7 @@
 pub mod integer;
 pub mod inventory;
 pub mod r#type;
+mod r#struct;
 
 /// [`Descriptor`] of a type for encoding.
 pub trait Descriptor<T, D: Description> {

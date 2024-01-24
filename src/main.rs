@@ -4,7 +4,6 @@ mod core;
 mod data;
 mod page;
 mod schema;
-mod serde;
 
 fn main() {
     // let bytes: [u8; 8] = [0, 0, 0, 0, 0, 0, 1, 125];
