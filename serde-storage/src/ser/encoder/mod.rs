@@ -3,13 +3,15 @@ pub mod storable;
 pub mod storable_integer;
 
 use crate::{
-    error::Error,
     descriptor::{
         integer::IntegerDescriptor,
         r#type::{BoolDescription, BytesDescription, StringDescription},
         Description, Descriptor as _,
     },
-    ser::encoder::{single_item::SingleItemEncoder, storable::Storable},
+    ser::{
+        encoder::{single_item::SingleItemEncoder, storable::Storable},
+        error::Error,
+    },
 };
 use smart_default::SmartDefault;
 pub use storable_integer::StorableInteger;
@@ -59,10 +61,11 @@ impl OutputDescriptor {
     }
 }
 
+/// StorageEncoder is a helper for encoding items.
 #[derive(Default, Debug)]
 pub struct StorageEncoder {
-    output: OutputBytes,
-    descriptor: OutputDescriptor,
+    pub output: OutputBytes,
+    pub descriptor: OutputDescriptor,
 }
 
 impl StorageEncoder {

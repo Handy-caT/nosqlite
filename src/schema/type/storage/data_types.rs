@@ -1,5 +1,5 @@
 use serde_storage::{
-    error::Error,
+    ser::error::Error,
     ser::encoder::{single_item::SingleItemEncoder, storable::Storable},
 };
 

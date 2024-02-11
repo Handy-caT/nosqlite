@@ -1,4 +1,5 @@
 pub mod encoder;
+pub mod error;
 pub mod r#struct;
 
 use crate::ser::encoder::StorageEncoder;

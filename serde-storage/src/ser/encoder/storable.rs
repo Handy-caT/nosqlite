@@ -1,4 +1,4 @@
-use crate::{error::Error, ser::encoder::single_item::SingleItemEncoder};
+use crate::ser::{encoder::single_item::SingleItemEncoder, error::Error};
 
 pub trait Storable {
     // fn to_storable(&self) -> Vec<u8>;
