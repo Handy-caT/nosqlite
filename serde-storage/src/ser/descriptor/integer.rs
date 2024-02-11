@@ -1,7 +1,11 @@
-use crate::{book_values, ser::{
-    descriptor::{get_type_name, Description, Descriptor},
-    encoder::StorableInteger,
-}, USIZE_SIZE};
+use crate::{
+    book_values,
+    ser::{
+        descriptor::{get_type_name, Description, Descriptor},
+        encoder::StorableInteger,
+    },
+    USIZE_SIZE,
+};
 
 /// Description of an integer for encoding.
 #[derive(Default, Debug, Clone)]

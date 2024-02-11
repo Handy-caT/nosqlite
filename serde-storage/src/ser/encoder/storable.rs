@@ -1,12 +1,11 @@
-use crate::{
-    error::Error, ser::encoder::single_item::SingleItemEncoder,
-};
+use crate::{error::Error, ser::encoder::single_item::SingleItemEncoder};
 
 pub trait Storable {
     // fn to_storable(&self) -> Vec<u8>;
     fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error>;
 }
 
+#[rustfmt::skip]
 macro_rules! impl_integer {
     ($($t:ty),*) => {
         $(
@@ -27,8 +26,7 @@ impl Storable for bool {
     }
 }
 
-impl Storable for String
-{
+impl Storable for String {
     fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
         encoder.emit_str(self)
     }

@@ -1,5 +1,4 @@
-use crate::book_values;
-use crate::ser::descriptor::Description;
+use crate::{book_values, ser::descriptor::Description};
 
 /// Descriptor for a [`String`].
 pub struct StringDescription {

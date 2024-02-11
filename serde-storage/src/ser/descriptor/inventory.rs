@@ -22,8 +22,8 @@ macro_rules! book_values {
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashSet;
     use super::*;
+    use std::collections::HashSet;
 
     #[test]
     fn test_book_values() {

@@ -34,6 +34,7 @@ dependencies = [
  "derive_more",
  "queues",
  "serde",
+ "serde-storage",
  "smart-default",
 ]
 

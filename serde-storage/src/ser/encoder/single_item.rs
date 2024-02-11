@@ -1,6 +1,7 @@
-use crate::error::Error;
-use crate::ser::encoder::storable::Storable;
-use crate::ser::encoder::{StorableInteger, StorageEncoder};
+use crate::{
+    error::Error,
+    ser::encoder::{storable::Storable, StorableInteger, StorageEncoder},
+};
 
 pub struct SingleItemEncoder<'a> {
     pub encoder: &'a mut StorageEncoder,
@@ -20,10 +21,7 @@ impl<'a> SingleItemEncoder<'a> {
         value_cb(self)
     }
 
-    pub fn emit_int<T: StorableInteger>(
-        self,
-        value: T,
-    ) -> Result<(), Error> {
+    pub fn emit_int<T: StorableInteger>(self, value: T) -> Result<(), Error> {
         *self.value_written = true;
         self.encoder.emit_int(value)
     }

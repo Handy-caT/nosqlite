@@ -1,19 +1,20 @@
-mod single_item;
-mod storable;
+pub mod single_item;
+pub mod storable;
 pub mod storable_integer;
 
 use crate::{
     error::Error,
-    ser::descriptor::{
-        integer::IntegerDescriptor,
-        r#type::{BoolDescription, BytesDescription, StringDescription},
-        Description, Descriptor as _,
+    ser::{
+        descriptor::{
+            integer::IntegerDescriptor,
+            r#type::{BoolDescription, BytesDescription, StringDescription},
+            Description, Descriptor as _,
+        },
+        encoder::{single_item::SingleItemEncoder, storable::Storable},
     },
 };
 use smart_default::SmartDefault;
 pub use storable_integer::StorableInteger;
-use crate::ser::encoder::single_item::SingleItemEncoder;
-use crate::ser::encoder::storable::Storable;
 
 /// Output bytes after encoding.
 #[derive(Default, Debug, Clone)]
@@ -133,8 +134,7 @@ impl StorageEncoder {
 
     /// Encode a `&[u8]` and append it to the output.
     pub fn emit_bytes(&mut self, value: &[u8]) -> Result<(), Error> {
-        self.descriptor
-            .append(BytesDescription::new(value));
+        self.descriptor.append(BytesDescription::new(value));
         self.output.append(value.to_vec());
 
         Ok(())

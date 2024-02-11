@@ -1,14 +1,14 @@
-mod descriptor;
-mod encoder;
-mod r#struct;
+pub mod descriptor;
+pub mod encoder;
+pub mod r#struct;
 
-use crate::error::Error;
+use crate::ser::encoder::StorageEncoder;
 use serde::{ser, Serialize};
-//
-// pub struct StorageSerializer {
-//     buffer: Vec<u8>,
-// }
-//
+
+pub struct StorageSerializer {
+    encoder: StorageEncoder,
+}
+
 // impl<'a> ser::Serializer for &'a mut StorageSerializer {
 //     type Ok = ();
 //
@@ -107,7 +107,8 @@ use serde::{ser, Serialize};
 //         Ok(())
 //     }
 //
-//     fn serialize_unit_struct(self, _name: &'static str) -> Result<(), Self::Error> {
+//     fn serialize_unit_struct(self, _name: &'static str)
+//      -> Result<(), Self::Error> {
 //         self.serialize_unit()
 //     }
 //
@@ -131,11 +132,13 @@ use serde::{ser, Serialize};
 //         value.serialize(self)
 //     }
 //
-//     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Error> {
+//     fn serialize_seq(self, _len: Option<usize>)
+//      -> Result<Self::SerializeSeq, Error> {
 //         Ok(self)
 //     }
 //
-//     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Error> {
+//     fn serialize_tuple(self, len: usize)
+//      -> Result<Self::SerializeTuple, Error> {
 //         self.serialize_seq(Some(len))
 //     }
 //

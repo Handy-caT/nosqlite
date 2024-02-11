@@ -6,5 +6,12 @@ pub struct StructEncoder<'a> {
     encoder: &'a mut StorageEncoder,
 }
 
-impl<'a> StructEncoder<'a> {
+impl<'a> StructEncoder<'a> {}
+
+pub struct StructDescriptor {
+    /// Bytes of the description.
+    bytes: Vec<u8>,
+
+    /// Type name of the integer.
+    name: String,
 }
