@@ -3,10 +3,27 @@ use serde_storage::{
     ser::encoder::{single_item::SingleItemEncoder, storable::Storable},
 };
 
-use crate::schema::r#type::data_types::Byte;
+use crate::schema::r#type::data_types::*;
 
-impl Storable for Byte {
+#[rustfmt::skip]
+macro_rules! impl_storable {
+    ($($t:ty),*) => {
+        $(
+            impl Storable for $t {
+                fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
+                    encoder.emit(*self)
+                }
+            }
+        )*
+    }
+}
+
+impl_storable!(
+    Byte, Bool, Short, Integer, Long, UShort, UInteger, ULong, Float, Double
+);
+
+impl<const N: u16> Storable for VarChar<N> {
     fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
-        encoder.emit(*self)
+        encoder.emit_str(&self.value)
     }
 }

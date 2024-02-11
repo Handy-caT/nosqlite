@@ -4,14 +4,12 @@ pub mod storable_integer;
 
 use crate::{
     error::Error,
-    ser::{
-        descriptor::{
-            integer::IntegerDescriptor,
-            r#type::{BoolDescription, BytesDescription, StringDescription},
-            Description, Descriptor as _,
-        },
-        encoder::{single_item::SingleItemEncoder, storable::Storable},
+    descriptor::{
+        integer::IntegerDescriptor,
+        r#type::{BoolDescription, BytesDescription, StringDescription},
+        Description, Descriptor as _,
     },
+    ser::encoder::{single_item::SingleItemEncoder, storable::Storable},
 };
 use smart_default::SmartDefault;
 pub use storable_integer::StorableInteger;

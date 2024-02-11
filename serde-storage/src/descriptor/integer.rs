@@ -1,9 +1,7 @@
 use crate::{
     book_values,
-    ser::{
-        descriptor::{get_type_name, Description, Descriptor},
-        encoder::StorableInteger,
-    },
+    descriptor::{get_type_name, Description, Descriptor},
+    ser::encoder::StorableInteger,
     USIZE_SIZE,
 };
 

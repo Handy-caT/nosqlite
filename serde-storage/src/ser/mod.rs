@@ -1,4 +1,3 @@
-pub mod descriptor;
 pub mod encoder;
 pub mod r#struct;
 

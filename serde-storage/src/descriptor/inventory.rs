@@ -13,8 +13,8 @@ inventory::collect!(Value);
 macro_rules! book_values {
     ($($t:expr),*) => {
         $(
-            $crate::ser::descriptor::inventory::submit!(
-                $crate::ser::descriptor::inventory::Value($t)
+            $crate::descriptor::inventory::submit!(
+                $crate::descriptor::inventory::Value($t)
             );
         )*
     }

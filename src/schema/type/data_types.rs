@@ -1,51 +1,67 @@
-use derive_more::From;
+use derive_more::{AsRef, From};
 
 /// Represents a byte data type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct Byte(pub u8);
 
 /// Represents a bool data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct Bool(pub bool);
 
 /// Represents a short integer data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct Short(pub i16);
 
 /// Represents an integer data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct Integer(pub i32);
 
 /// Represents a long integer data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct Long(pub i128);
 
 /// Represents an unsigned short integer data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct UShort(pub u16);
 
 /// Represents an unsigned integer data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct UInteger(pub u32);
 
 /// Represents an unsigned long integer data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct ULong(pub u128);
 
 /// Represents a floating point data type.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, From)]
+#[derive(AsRef, Debug, Clone, Copy, PartialEq, PartialOrd, From)]
 pub struct Float(pub f32);
 
 /// Represents a double precision floating point data type.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, From)]
+#[derive(AsRef, Debug, Clone, Copy, PartialEq, PartialOrd, From)]
 pub struct Double(pub f64);
 
 /// Represents a boolean data type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+#[derive(
+    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
+)]
 pub struct Boolean(pub bool);
 
 /// Represents a char array data type.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(AsRef, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VarChar<const N: u16> {
     /// The actual string data.
     pub value: String,
