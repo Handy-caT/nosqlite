@@ -39,4 +39,34 @@ impl<'d> SingleItemDecoder<'d> {
     pub fn emit_u128(self, value: Vec<u8>) -> Result<u128, Error> {
         self.decoder.emit_u128(value)
     }
+
+    /// Emit a bool.
+    pub fn emit_bool(self, value: Vec<u8>) -> Result<bool, Error> {
+        self.decoder.emit_bool(value)
+    }
+
+    /// Emit a i8.
+    pub fn emit_i8(self, value: Vec<u8>) -> Result<i8, Error> {
+        self.decoder.emit_i8(value)
+    }
+
+    /// Emit a i16.
+    pub fn emit_i16(self, value: Vec<u8>) -> Result<i16, Error> {
+        self.decoder.emit_i16(value)
+    }
+
+    /// Emit a i32.
+    pub fn emit_i32(self, value: Vec<u8>) -> Result<i32, Error> {
+        self.decoder.emit_i32(value)
+    }
+
+    /// Emit a i64.
+    pub fn emit_i64(self, value: Vec<u8>) -> Result<i64, Error> {
+        self.decoder.emit_i64(value)
+    }
+
+    /// Emit a i128.
+    pub fn emit_i128(self, value: Vec<u8>) -> Result<i128, Error> {
+        self.decoder.emit_i128(value)
+    }
 }

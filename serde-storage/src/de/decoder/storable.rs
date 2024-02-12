@@ -33,3 +33,39 @@ impl Storable<u128> for u128 {
         decoder.emit_u128(value)
     }
 }
+
+impl Storable<bool> for bool {
+    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<bool, Error> {
+        decoder.emit_bool(value)
+    }
+}
+
+impl Storable<i8> for i8 {
+    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i8, Error> {
+        decoder.emit_i8(value)
+    }
+}
+
+impl Storable<i16> for i16 {
+    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i16, Error> {
+        decoder.emit_i16(value)
+    }
+}
+
+impl Storable<i32> for i32 {
+    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i32, Error> {
+        decoder.emit_i32(value)
+    }
+}
+
+impl Storable<i64> for i64 {
+    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i64, Error> {
+        decoder.emit_i64(value)
+    }
+}
+
+impl Storable<i128> for i128 {
+    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i128, Error> {
+        decoder.emit_i128(value)
+    }
+}
