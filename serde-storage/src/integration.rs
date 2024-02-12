@@ -279,4 +279,23 @@ mod tests {
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
+
+    #[test]
+    fn test_encode_decode_bytes() {
+        let value = vec![1, 2, 3, 4];
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_bytes(value.as_slice());
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![1, 2, 3, 4]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_bytes(bytes.as_slice());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
 }

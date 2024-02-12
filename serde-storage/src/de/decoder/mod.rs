@@ -162,4 +162,9 @@ impl StorageDecoder {
         let bytes = value.try_into().unwrap();
         Ok(f64::from_be_bytes(bytes))
     }
+
+    /// Emit a `&[u8]`.
+    pub fn emit_bytes(&mut self, value: &[u8]) -> Result<Vec<u8>, Error> {
+        Ok(value.to_vec())
+    }
 }

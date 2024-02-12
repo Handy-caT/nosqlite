@@ -123,3 +123,12 @@ impl Storable<f64> for f64 {
         decoder.emit_f64(value)
     }
 }
+
+impl Storable<Vec<u8>> for Vec<u8> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<Vec<u8>, Error> {
+        decoder.emit_bytes(value.as_slice())
+    }
+}

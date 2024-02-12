@@ -17,7 +17,7 @@ macro_rules! impl_storable {
         $(
             impl encoder::Storable for $t {
                 fn encode(&self, encoder: SingleItemEncoder) -> Result<(), ser::Error> {
-                    encoder.emit(*self)
+                    encoder.emit(self.0)
                 }
             }
         )*
