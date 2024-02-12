@@ -49,4 +49,16 @@ impl<'e> SingleItemEncoder<'e> {
         *self.value_written = true;
         self.encoder.emit_bytes(value)
     }
+
+    /// Emit a f32.
+    pub fn emit_f32(self, value: f32) -> Result<(), Error> {
+        *self.value_written = true;
+        self.encoder.emit_f32(value)
+    }
+
+    /// Emit a f64.
+    pub fn emit_f64(self, value: f64) -> Result<(), Error> {
+        *self.value_written = true;
+        self.encoder.emit_f64(value)
+    }
 }

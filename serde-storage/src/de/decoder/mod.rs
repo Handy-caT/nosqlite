@@ -1,10 +1,9 @@
-use crate::de::{
-    decoder::{single_item::SingleItemDecoder, storable::Storable},
-    error::Error,
-};
-
 pub mod single_item;
 pub mod storable;
+
+use crate::de::{decoder::single_item::SingleItemDecoder, error::Error};
+
+pub use storable::Storable;
 
 /// StorageDecoder is a helper for decoding items.
 #[derive(Default, Debug)]
@@ -142,5 +141,25 @@ impl StorageDecoder {
         let string =
             String::from_utf8(value).map_err(|_| Error::InvalidUtf8)?;
         Ok(string)
+    }
+
+    /// Emit a f32.
+    pub fn emit_f32(&mut self, value: Vec<u8>) -> Result<f32, Error> {
+        if value.len() != 4 {
+            return Err(Error::InvalidLength);
+        }
+
+        let bytes = value.try_into().unwrap();
+        Ok(f32::from_be_bytes(bytes))
+    }
+
+    /// Emit a f64.
+    pub fn emit_f64(&mut self, value: Vec<u8>) -> Result<f64, Error> {
+        if value.len() != 8 {
+            return Err(Error::InvalidLength);
+        }
+
+        let bytes = value.try_into().unwrap();
+        Ok(f64::from_be_bytes(bytes))
     }
 }

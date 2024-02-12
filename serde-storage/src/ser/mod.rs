@@ -5,6 +5,8 @@ pub mod r#struct;
 use crate::ser::encoder::StorageEncoder;
 use serde::{ser, Serialize};
 
+pub use error::Error;
+
 pub struct StorageSerializer {
     encoder: StorageEncoder,
 }

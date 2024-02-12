@@ -241,4 +241,42 @@ mod tests {
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
+
+    #[test]
+    fn test_encode_decode_f32() {
+        let value: f32 = 1.098_761_2;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_f32(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![63, 140, 164, 53]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_f32(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
+
+    #[test]
+    fn test_encode_decode_f64() {
+        let value: f64 = 1.90172468123;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_f64(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![63, 254, 109, 118, 219, 254, 15, 223]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_f64(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
 }

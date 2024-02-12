@@ -105,3 +105,21 @@ impl Storable<String> for String {
         decoder.emit_str(value)
     }
 }
+
+impl Storable<f32> for f32 {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<f32, Error> {
+        decoder.emit_f32(value)
+    }
+}
+
+impl Storable<f64> for f64 {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<f64, Error> {
+        decoder.emit_f64(value)
+    }
+}

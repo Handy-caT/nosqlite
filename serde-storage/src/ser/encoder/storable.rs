@@ -37,3 +37,15 @@ impl Storable for Vec<u8> {
         encoder.emit_bytes(self)
     }
 }
+
+impl Storable for f32 {
+    fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
+        encoder.emit_f32(*self)
+    }
+}
+
+impl Storable for f64 {
+    fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
+        encoder.emit_f64(*self)
+    }
+}

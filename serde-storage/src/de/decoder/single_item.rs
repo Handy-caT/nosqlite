@@ -74,4 +74,14 @@ impl<'d> SingleItemDecoder<'d> {
     pub fn emit_str(self, value: Vec<u8>) -> Result<String, Error> {
         self.decoder.emit_str(value)
     }
+
+    /// Emit a f32.
+    pub fn emit_f32(self, value: Vec<u8>) -> Result<f32, Error> {
+        self.decoder.emit_f32(value)
+    }
+
+    /// Emit a f64.
+    pub fn emit_f64(self, value: Vec<u8>) -> Result<f64, Error> {
+        self.decoder.emit_f64(value)
+    }
 }

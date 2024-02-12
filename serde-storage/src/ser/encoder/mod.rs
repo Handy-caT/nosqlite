@@ -8,12 +8,13 @@ use crate::{
         r#type::{BoolDescription, BytesDescription, StringDescription},
         Description, Descriptor as _,
     },
-    ser::{
-        encoder::{single_item::SingleItemEncoder, storable::Storable},
-        error::Error,
-    },
+    ser::{encoder::single_item::SingleItemEncoder, error::Error},
 };
+
 use smart_default::SmartDefault;
+
+use crate::descriptor::r#type::F32Description;
+pub use storable::Storable;
 pub use storable_integer::StorableInteger;
 
 /// Output bytes after encoding.
@@ -128,7 +129,7 @@ impl StorageEncoder {
         let bytes = if value { vec![1] } else { vec![0] };
 
         self.output.append(bytes);
-        self.descriptor.append(BoolDescription::new());
+        self.descriptor.append(BoolDescription::default());
 
         Ok(())
     }
@@ -137,6 +138,22 @@ impl StorageEncoder {
     pub fn emit_bytes(&mut self, value: &[u8]) -> Result<(), Error> {
         self.descriptor.append(BytesDescription::new(value));
         self.output.append(value.to_vec());
+
+        Ok(())
+    }
+
+    /// Encode a `f32` and append it to the output.
+    pub fn emit_f32(&mut self, value: f32) -> Result<(), Error> {
+        self.descriptor.append(F32Description::default());
+        self.output.append(value.to_be_bytes().to_vec());
+
+        Ok(())
+    }
+
+    /// Encode a `f64` and append it to the output.
+    pub fn emit_f64(&mut self, value: f64) -> Result<(), Error> {
+        self.descriptor.append(F32Description::default());
+        self.output.append(value.to_be_bytes().to_vec());
 
         Ok(())
     }
@@ -204,5 +221,33 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "byte4");
+    }
+
+    #[test]
+    fn test_f32() {
+        let value = 1.1231234;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_f32(value);
+        assert!(res.is_ok());
+
+        let descriptor = encoder.descriptor.get_descriptors();
+        assert_eq!(descriptor.len(), 1);
+        assert_eq!(descriptor[0].1, "f32");
+    }
+
+    #[test]
+    fn test_f64() {
+        let value = 1.8967892514;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_f64(value);
+        assert!(res.is_ok());
+
+        let descriptor = encoder.descriptor.get_descriptors();
+        assert_eq!(descriptor.len(), 1);
+        assert_eq!(descriptor[0].1, "f32");
     }
 }
