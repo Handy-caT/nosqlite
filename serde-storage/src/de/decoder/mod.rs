@@ -26,6 +26,7 @@ impl StorageDecoder {
         value_cb(decoder)
     }
 
+    /// Emit u8.
     pub fn emit_u8(&mut self, value: Vec<u8>) -> Result<u8, Error> {
         if value.len() != 1 {
             return Err(Error::InvalidLength);
@@ -34,11 +35,43 @@ impl StorageDecoder {
         Ok(value[0])
     }
 
+    /// Emit u16.
     pub fn emit_u16(&mut self, value: Vec<u8>) -> Result<u16, Error> {
         if value.len() != 2 {
             return Err(Error::InvalidLength);
         }
 
-        Ok(u16::from_be_bytes([value[0], value[1]]))
+        let bytes = value.try_into().unwrap();
+        Ok(u16::from_be_bytes(bytes))
+    }
+
+    /// Emit u32.
+    pub fn emit_u32(&mut self, value: Vec<u8>) -> Result<u32, Error> {
+        if value.len() != 4 {
+            return Err(Error::InvalidLength);
+        }
+
+        let bytes = value.try_into().unwrap();
+        Ok(u32::from_be_bytes(bytes))
+    }
+
+    /// Emit u64.
+    pub fn emit_u64(&mut self, value: Vec<u8>) -> Result<u64, Error> {
+        if value.len() != 8 {
+            return Err(Error::InvalidLength);
+        }
+
+        let bytes = value.try_into().unwrap();
+        Ok(u64::from_be_bytes(bytes))
+    }
+
+    /// Emit u128.
+    pub fn emit_u128(&mut self, value: Vec<u8>) -> Result<u128, Error> {
+        if value.len() != 16 {
+            return Err(Error::InvalidLength);
+        }
+
+        let bytes = value.try_into().unwrap();
+        Ok(u128::from_be_bytes(bytes))
     }
 }

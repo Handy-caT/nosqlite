@@ -1,6 +1,6 @@
-use serde_storage::{
-    ser::error::Error,
-    ser::encoder::{single_item::SingleItemEncoder, storable::Storable},
+use serde_storage::ser::{
+    encoder::{single_item::SingleItemEncoder, storable::Storable},
+    error::Error,
 };
 
 use crate::schema::r#type::data_types::*;
