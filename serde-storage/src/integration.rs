@@ -99,4 +99,146 @@ mod tests {
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
+
+    #[test]
+    fn test_encode_decode_bool() {
+        let value: bool = true;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_bool(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![1]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_bool(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
+
+    #[test]
+    fn test_encode_decode_i8() {
+        let value: i8 = -25;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_int(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![231]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_i8(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
+
+    #[test]
+    fn test_encode_decode_i16() {
+        let value: i16 = -1025;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_int(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![251, 255]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_i16(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
+
+    #[test]
+    fn test_encode_decode_i32() {
+        let value: i32 = -10025;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_int(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![255, 255, 216, 215]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_i32(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
+
+    #[test]
+    fn test_encode_decode_i64() {
+        let value: i64 = -81675025;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_int(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(bytes, vec![255, 255, 255, 255, 251, 33, 188, 239]);
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_i64(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
+
+    #[test]
+    fn test_encode_decode_i128() {
+        let value: i128 = -78612539123123;
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_int(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(
+            bytes,
+            vec![
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 184, 128,
+                151, 135, 218, 77
+            ]
+        );
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_i128(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
+
+    #[test]
+    fn test_encode_decode_string() {
+        let value = "Hello, world!";
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_str(value);
+        assert!(res.is_ok());
+
+        let bytes = encoder.output.get_bytes();
+        assert_eq!(
+            bytes,
+            vec![72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33]
+        );
+
+        let mut decoder = StorageDecoder;
+
+        let res = decoder.emit_str(bytes);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+    }
 }

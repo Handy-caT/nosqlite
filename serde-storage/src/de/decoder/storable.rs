@@ -11,31 +11,46 @@ impl Storable<u8> for u8 {
 }
 
 impl Storable<u16> for u16 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<u16, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<u16, Error> {
         decoder.emit_u16(value)
     }
 }
 
 impl Storable<u32> for u32 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<u32, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<u32, Error> {
         decoder.emit_u32(value)
     }
 }
 
 impl Storable<u64> for u64 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<u64, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<u64, Error> {
         decoder.emit_u64(value)
     }
 }
 
 impl Storable<u128> for u128 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<u128, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<u128, Error> {
         decoder.emit_u128(value)
     }
 }
 
 impl Storable<bool> for bool {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<bool, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<bool, Error> {
         decoder.emit_bool(value)
     }
 }
@@ -47,25 +62,46 @@ impl Storable<i8> for i8 {
 }
 
 impl Storable<i16> for i16 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i16, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<i16, Error> {
         decoder.emit_i16(value)
     }
 }
 
 impl Storable<i32> for i32 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i32, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<i32, Error> {
         decoder.emit_i32(value)
     }
 }
 
 impl Storable<i64> for i64 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i64, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<i64, Error> {
         decoder.emit_i64(value)
     }
 }
 
 impl Storable<i128> for i128 {
-    fn decode(decoder: SingleItemDecoder, value: Vec<u8>) -> Result<i128, Error> {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<i128, Error> {
         decoder.emit_i128(value)
+    }
+}
+
+impl Storable<String> for String {
+    fn decode(
+        decoder: SingleItemDecoder,
+        value: Vec<u8>,
+    ) -> Result<String, Error> {
+        decoder.emit_str(value)
     }
 }

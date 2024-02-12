@@ -69,4 +69,9 @@ impl<'d> SingleItemDecoder<'d> {
     pub fn emit_i128(self, value: Vec<u8>) -> Result<i128, Error> {
         self.decoder.emit_i128(value)
     }
+
+    /// Emit a string.
+    pub fn emit_str(self, value: Vec<u8>) -> Result<String, Error> {
+        self.decoder.emit_str(value)
+    }
 }

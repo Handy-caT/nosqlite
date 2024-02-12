@@ -136,4 +136,11 @@ impl StorageDecoder {
         let bytes = value.try_into().unwrap();
         Ok(i128::from_be_bytes(bytes))
     }
+
+    /// Emit a `String`.
+    pub fn emit_str(&mut self, value: Vec<u8>) -> Result<String, Error> {
+        let string =
+            String::from_utf8(value).map_err(|_| Error::InvalidUtf8)?;
+        Ok(string)
+    }
 }
