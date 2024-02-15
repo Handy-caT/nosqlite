@@ -3,6 +3,7 @@ pub mod integer;
 pub mod inventory;
 mod r#struct;
 pub mod r#type;
+pub mod backwards;
 
 /// [`Descriptor`] of a type for encoding.
 pub trait Descriptor<T, D: Description> {

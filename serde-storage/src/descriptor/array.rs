@@ -28,7 +28,7 @@ impl<D: Description, T: Describable<D>> ArrayDescription<T, D> {
         bytes.extend_from_slice(&len.to_be_bytes());
 
         Self {
-            bytes: vec![num],
+            bytes,
             name,
             phantom: std::marker::PhantomData,
         }

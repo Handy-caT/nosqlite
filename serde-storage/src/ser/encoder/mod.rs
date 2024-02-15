@@ -13,7 +13,7 @@ use crate::{
 
 use smart_default::SmartDefault;
 
-use crate::descriptor::r#type::{CharDescription, F32Description};
+use crate::descriptor::r#type::{CharDescription, F32Description, F64Description};
 pub use storable::Storable;
 pub use storable_integer::StorableInteger;
 use crate::descriptor::array::ArrayDescription;
@@ -156,7 +156,7 @@ impl StorageEncoder {
 
     /// Encode a `f64` and append it to the output.
     pub fn emit_f64(&mut self, value: f64) -> Result<(), Error> {
-        self.descriptor.append(F32Description::default());
+        self.descriptor.append(F64Description::default());
         self.output.append(value.to_be_bytes().to_vec());
 
         Ok(())
@@ -252,6 +252,6 @@ mod tests {
 
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
-        assert_eq!(descriptor[0].1, "f32");
+        assert_eq!(descriptor[0].1, "f64");
     }
 }
