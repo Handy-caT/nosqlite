@@ -41,49 +41,49 @@ const U64_NUMBER: u8 = 4;
 const U128_NUMBER: u8 = 5;
 
 /// Number of [`usize`] when size is 1 for the description of an integer.
-const USIZE_U8_NUMBER: u8 = 1 | 0b1000_0000;
+const USIZE_U8_NUMBER: u8 = 6;
 
 /// Number of [`usize`] when size is 2 for the description of an integer.
-const USIZE_U16_NUMBER: u8 = 2 | 0b1000_0000;
+const USIZE_U16_NUMBER: u8 = 7;
 
 /// Number of [`usize`] when size is 4 for the description of an integer.
-const USIZE_U32_NUMBER: u8 = 3 | 0b1000_0000;
+const USIZE_U32_NUMBER: u8 = 8;
 
 /// Number of [`usize`] when size is 8 for the description of an integer.
-const USIZE_U64_NUMBER: u8 = 4 | 0b1000_0000;
+const USIZE_U64_NUMBER: u8 = 9;
 
 /// Number of [`usize`] when size is 16 for the description of an integer.
-const USIZE_U128_NUMBER: u8 = 5 | 0b1000_0000;
+const USIZE_U128_NUMBER: u8 = 10;
 
 /// Number of [`i8`] for the description of an integer.
-const I8_NUMBER: u8 = 1 | 0b0100_0000;
+const I8_NUMBER: u8 = 11;
 
 /// Number of [`i16`] for the description of an integer.
-const I16_NUMBER: u8 = 2 | 0b0100_0000;
+const I16_NUMBER: u8 = 12;
 
 /// Number of [`i32`] for the description of an integer.
-const I32_NUMBER: u8 = 3 | 0b0100_0000;
+const I32_NUMBER: u8 = 13;
 
 /// Number of [`i64`] for the description of an integer.
-const I64_NUMBER: u8 = 4 | 0b0100_0000;
+const I64_NUMBER: u8 = 14;
 
 /// Number of [`i128`] for the description of an integer.
-const I128_NUMBER: u8 = 5 | 0b0100_0000;
+const I128_NUMBER: u8 = 15;
 
 /// Number of [`isize`] when size is 1 for the description of an integer.
-const ISIZE_I8_NUMBER: u8 = 1 | 0b1100_0000;
+const ISIZE_I8_NUMBER: u8 = 16;
 
 /// Number of [`isize`] when size is 2 for the description of an integer.
-const ISIZE_I16_NUMBER: u8 = 2 | 0b1100_0000;
+const ISIZE_I16_NUMBER: u8 = 17;
 
 /// Number of [`isize`] when size is 4 for the description of an integer.
-const ISIZE_I32_NUMBER: u8 = 3 | 0b1100_0000;
+const ISIZE_I32_NUMBER: u8 = 18;
 
 /// Number of [`isize`] when size is 8 for the description of an integer.
-const ISIZE_I64_NUMBER: u8 = 4 | 0b1100_0000;
+const ISIZE_I64_NUMBER: u8 = 19;
 
 /// Number of [`isize`] when size is 16 for the description of an integer.
-const ISIZE_I128_NUMBER: u8 = 5 | 0b1100_0000;
+const ISIZE_I128_NUMBER: u8 = 20;
 
 book_values!(
     U8_NUMBER,
@@ -108,9 +108,9 @@ book_values!(
     ISIZE_I128_NUMBER
 );
 
-pub struct IntegerDescriptor;
+pub struct IntegerDescriptor<T>(std::marker::PhantomData<T>);
 
-impl IntegerDescriptor {
+impl<T> IntegerDescriptor<T> {
     fn get_usize_description() -> u8 {
         match USIZE_SIZE {
             1 => USIZE_U8_NUMBER,
@@ -135,9 +135,9 @@ impl IntegerDescriptor {
 }
 
 impl<T: StorableInteger> Descriptor<T, IntegerDescription>
-    for IntegerDescriptor
+    for IntegerDescriptor<T>
 {
-    fn describe(_: T) -> Option<IntegerDescription> {
+    fn describe() -> IntegerDescription {
         let type_name = get_type_name::<T>();
 
         let byte: u8 = match type_name {
@@ -153,15 +153,31 @@ impl<T: StorableInteger> Descriptor<T, IntegerDescription>
             "i64" => I64_NUMBER,
             "i128" => I128_NUMBER,
             "isize" => Self::get_isize_description(),
-            _ => return None,
+            _ => unreachable!(),
         };
 
-        Some(IntegerDescription {
+        IntegerDescription {
             bytes: vec![byte],
             name: type_name.to_string(),
-        })
+        }
     }
 }
+
+macro_rules! impl_describable_integer {
+    ($($t:ty),*) => {
+        $(
+            impl crate::descriptor::Describable<IntegerDescription> for $t {
+                fn describe() -> IntegerDescription {
+                    IntegerDescriptor::<$t>::describe()
+                }
+            }
+        )*
+    }
+}
+
+impl_describable_integer!(
+    u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
+);
 
 #[cfg(test)]
 mod tests {
@@ -182,18 +198,18 @@ mod tests {
         let i128_val: i128 = 1;
         let isize_val: isize = 0;
 
-        let u8_desc = IntegerDescriptor::describe(u8_val).unwrap();
-        let u16_desc = IntegerDescriptor::describe(u16_val).unwrap();
-        let u32_desc = IntegerDescriptor::describe(u32_val).unwrap();
-        let u64_desc = IntegerDescriptor::describe(u64_val).unwrap();
-        let u128_desc = IntegerDescriptor::describe(u128_val).unwrap();
-        let usize_desc = IntegerDescriptor::describe(usize_val).unwrap();
-        let i8_desc = IntegerDescriptor::describe(i8_val).unwrap();
-        let i16_desc = IntegerDescriptor::describe(i16_val).unwrap();
-        let i32_desc = IntegerDescriptor::describe(i32_val).unwrap();
-        let i64_desc = IntegerDescriptor::describe(i64_val).unwrap();
-        let i128_desc = IntegerDescriptor::describe(i128_val).unwrap();
-        let isize_desc = IntegerDescriptor::describe(isize_val).unwrap();
+        let u8_desc = IntegerDescriptor::<u8>::describe();
+        let u16_desc = IntegerDescriptor::<u16>::describe();
+        let u32_desc = IntegerDescriptor::<u32>::describe();
+        let u64_desc = IntegerDescriptor::<u64>::describe();
+        let u128_desc = IntegerDescriptor::<u128>::describe();
+        let usize_desc = IntegerDescriptor::<usize>::describe();
+        let i8_desc = IntegerDescriptor::<i8>::describe();
+        let i16_desc = IntegerDescriptor::<i16>::describe();
+        let i32_desc = IntegerDescriptor::<i32>::describe();
+        let i64_desc = IntegerDescriptor::<i64>::describe();
+        let i128_desc = IntegerDescriptor::<i128>::describe();
+        let isize_desc = IntegerDescriptor::<isize>::describe();
 
         assert_eq!(u8_desc.get_bytes(), vec![U8_NUMBER]);
         assert_eq!(u8_desc.get_name(), "u8");
@@ -212,7 +228,7 @@ mod tests {
 
         assert_eq!(
             usize_desc.get_bytes(),
-            vec![IntegerDescriptor::get_usize_description()]
+            vec![IntegerDescriptor::<usize>::get_usize_description()]
         );
         assert_eq!(usize_desc.get_name(), "usize");
 
@@ -233,7 +249,7 @@ mod tests {
 
         assert_eq!(
             isize_desc.get_bytes(),
-            vec![IntegerDescriptor::get_isize_description()]
+            vec![IntegerDescriptor::<isize>::get_isize_description()]
         );
         assert_eq!(isize_desc.get_name(), "isize");
     }

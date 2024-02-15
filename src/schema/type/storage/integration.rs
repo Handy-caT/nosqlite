@@ -92,7 +92,10 @@ mod tests {
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
-        assert_eq!(bytes, vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 170, 69]);
+        assert_eq!(
+            bytes,
+            vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 170, 69]
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -149,7 +152,10 @@ mod tests {
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
-        assert_eq!(bytes, vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 170, 69]);
+        assert_eq!(
+            bytes,
+            vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 170, 69]
+        );
 
         let mut decoder = StorageDecoder;
 

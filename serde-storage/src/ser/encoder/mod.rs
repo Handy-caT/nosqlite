@@ -5,7 +5,7 @@ pub mod storable_integer;
 use crate::{
     descriptor::{
         integer::IntegerDescriptor,
-        r#type::{BoolDescription, BytesDescription, StringDescription},
+        r#type::BoolDescription,
         Description, Descriptor as _,
     },
     ser::{encoder::single_item::SingleItemEncoder, error::Error},
@@ -13,9 +13,11 @@ use crate::{
 
 use smart_default::SmartDefault;
 
-use crate::descriptor::r#type::F32Description;
+use crate::descriptor::r#type::{CharDescription, F32Description};
 pub use storable::Storable;
 pub use storable_integer::StorableInteger;
+use crate::descriptor::array::ArrayDescription;
+use crate::descriptor::integer::IntegerDescription;
 
 /// Output bytes after encoding.
 #[derive(Default, Debug, Clone)]
@@ -106,7 +108,7 @@ impl StorageEncoder {
         self.output.append(value.get_storable());
 
         // Unwrap is safe because the value is always a valid integer.
-        let description = IntegerDescriptor::describe(value).unwrap();
+        let description = IntegerDescriptor::<T>::describe();
 
         self.descriptor.append(description);
 
@@ -118,7 +120,7 @@ impl StorageEncoder {
         let bytes = value.as_ref().as_bytes().to_vec();
         self.output.append(bytes);
 
-        let description = StringDescription::new(value.as_ref().len());
+        let description = ArrayDescription::<char, CharDescription>::new(value.as_ref().len() as u32);
         self.descriptor.append(description);
 
         Ok(())
@@ -136,7 +138,9 @@ impl StorageEncoder {
 
     /// Encode a `&[u8]` and append it to the output.
     pub fn emit_bytes(&mut self, value: &[u8]) -> Result<(), Error> {
-        self.descriptor.append(BytesDescription::new(value));
+        let description = ArrayDescription::<u8, IntegerDescription>::new(value.len() as u32);
+
+        self.descriptor.append(description);
         self.output.append(value.to_vec());
 
         Ok(())
@@ -192,7 +196,7 @@ mod tests {
 
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
-        assert_eq!(descriptor[0].1, "str13");
+        assert_eq!(descriptor[0].1, "array_char_13");
     }
 
     #[test]
@@ -220,7 +224,7 @@ mod tests {
 
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
-        assert_eq!(descriptor[0].1, "byte4");
+        assert_eq!(descriptor[0].1, "array_u8_4");
     }
 
     #[test]

@@ -1,7 +1,8 @@
 use crate::{book_values, descriptor::Description};
+use crate::descriptor::Describable;
 
-/// Descriptor for a [`String`].
-pub struct StringDescription {
+/// Descriptor for a char.
+pub struct CharDescription {
     /// Bytes of the description.
     bytes: Vec<u8>,
 
@@ -9,27 +10,32 @@ pub struct StringDescription {
     name: String,
 }
 
-const STRING_NUMBER: u8 = 6;
-book_values!(STRING_NUMBER);
+const CHAR_NUMBER: u8 = 21;
+book_values!(CHAR_NUMBER);
 
-impl StringDescription {
-    /// Create a new [`StringDescription`].
-    pub fn new(len: usize) -> Self {
-        let name = format!("str{}", len);
+impl Default for CharDescription {
+    fn default() -> Self {
+        let name = "char".to_string();
         Self {
-            bytes: vec![STRING_NUMBER],
+            bytes: vec![CHAR_NUMBER],
             name,
         }
     }
 }
 
-impl Description for StringDescription {
+impl Description for CharDescription {
     fn get_bytes(&self) -> Vec<u8> {
         self.bytes.clone()
     }
 
     fn get_name(&self) -> String {
         self.name.clone()
+    }
+}
+
+impl Describable<CharDescription> for char {
+    fn describe() -> CharDescription {
+        CharDescription::default()
     }
 }
 
@@ -65,36 +71,9 @@ impl Description for BoolDescription {
     }
 }
 
-/// Descriptor for a u8 array.
-pub struct BytesDescription {
-    /// Bytes of the description.
-    bytes: Vec<u8>,
-
-    /// Type name of the integer.
-    name: String,
-}
-
-const BYTES_NUMBER: u8 = 7;
-book_values!(BYTES_NUMBER);
-
-impl BytesDescription {
-    /// Create a new [`BytesDescription`].
-    pub fn new(bytes: &[u8]) -> Self {
-        let name = format!("byte{}", bytes.len());
-        Self {
-            bytes: vec![BYTES_NUMBER],
-            name,
-        }
-    }
-}
-
-impl Description for BytesDescription {
-    fn get_bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
-    }
-
-    fn get_name(&self) -> String {
-        self.name.clone()
+impl Describable<BoolDescription> for bool {
+    fn describe() -> BoolDescription {
+        BoolDescription::default()
     }
 }
 
@@ -107,7 +86,7 @@ pub struct F32Description {
     name: String,
 }
 
-const F32_NUMBER: u8 = 8;
+const F32_NUMBER: u8 = 22;
 book_values!(F32_NUMBER);
 
 impl Default for F32Description {
@@ -130,6 +109,12 @@ impl Description for F32Description {
     }
 }
 
+impl Describable<F32Description> for f32 {
+    fn describe() -> F32Description {
+        F32Description::default()
+    }
+}
+
 /// Descriptor for a f64.
 pub struct F64Description {
     /// Bytes of the description.
@@ -139,7 +124,7 @@ pub struct F64Description {
     name: String,
 }
 
-const F64_NUMBER: u8 = 9;
+const F64_NUMBER: u8 = 23;
 book_values!(F64_NUMBER);
 
 impl Default for F64Description {
@@ -159,5 +144,11 @@ impl Description for F64Description {
 
     fn get_name(&self) -> String {
         self.name.clone()
+    }
+}
+
+impl Describable<F64Description> for f64 {
+    fn describe() -> F64Description {
+        F64Description::default()
     }
 }

@@ -16,6 +16,9 @@ macro_rules! book_values {
             $crate::descriptor::inventory::submit!(
                 $crate::descriptor::inventory::Value($t)
             );
+            $crate::descriptor::inventory::submit!(
+                $crate::descriptor::inventory::Value($t | 0b1000_0000)
+            );
         )*
     }
 }
