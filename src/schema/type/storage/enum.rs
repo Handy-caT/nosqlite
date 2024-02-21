@@ -1,1 +1,1 @@
-use crate::schema::r#type::r#enum::StorageDataType;
+use crate::schema::r#type::r#enum::StorageData;

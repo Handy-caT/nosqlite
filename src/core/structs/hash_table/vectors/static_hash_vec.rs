@@ -27,7 +27,7 @@ pub(crate) struct StaticHashVec<K, V> {
 }
 
 /// Implementation of basic [`HashVec`] trait for [`StaticHashVec`].
-impl<K: Eq + Clone, V: Eq + Clone> HashVec<K, V> for StaticHashVec<K, V> {
+impl<K: PartialEq + Clone, V: PartialEq + Clone> HashVec<K, V> for StaticHashVec<K, V> {
     fn new(size: usize) -> Self {
         let mut data = Vec::new();
         let mut i = 0;
@@ -112,7 +112,7 @@ impl<K: Eq + Clone, V: Eq + Clone> HashVec<K, V> for StaticHashVec<K, V> {
 }
 
 /// Implementation of [`Indexes`] trait for [`StaticHashVec`]
-impl<K: Eq + Clone, V: Eq + Clone> Indexes<K, V> for StaticHashVec<K, V> {
+impl<K: PartialEq + Clone, V: PartialEq + Clone> Indexes<K, V> for StaticHashVec<K, V> {
     fn remove_by_index(
         &mut self,
         index: usize,
