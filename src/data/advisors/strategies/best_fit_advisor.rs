@@ -65,7 +65,7 @@ where
         if base_obj.len() == 0 {
             return None;
         }
-        let link = base_obj.find_greater_equal(PageLink::new(0, 0, size));
+        let link = base_obj.find_greater_equal(&PageLink::new(0, 0, size));
 
         match link {
             Some(link) => {

@@ -24,7 +24,7 @@ impl AdditionalIndexVec {
     }
 
     pub fn new_with_existing<
-        T: Default + Copy,
+        T: Default + Clone,
         M: TreeVec<T> + Levels + Sized,
     >(
         tree_vec: &M,

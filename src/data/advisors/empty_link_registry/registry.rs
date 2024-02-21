@@ -71,7 +71,7 @@ where
     }
 
     fn remove_link(&mut self, link: PageLink) {
-        self.data.remove_by_value(link);
+        self.data.remove_by_value(&link);
     }
 
     fn pop(&mut self) -> Option<PageLink> {

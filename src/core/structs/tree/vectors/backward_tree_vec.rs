@@ -37,7 +37,7 @@ pub struct BackwardsTreeVec<T> {
     parents: Vec<usize>,
 }
 
-impl<T: Default + Copy> Levels for BackwardsTreeVec<T> {
+impl<T: Default + Clone> Levels for BackwardsTreeVec<T> {
     fn get_allocated_levels(&self) -> u8 {
         self.allocated_levels
     }
@@ -47,7 +47,7 @@ impl<T: Default + Copy> Levels for BackwardsTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> DefaultFunctions<T> for BackwardsTreeVec<T> {
+impl<T: Default + Clone> DefaultFunctions<T> for BackwardsTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }
@@ -73,7 +73,7 @@ impl<T: Default + Copy> DefaultFunctions<T> for BackwardsTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
+impl<T: Default + Clone> OptimizedFunctions<T> for BackwardsTreeVec<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8 {
         &mut self.allocated_levels
     }
@@ -95,7 +95,7 @@ impl<T: Default + Copy> OptimizedFunctions<T> for BackwardsTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
+impl<T: Default + Clone> TreeVec<T> for BackwardsTreeVec<T> {
     fn new() -> BackwardsTreeVec<T> {
         let mut vec = BackwardsTreeVec {
             allocated_levels: 0,
@@ -148,7 +148,7 @@ impl<T: Default + Copy> TreeVec<T> for BackwardsTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> Index<usize> for BackwardsTreeVec<T> {
+impl<T: Default + Clone> Index<usize> for BackwardsTreeVec<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &T {
@@ -156,13 +156,13 @@ impl<T: Default + Copy> Index<usize> for BackwardsTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> IndexMut<usize> for BackwardsTreeVec<T> {
+impl<T: Default + Clone> IndexMut<usize> for BackwardsTreeVec<T> {
     fn index_mut(&mut self, index: usize) -> &mut T {
         &mut self.data[index]
     }
 }
 
-impl<T: Default + Copy> Backward for BackwardsTreeVec<T> {
+impl<T: Default + Clone> Backward for BackwardsTreeVec<T> {
     fn get_parent(&self, index: usize) -> Option<usize> {
         if index == 0 {
             return None;

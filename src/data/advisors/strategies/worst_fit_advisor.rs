@@ -154,7 +154,7 @@ mod tests {
         advisor.apply_place(&link.unwrap(), 100);
 
         let data = registry.get_data_mut();
-        let link = data.remove_by_value(PageLink::new(0, 200, 100));
+        let link = data.remove_by_value(&PageLink::new(0, 200, 100));
         assert_eq!(link, Some(PageLink::new(0, 200, 100)));
     }
 }

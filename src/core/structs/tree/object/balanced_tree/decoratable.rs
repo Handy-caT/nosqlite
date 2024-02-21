@@ -30,12 +30,12 @@ pub struct Decoratable<
     /// Additional indexes vector
     indexes: AdditionalIndexVec,
     /// Compare function
-    compare: fn(T, T) -> Ordering,
+    compare: fn(&T, &T) -> Ordering,
     v: std::marker::PhantomData<V>,
 }
 
 impl<
-        T: Default + Copy,
+        T: Default + Clone,
         V: TreeVec<T> + Levels + Sized,
         M: Tree<T> + Sized + VecFunctions<T, V>,
     > Decoratable<T, V, M>
@@ -49,7 +49,7 @@ impl<
     /// * `Decoratable` - new [`Decoratable`] balanced tree.
     pub fn new_with_existing(
         tree: M,
-        compare: fn(T, T) -> Ordering,
+        compare: fn(&T, &T) -> Ordering,
     ) -> Decoratable<T, V, M> {
         let additional_index_vec =
             AdditionalIndexVec::new_with_existing(tree.get_nodes());
@@ -97,7 +97,7 @@ impl<
         if let Some(node_value) =
             self.base.get_nodes_mut().get_value_mut(root_index)
         {
-            if (self.compare)(value, *node_value) == Ordering::Less {
+            if (self.compare)(&value, node_value) == Ordering::Less {
                 if self.indexes[root_index].left_index.is_none() {
                     self.indexes[root_index].left_index = Some(value_index);
                 } else {
@@ -130,18 +130,18 @@ impl<
     /// * `i32` - new root index
     fn remove_from_root(
         &mut self,
-        value: T,
+        value: &T,
         root_index: usize,
     ) -> Option<usize> {
         if let Some(node_value) =
             self.base.get_nodes_mut().get_value_mut(root_index)
         {
-            if (self.compare)(value, *node_value) == Ordering::Less {
+            if (self.compare)(value, node_value) == Ordering::Less {
                 self.indexes[root_index].left_index = self.remove_from_root(
                     value,
                     self.indexes[root_index].left_index.unwrap(),
                 );
-            } else if (self.compare)(value, *node_value) == Ordering::Greater {
+            } else if (self.compare)(value, node_value) == Ordering::Greater {
                 self.indexes[root_index].right_index = self.remove_from_root(
                     value,
                     self.indexes[root_index].right_index.unwrap(),
@@ -211,7 +211,7 @@ impl<
 }
 
 impl<
-        T: Default + Copy + Ord,
+        T: Default + Clone + Ord,
         V: TreeVec<T> + Levels + Sized,
         M: Tree<T> + Sized + VecFunctions<T, V>,
     > Tree<T> for Decoratable<T, V, M>
@@ -232,7 +232,7 @@ impl<
         dec_tree
     }
 
-    fn new_with_compare(compare: fn(T, T) -> Ordering) -> Self {
+    fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self {
         let additional_index_vec = AdditionalIndexVec::new();
 
         let mut dec_tree = Decoratable {
@@ -249,7 +249,7 @@ impl<
     }
 
     fn push(&mut self, value: T) -> usize {
-        let index = self.base.push(value);
+        let index = self.base.push(value.clone());
         self.push_index(index);
         if self.root.is_none() {
             self.root = Some(index);
@@ -260,7 +260,7 @@ impl<
         index
     }
 
-    fn find(&mut self, value: T) -> Option<usize> {
+    fn find(&mut self, value: &T) -> Option<usize> {
         let mut current_index = self.root;
         while current_index.is_some() {
             if let Some(node_value) = self
@@ -268,10 +268,10 @@ impl<
                 .get_nodes_mut()
                 .get_value_mut(current_index.unwrap())
             {
-                if (self.compare)(value, *node_value) == Ordering::Less {
+                if (self.compare)(value, node_value) == Ordering::Less {
                     current_index =
                         self.indexes[current_index.unwrap()].left_index;
-                } else if (self.compare)(value, *node_value)
+                } else if (self.compare)(value, node_value)
                     == Ordering::Greater
                 {
                     current_index =
@@ -286,19 +286,19 @@ impl<
         None
     }
 
-    fn remove_by_value(&mut self, value: T) -> Option<T> {
+    fn remove_by_value(&mut self, value: &T) -> Option<T> {
         if self.len() == 0 {
             return None;
         } else if self.len() == 1 {
             self.base.remove_by_value(value);
             self.indexes[0] = TreeIndex::default();
             self.root = None;
-            return Some(value);
+            return Some(value.clone());
         }
         self.root = self.remove_from_root(value, self.root.unwrap());
         self.base.remove_by_value(value);
 
-        Some(value)
+        Some(value.clone())
     }
 
     fn pop(&self) -> Option<T> {
@@ -315,7 +315,7 @@ impl<
 }
 
 impl<
-        T: Default + Copy + Ord,
+        T: Default + Clone + Ord,
         V: TreeVec<T> + Indexes<T> + Levels + Sized,
         M: Tree<T> + Sized + VecFunctions<T, V>,
     > VecFunctions<T, V> for Decoratable<T, V, M>
@@ -347,7 +347,7 @@ impl<
             return Some(value);
         }
         let value = self.base.get(index).unwrap();
-        self.root = self.remove_from_root(value, self.root.unwrap());
+        self.root = self.remove_from_root(&value, self.root.unwrap());
         self.base.remove_by_index(index);
 
         Some(value)
@@ -462,9 +462,9 @@ mod tests {
             BalancedTree<u64, DefaultTreeVec<u64>>,
         >::new_with_existing(tree, |a, b| b.cmp(&a));
 
-        assert_eq!(dec_tree.find(1), Some(0));
-        assert_eq!(dec_tree.find(2), Some(1));
-        assert_eq!(dec_tree.find(3), Some(2));
+        assert_eq!(dec_tree.find(&1), Some(0));
+        assert_eq!(dec_tree.find(&2), Some(1));
+        assert_eq!(dec_tree.find(&3), Some(2));
     }
 
     #[test]
@@ -481,9 +481,9 @@ mod tests {
             BalancedTree<u64, DefaultTreeVec<u64>>,
         >::new_with_existing(tree, |a, b| b.cmp(&a));
 
-        assert_eq!(dec_tree.remove_by_value(1), Some(1));
-        assert_eq!(dec_tree.remove_by_value(2), Some(2));
-        assert_eq!(dec_tree.remove_by_value(3), Some(3));
+        assert_eq!(dec_tree.remove_by_value(&1), Some(1));
+        assert_eq!(dec_tree.remove_by_value(&2), Some(2));
+        assert_eq!(dec_tree.remove_by_value(&3), Some(3));
     }
 
     #[test]
@@ -519,11 +519,11 @@ mod tests {
             BalancedTree<u64, DefaultTreeVec<u64>>,
         >::new_with_existing(tree, |a, b| b.cmp(&a));
 
-        assert_eq!(dec_tree.remove_by_value(1), Some(1));
+        assert_eq!(dec_tree.remove_by_value(&1), Some(1));
         assert_eq!(dec_tree.len(), 0);
         assert_eq!(dec_tree.get(0), None);
 
-        assert_eq!(dec_tree.remove_by_value(1), None);
+        assert_eq!(dec_tree.remove_by_value(&1), None);
     }
 
     #[test]
@@ -540,7 +540,7 @@ mod tests {
 
         assert_eq!(dec_tree.remove_by_index(0), Some(1));
         assert_eq!(dec_tree.len(), 0);
-        assert_eq!(dec_tree.find(1), None);
+        assert_eq!(dec_tree.find(&1), None);
         assert_eq!(dec_tree.get(0), None);
 
         assert_eq!(dec_tree.remove_by_index(0), None);

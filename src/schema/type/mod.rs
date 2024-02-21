@@ -1,3 +1,3 @@
-mod data_types;
-mod r#enum;
+pub mod data_types;
+pub mod r#enum;
 mod storage;

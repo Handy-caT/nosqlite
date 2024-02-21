@@ -4,7 +4,7 @@ use std::{cmp::Ordering, fmt::Debug};
 /// It is used as a value in [`HashVec`].
 /// * `K` - key type
 /// * `V` - value type
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct KeyValue<K, V> {
     pub key: K,
     pub value: V,
@@ -17,7 +17,7 @@ impl<K: PartialEq, V: PartialEq> PartialEq<Self> for KeyValue<K, V> {
     }
 }
 
-impl<K: Copy, V: Copy> KeyValue<K, V> {
+impl<K: Clone, V: Clone> KeyValue<K, V> {
     /// Creates a new [`KeyValue`]
     /// # Arguments
     /// * `key` - key
@@ -32,7 +32,7 @@ impl<K: Copy, V: Copy> KeyValue<K, V> {
     /// # Returns
     /// * `(K, V)` - Tuple of (key, value)
     pub fn as_tuple(&self) -> (K, V) {
-        (self.key, self.value)
+        (self.key.clone(), self.value.clone())
     }
 }
 

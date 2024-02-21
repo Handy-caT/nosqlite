@@ -31,7 +31,7 @@ impl LinkStorage {
     /// # Returns
     /// * `Option<NumericId>` - The [`NumericId`] from the [`PageLink`].
     pub fn get_id(&mut self, link: PageLink) -> Option<NumericId> {
-        self.data.get(link)
+        self.data.get(&link)
     }
 
     /// Gets a [`PageLink`] from a [`NumericId`].
@@ -40,7 +40,7 @@ impl LinkStorage {
     /// # Returns
     /// * `Option<PageLink>` - The [`PageLink`] from the [`NumericId`].
     pub fn get_link(&mut self, id: NumericId) -> Option<PageLink> {
-        self.data.get_by_value(id)
+        self.data.get_by_value(&id)
     }
 
     /// Inserts a [`PageLink`] and [`NumericId`] into the [`LinkStorage`].
@@ -64,7 +64,7 @@ impl LinkStorage {
     /// # Returns
     /// * `Option<NumericId>` - The [`NumericId`] that was removed.
     pub fn remove_by_link(&mut self, link: PageLink) -> Option<NumericId> {
-        self.data.remove(link)
+        self.data.remove(&link)
     }
 
     /// Removes a [`PageLink`] and [`NumericId`] from the [`LinkStorage`]
@@ -74,7 +74,7 @@ impl LinkStorage {
     /// # Returns
     /// * `Option<PageLink>` - The [`PageLink`] that was removed.
     pub fn remove_by_id(&mut self, id: NumericId) -> Option<PageLink> {
-        self.data.remove_by_value(id)
+        self.data.remove_by_value(&id)
     }
 
     /// Returns the number of elements in the [`LinkStorage`].

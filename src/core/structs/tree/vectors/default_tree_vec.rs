@@ -22,7 +22,7 @@ pub struct DefaultTreeVec<T: Sized> {
     length: usize,
 }
 
-impl<T: Default + Copy> Indexes<T> for DefaultTreeVec<T> {
+impl<T: Default + Clone> Indexes<T> for DefaultTreeVec<T> {
     fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex {
         &mut self.indexes[index]
     }
@@ -36,7 +36,7 @@ impl<T: Default + Copy> Indexes<T> for DefaultTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
+impl<T: Default + Clone> TreeVec<T> for DefaultTreeVec<T> {
     fn new() -> DefaultTreeVec<T> {
         DefaultTreeVec {
             data: Vec::new(),
@@ -75,7 +75,7 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
             } else {
                 let value = self.data.get(index);
                 Some(TreeNode {
-                    value: *value.unwrap(),
+                    value: value.unwrap().clone(),
                     indexes: *item,
                 })
             }
@@ -107,7 +107,7 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
         let value = self.data.get(index);
 
         Some(TreeNode {
-            value: *value.unwrap(),
+            value: value.unwrap().clone(),
             indexes: item,
         })
     }
@@ -117,7 +117,7 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> Index<usize> for DefaultTreeVec<T> {
+impl<T: Default + Clone> Index<usize> for DefaultTreeVec<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -125,13 +125,13 @@ impl<T: Default + Copy> Index<usize> for DefaultTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> IndexMut<usize> for DefaultTreeVec<T> {
+impl<T: Default + Clone> IndexMut<usize> for DefaultTreeVec<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.data[index]
     }
 }
 
-impl<T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
+impl<T: Default + Clone> DefaultFunctions<T> for DefaultTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }

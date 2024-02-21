@@ -60,7 +60,7 @@ mod tests {
             BinHeap<u64>,
         >::new_with_existing(heap, |a, b| b.cmp(&a));
 
-        tree.remove_by_value(2);
+        tree.remove_by_value(&2);
 
         assert_eq!(tree.len(), 2);
     }

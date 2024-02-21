@@ -30,19 +30,19 @@ impl<K, V, HK, HV> BackwardsHashTable<K, V, HK, HV>
 where
     HK: HashTable<K, usize>,
     HV: HashTable<V, usize>,
-    K: Copy + CustomHash,
-    V: Copy,
+    K: Clone + CustomHash,
+    V: Clone,
 {
     /// Removes a key-value pair by value.
     /// # Arguments
     /// * `value` - Value of the key-value pair to remove.
     /// # Returns
     /// * `Option<K>` - Key of the key-value pair that was removed.
-    pub fn remove_by_value(&mut self, value: V) -> Option<K> {
-        let value_index = self.value_hash_table.remove(value)?;
+    pub fn remove_by_value(&mut self, value: &V) -> Option<K> {
+        let value_index = self.value_hash_table.remove(&value)?;
         let key_value = self.key_values.remove(value_index)?;
 
-        self.key_hash_table.remove(key_value.key)?;
+        self.key_hash_table.remove(&key_value.key)?;
 
         self.len -= 1;
 
@@ -54,8 +54,8 @@ where
     /// * `value` - Value of the key-value pair to get.
     /// # Returns
     /// * `Option<K>` - Key of the key-value pair that was removed.
-    pub fn get_by_value(&mut self, value: V) -> Option<K> {
-        let value_index = self.value_hash_table.get(value)?;
+    pub fn get_by_value(&mut self, value: &V) -> Option<K> {
+        let value_index = self.value_hash_table.get(&value)?;
         let key_value = self.key_values.get(value_index)?;
 
         Some(key_value.key)
@@ -66,8 +66,8 @@ impl<K, V, HK, HV> HashTable<K, V> for BackwardsHashTable<K, V, HK, HV>
 where
     HK: HashTable<K, usize>,
     HV: HashTable<V, usize>,
-    K: Copy + CustomHash,
-    V: Copy + CustomHash,
+    K: Clone + CustomHash,
+    V: Clone + CustomHash,
 {
     fn new(size: usize) -> Self {
         let key_hash_table = HK::new(size);
@@ -83,9 +83,9 @@ where
     }
 
     fn insert(&mut self, key: K, value: V) -> Option<KeyValue<K, V>> {
-        let index = self.key_values.push(KeyValue::new(key, value));
+        let index = self.key_values.push(KeyValue::new(key.clone(), value.clone()));
 
-        let result = KeyValue::new(key, value);
+        let result = KeyValue::new(key.clone(), value.clone());
 
         let key_index = self.key_hash_table.insert(key, index)?.value;
         let value_index = self.value_hash_table.insert(value, index)?.value;
@@ -99,29 +99,29 @@ where
             Some(result)
         } else if key_index != index {
             let updated = self.key_values.remove(key_index)?;
-            self.value_hash_table.remove(updated.value);
+            self.value_hash_table.remove(&updated.value);
 
             Some(updated)
         } else {
             let updated = self.key_values.remove(value_index)?;
-            self.key_hash_table.remove(updated.key);
+            self.key_hash_table.remove(&updated.key);
 
             Some(updated)
         }
     }
 
-    fn remove(&mut self, key: K) -> Option<V> {
+    fn remove(&mut self, key: &K) -> Option<V> {
         let key_index = self.key_hash_table.remove(key)?;
         let key_value = self.key_values.remove(key_index)?;
 
-        self.value_hash_table.remove(key_value.value)?;
+        self.value_hash_table.remove(&key_value.value)?;
 
         self.len -= 1;
 
         Some(key_value.value)
     }
 
-    fn get(&mut self, key: K) -> Option<V> {
+    fn get(&mut self, key: &K) -> Option<V> {
         let key_index = self.key_hash_table.get(key)?;
         let key_value = self.key_values.get(key_index)?;
 
@@ -237,12 +237,12 @@ mod tests {
         assert_eq!(hash_table.value_hash_table.size(), 16);
         assert_eq!(hash_table.len, 1);
 
-        assert_eq!(hash_table.get(1), Some(2));
+        assert_eq!(hash_table.get(&1), Some(2));
 
         let value = hash_table.insert(2, 3);
 
         assert_eq!(value, Some(KeyValue::new(2, 3)));
-        assert_eq!(hash_table.get(2), Some(3));
+        assert_eq!(hash_table.get(&2), Some(3));
         assert_eq!(hash_table.key_values.len(), 2);
     }
 
@@ -251,7 +251,7 @@ mod tests {
         let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
-        let value = hash_table.remove(1);
+        let value = hash_table.remove(&1);
 
         assert_eq!(value, Some(2));
         assert_eq!(hash_table.key_values.len(), 0);
@@ -265,7 +265,7 @@ mod tests {
         let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
-        let key = hash_table.remove_by_value(2);
+        let key = hash_table.remove_by_value(&2);
 
         assert_eq!(key, Some(1));
         assert_eq!(hash_table.key_values.len(), 0);
@@ -279,7 +279,7 @@ mod tests {
         let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
-        let value = hash_table.get(1);
+        let value = hash_table.get(&1);
 
         assert_eq!(value, Some(2));
         assert_eq!(hash_table.key_values.len(), 1);
@@ -293,7 +293,7 @@ mod tests {
         let mut hash_table = BackwardsHashTable::<usize, usize>::new(10);
 
         hash_table.insert(1, 2);
-        let key = hash_table.get_by_value(2);
+        let key = hash_table.get_by_value(&2);
 
         assert_eq!(key, Some(1));
         assert_eq!(hash_table.key_values.len(), 1);

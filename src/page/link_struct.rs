@@ -78,7 +78,7 @@ impl PageLink {
     /// * `b` - The second `PageLink` to compare.
     /// # Returns
     /// Ordering - The ordering of the two `PageLink`s.
-    pub fn compare_by_len(a: PageLink, b: PageLink) -> Ordering {
+    pub fn compare_by_len(a: &PageLink, b: &PageLink) -> Ordering {
         a.len.cmp(&b.len)
     }
 
@@ -88,7 +88,7 @@ impl PageLink {
     /// * `b` - The second `PageLink` to compare.
     /// # Returns
     /// Ordering - The ordering of the two `PageLink`s.
-    pub fn compare_by_index(a: PageLink, b: PageLink) -> Ordering {
+    pub fn compare_by_index(a: &PageLink, b: &PageLink) -> Ordering {
         a.get_raw_index().cmp(&b.get_raw_index())
     }
 
@@ -219,15 +219,15 @@ mod tests {
         let link2 = super::PageLink::new(0, 0, 20);
 
         assert_eq!(
-            super::PageLink::compare_by_len(link1, link2),
+            super::PageLink::compare_by_len(&link1, &link2),
             std::cmp::Ordering::Less
         );
         assert_eq!(
-            super::PageLink::compare_by_len(link2, link1),
+            super::PageLink::compare_by_len(&link2, &link1),
             std::cmp::Ordering::Greater
         );
         assert_eq!(
-            super::PageLink::compare_by_len(link1, link1),
+            super::PageLink::compare_by_len(&link1, &link1),
             std::cmp::Ordering::Equal
         );
     }
@@ -238,15 +238,15 @@ mod tests {
         let link2 = super::PageLink::new(0, 10, 20);
 
         assert_eq!(
-            super::PageLink::compare_by_index(link1, link2),
+            super::PageLink::compare_by_index(&link1, &link2),
             std::cmp::Ordering::Less
         );
         assert_eq!(
-            super::PageLink::compare_by_index(link2, link1),
+            super::PageLink::compare_by_index(&link2, &link1),
             std::cmp::Ordering::Greater
         );
         assert_eq!(
-            super::PageLink::compare_by_index(link1, link1),
+            super::PageLink::compare_by_index(&link1, &link1),
             std::cmp::Ordering::Equal
         );
     }

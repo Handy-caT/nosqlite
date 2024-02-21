@@ -84,8 +84,8 @@ where
 impl<K, V, H> HashTable<K, V> for ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-    K: Copy + CustomHash,
-    V: Copy,
+    K: Clone + CustomHash,
+    V: Clone,
 {
     fn new(size: usize) -> Self {
         ScalableHashTable {
@@ -101,11 +101,11 @@ where
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
-        let mut result = KeyValue::new(key, value);
+        let mut result = KeyValue::new(key.clone(), value.clone());
 
-        let has_key = self.table.have_key(index, key);
+        let has_key = self.table.have_key(index, &key);
         if has_key {
-            let updated = self.table.update(index, key, value).unwrap().value;
+            let updated = self.table.update(index, &key, value).unwrap().value;
             result.value = updated;
         } else {
             self.table.push(index, key, value);
@@ -117,7 +117,7 @@ where
         Some(result)
     }
 
-    fn remove(&mut self, key: K) -> Option<V> {
+    fn remove(&mut self, key: &K) -> Option<V> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
@@ -131,7 +131,7 @@ where
         }
     }
 
-    fn get(&mut self, key: K) -> Option<V> {
+    fn get(&mut self, key: &K) -> Option<V> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
@@ -191,8 +191,8 @@ where
 impl<K, V, H> ExtendedFunctions<K, V> for ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-    K: Copy + CustomHash,
-    V: Copy,
+    K: Clone + CustomHash,
+    V: Clone,
 {
     fn new_with_hash(size: usize, hash: fn(&[u8]) -> u64) -> Self {
         ScalableHashTable {
@@ -271,7 +271,7 @@ mod tests {
 
         assert_eq!(hash_table.len, 8);
         assert_eq!(hash_table.table.size, 8);
-        assert_eq!(hash_table.get(0), Some(10));
+        assert_eq!(hash_table.get(&0), Some(10));
     }
 
     #[test]
@@ -312,11 +312,11 @@ mod tests {
         assert_eq!(hash_table.len, 8);
         assert_eq!(hash_table.table.size, 8);
 
-        hash_table.remove(0);
+        hash_table.remove(&0);
 
         assert_eq!(hash_table.len, 7);
         assert_eq!(hash_table.table.size, 8);
-        assert_eq!(hash_table.get(0), None);
+        assert_eq!(hash_table.get(&0), None);
     }
 
     #[test]
@@ -334,8 +334,8 @@ mod tests {
         assert_eq!(hash_table.len, 8);
         assert_eq!(hash_table.table.size, 8);
 
-        assert_eq!(hash_table.get(0), Some(0));
-        assert_eq!(hash_table.get(10), None);
+        assert_eq!(hash_table.get(&0), Some(0));
+        assert_eq!(hash_table.get(&10), None);
     }
 
     #[test]

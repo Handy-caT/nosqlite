@@ -21,7 +21,7 @@ pub struct OptimizedVector<T> {
     max_length: usize,
 }
 
-impl<T: Copy> OptimizedVector<T> {
+impl<T: Clone> OptimizedVector<T> {
     /// Creates a new [`OptimizedVector`].
     /// # Returns
     /// * `OptimizedVector<T>`: New [`OptimizedVector`].
@@ -79,7 +79,7 @@ impl<T: Copy> OptimizedVector<T> {
             return None;
         }
 
-        Some(self.data[index])
+        Some(self.data[index].clone())
     }
 
     /// Gets a mutable value from the vector.
@@ -119,7 +119,7 @@ impl<T: Copy> OptimizedVector<T> {
         self.empty.push(index);
         self.length -= 1;
 
-        Some(self.data[index])
+        Some(self.data[index].clone())
     }
 
     /// Gets the data vector.

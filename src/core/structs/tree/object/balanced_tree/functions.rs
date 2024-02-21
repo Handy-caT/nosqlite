@@ -108,7 +108,7 @@ pub fn remove_min(
     }
 }
 
-pub fn find_greater_equal<T: Default + PartialOrd + Copy>(
+pub fn find_greater_equal<T: Default + PartialOrd + Clone>(
     nodes: &mut [T],
     indexes: &mut [TreeIndex],
     compare: fn(&T, &T) -> Ordering,
@@ -162,7 +162,7 @@ pub fn find_greater_equal<T: Default + PartialOrd + Copy>(
     return if ind {
         Some((
             indexes[current_index.unwrap()].index.unwrap(),
-            nodes[current_index.unwrap()],
+            nodes[current_index.unwrap()].clone(),
         ))
     } else if last.1 == "right" {
         if queue.peek().unwrap().1 == "right" {
@@ -175,13 +175,13 @@ pub fn find_greater_equal<T: Default + PartialOrd + Copy>(
 
             Some((
                 indexes[turn.0.unwrap()].index.unwrap(),
-                nodes[turn.0.unwrap()],
+                nodes[turn.0.unwrap()].clone(),
             ))
         }
     } else {
         Some((
             indexes[last.0.unwrap()].index.unwrap(),
-            nodes[last.0.unwrap()],
+            nodes[last.0.unwrap()].clone(),
         ))
     };
 }
