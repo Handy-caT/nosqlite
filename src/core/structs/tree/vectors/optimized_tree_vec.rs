@@ -15,6 +15,7 @@ pub const INITIAL_LEVELS: u8 = 6;
 /// It allocates memory for a tree level when it is needed.
 /// # Type parameters
 /// * `T`: Type of the data that will be stored in the tree.
+#[derive(Debug)]
 pub struct OptimizedTreeVec<T> {
     /// Number of allocated levels.
     allocated_levels: u8,

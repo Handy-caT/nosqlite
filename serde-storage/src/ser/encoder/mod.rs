@@ -4,20 +4,21 @@ pub mod storable_integer;
 
 use crate::{
     descriptor::{
-        integer::IntegerDescriptor,
-        r#type::BoolDescription,
-        Description, Descriptor as _,
+        integer::IntegerDescriptor, r#type::BoolDescription, Description,
+        Descriptor as _,
     },
     ser::{encoder::single_item::SingleItemEncoder, error::Error},
 };
 
 use smart_default::SmartDefault;
 
-use crate::descriptor::r#type::{CharDescription, F32Description, F64Description};
+use crate::descriptor::{
+    array::ArrayDescription,
+    integer::IntegerDescription,
+    r#type::{CharDescription, F32Description, F64Description},
+};
 pub use storable::Storable;
 pub use storable_integer::StorableInteger;
-use crate::descriptor::array::ArrayDescription;
-use crate::descriptor::integer::IntegerDescription;
 
 /// Output bytes after encoding.
 #[derive(Default, Debug, Clone)]
@@ -120,7 +121,9 @@ impl StorageEncoder {
         let bytes = value.as_ref().as_bytes().to_vec();
         self.output.append(bytes);
 
-        let description = ArrayDescription::<char, CharDescription>::new(value.as_ref().len() as u32);
+        let description = ArrayDescription::<char, CharDescription>::new(
+            value.as_ref().len() as u32,
+        );
         self.descriptor.append(description);
 
         Ok(())
@@ -138,7 +141,8 @@ impl StorageEncoder {
 
     /// Encode a `&[u8]` and append it to the output.
     pub fn emit_bytes(&mut self, value: &[u8]) -> Result<(), Error> {
-        let description = ArrayDescription::<u8, IntegerDescription>::new(value.len() as u32);
+        let description =
+            ArrayDescription::<u8, IntegerDescription>::new(value.len() as u32);
 
         self.descriptor.append(description);
         self.output.append(value.to_vec());

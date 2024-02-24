@@ -1,5 +1,6 @@
-use crate::descriptor::{Describable, DescribableArray, Description};
-use crate::descriptor::r#type::CharDescription;
+use crate::descriptor::{
+    r#type::CharDescription, Describable, DescribableArray, Description,
+};
 
 pub struct ArrayDescription<T, D> {
     /// Bytes of the description.

@@ -18,6 +18,7 @@ pub use decoratable::Decoratable;
 /// Vector must implement [`TreeVec`] trait
 /// In balanced tree all nodes have no more than 2 children
 /// It also can be customized with compare function
+#[derive(Debug)]
 pub struct BalancedTree<T, M: TreeVec<T> + Sized> {
     /// Index of the root node
     root: Option<usize>,
@@ -212,8 +213,7 @@ impl<
                         .nodes
                         .get_index_mut(current_index.unwrap())
                         .left_index;
-                } else if (self.compare)(value, node_value)
-                    == Ordering::Greater
+                } else if (self.compare)(value, node_value) == Ordering::Greater
                 {
                     current_index = self
                         .nodes
@@ -328,8 +328,7 @@ impl<T: Default + PartialOrd + Clone, M: TreeVec<T> + Indexes<T> + Sized>
                         .nodes
                         .get_index_mut(current_index.unwrap())
                         .left_index;
-                } else if (self.compare)(value, node_value)
-                    == Ordering::Greater
+                } else if (self.compare)(value, node_value) == Ordering::Greater
                 {
                     if last.1 == "left" {
                         turn_count += 1;
@@ -415,8 +414,7 @@ impl<T: Default + PartialOrd + Clone, M: TreeVec<T> + Indexes<T> + Sized>
                         .nodes
                         .get_index_mut(current_index.unwrap())
                         .left_index;
-                } else if (self.compare)(value, node_value)
-                    == Ordering::Greater
+                } else if (self.compare)(value, node_value) == Ordering::Greater
                 {
                     if last.1 == "left" {
                         turn_count += 1;

@@ -11,6 +11,7 @@ use crate::core::structs::hash_table::vectors::{
 /// # Arguments
 /// * `V` - Type of the value
 /// * `K` - Type of the key
+#[derive(Debug)]
 pub(crate) struct StaticHashVec<K, V> {
     /// The data of the hash vector as a vector of vectors.
     data: Vec<Vec<KeyValue<K, V>>>,
@@ -27,7 +28,9 @@ pub(crate) struct StaticHashVec<K, V> {
 }
 
 /// Implementation of basic [`HashVec`] trait for [`StaticHashVec`].
-impl<K: PartialEq + Clone, V: PartialEq + Clone> HashVec<K, V> for StaticHashVec<K, V> {
+impl<K: PartialEq + Clone, V: PartialEq + Clone> HashVec<K, V>
+    for StaticHashVec<K, V>
+{
     fn new(size: usize) -> Self {
         let mut data = Vec::new();
         let mut i = 0;
@@ -112,7 +115,9 @@ impl<K: PartialEq + Clone, V: PartialEq + Clone> HashVec<K, V> for StaticHashVec
 }
 
 /// Implementation of [`Indexes`] trait for [`StaticHashVec`]
-impl<K: PartialEq + Clone, V: PartialEq + Clone> Indexes<K, V> for StaticHashVec<K, V> {
+impl<K: PartialEq + Clone, V: PartialEq + Clone> Indexes<K, V>
+    for StaticHashVec<K, V>
+{
     fn remove_by_index(
         &mut self,
         index: usize,

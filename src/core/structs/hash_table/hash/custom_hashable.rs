@@ -15,7 +15,7 @@ macro_rules! impl_custom_hash {
 }
 
 impl_custom_hash!(usize, u64);
-    
+
 impl CustomHash for String {
     fn hash(&self, hash: fn(&[u8]) -> u64) -> u64 {
         hash(self.as_bytes())

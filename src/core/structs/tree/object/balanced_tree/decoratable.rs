@@ -271,8 +271,7 @@ impl<
                 if (self.compare)(value, node_value) == Ordering::Less {
                     current_index =
                         self.indexes[current_index.unwrap()].left_index;
-                } else if (self.compare)(value, node_value)
-                    == Ordering::Greater
+                } else if (self.compare)(value, node_value) == Ordering::Greater
                 {
                     current_index =
                         self.indexes[current_index.unwrap()].right_index;

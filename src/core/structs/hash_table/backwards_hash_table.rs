@@ -7,6 +7,7 @@ use crate::core::{
     },
 };
 
+#[derive(Debug)]
 pub struct BackwardsHashTable<
     K,
     V,
@@ -83,7 +84,9 @@ where
     }
 
     fn insert(&mut self, key: K, value: V) -> Option<KeyValue<K, V>> {
-        let index = self.key_values.push(KeyValue::new(key.clone(), value.clone()));
+        let index = self
+            .key_values
+            .push(KeyValue::new(key.clone(), value.clone()));
 
         let result = KeyValue::new(key.clone(), value.clone());
 

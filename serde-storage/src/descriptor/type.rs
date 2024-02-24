@@ -1,5 +1,7 @@
-use crate::{book_values, descriptor::Description};
-use crate::descriptor::Describable;
+use crate::{
+    book_values,
+    descriptor::{Describable, Description},
+};
 
 /// Descriptor for a char.
 pub struct CharDescription {

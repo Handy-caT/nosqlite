@@ -22,6 +22,7 @@ const MAX_BUCKET_LEN: usize = 10;
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - [`HashVec`] implementation
+#[derive(Debug)]
 pub struct ScalableHashTable<K, V, H = StaticHashVec<K, V>> {
     /// [`HashVec`] implementation for storing key-value pairs.
     table: H,
@@ -213,6 +214,23 @@ where
 
     fn insert_tuple(&mut self, tuple: (K, V)) -> Option<KeyValue<K, V>> {
         self.insert(tuple.0, tuple.1)
+    }
+}
+
+impl<K, V, H> Default for ScalableHashTable<K, V, H>
+where
+    H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
+    K: Clone + CustomHash,
+    V: Clone,
+{
+    fn default() -> Self {
+        ScalableHashTable {
+            table: H::new(8),
+            len: 0,
+            v: PhantomData,
+            k: PhantomData,
+            hash,
+        }
     }
 }
 

@@ -20,6 +20,7 @@ use std::marker::PhantomData;
 /// * `K` - key type.
 /// * `V` - value type.
 /// * `H` - [`HashVec`] implementation.
+#[derive(Debug)]
 pub struct StaticHashTable<K, V, H = StaticHashVec<K, V>> {
     /// [`HashVec`] implementation for storing key-value pairs.
     table: H,

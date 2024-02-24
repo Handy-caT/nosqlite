@@ -1,3 +1,3 @@
-mod r#type;
-mod table;
 mod column;
+mod table;
+mod r#type;

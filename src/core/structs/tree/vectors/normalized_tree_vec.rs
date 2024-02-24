@@ -17,6 +17,7 @@ use std::ops::{Index, IndexMut};
 /// so data is independent from indexes.
 /// # Type parameters
 /// * `T` - Type of the data that the vector stores.
+#[derive(Debug)]
 pub struct NormalizedTreeVector<T> {
     /// Number of allocated levels.
     allocated_levels: u8,

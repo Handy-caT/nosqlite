@@ -14,6 +14,7 @@ use std::ops::{Index, IndexMut};
 /// stores the parents of the nodes.
 /// # Type parameters
 /// * `T` - Type of the data that the vector stores
+#[derive(Debug)]
 pub struct BackwardsTreeVec<T> {
     /// Number of allocated levels.
     allocated_levels: u8,

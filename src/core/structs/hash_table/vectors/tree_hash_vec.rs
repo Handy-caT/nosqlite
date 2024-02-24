@@ -22,6 +22,7 @@ type TreeBuckets<K, V> =
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
 /// * `K` - Type of the key
+#[derive(Debug)]
 pub struct TreeHashVec<
     K: Clone + Default + PartialOrd,
     V: Clone + Default + PartialOrd,

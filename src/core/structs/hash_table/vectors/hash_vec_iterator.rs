@@ -8,6 +8,7 @@ use std::marker::PhantomData;
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - [`HashVec`] implementation
+#[derive(Debug)]
 pub struct HashVecIterator<'a, K, V, H>
 where
     H: HashVec<K, V>,

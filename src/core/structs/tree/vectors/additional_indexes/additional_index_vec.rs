@@ -4,6 +4,7 @@ use crate::core::structs::tree::{
 };
 use std::ops::{Index, IndexMut};
 
+#[derive(Debug)]
 pub struct AdditionalIndexVec {
     pub indexes: Vec<TreeIndex>,
     allocated_levels: u8,

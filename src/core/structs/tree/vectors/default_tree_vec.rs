@@ -8,6 +8,7 @@ use std::ops::{Index, IndexMut};
 /// It has empty spaces that can be filled.
 /// # Type parameters
 /// * `T` - Type of the data that the vector stores
+#[derive(Debug)]
 pub struct DefaultTreeVec<T: Sized> {
     /// Vector that stores the data
     data: Vec<T>,

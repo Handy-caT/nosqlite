@@ -11,6 +11,7 @@ use std::cmp::Ordering;
 /// It is implemented using a vector.
 /// It is using custom [`NormalizedTreeVector`] struct that represents the tree,
 /// where childrens are on 2*i + 1 and 2*i + 2 positions.
+#[derive(Debug)]
 pub struct BinHeap<T> {
     /// [`NormalizedTreeVector`] that represents the tree
     /// It is used to store the data

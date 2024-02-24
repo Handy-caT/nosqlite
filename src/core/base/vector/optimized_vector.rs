@@ -4,6 +4,7 @@ pub const INITIAL_SIZE: usize = 16;
 /// It has a vector of data and vector of empty indexes.
 /// If the empty vector is empty, then the data vector is extended.
 /// If the empty vector is not empty, then index from the empty vector is used.
+#[derive(Debug)]
 pub struct OptimizedVector<T> {
     /// Vector of data.
     data: Vec<T>,

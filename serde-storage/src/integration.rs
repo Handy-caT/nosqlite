@@ -1,7 +1,12 @@
 #[cfg(test)]
 mod tests {
-    use crate::{de::decoder::StorageDecoder, ser::encoder::StorageEncoder};
-    use crate::descriptor::backwards::{get_length_by_description_bytes, get_type_by_description_bytes};
+    use crate::{
+        de::decoder::StorageDecoder,
+        descriptor::backwards::{
+            get_length_by_description_bytes, get_type_by_description_bytes,
+        },
+        ser::encoder::StorageEncoder,
+    };
 
     #[test]
     fn test_encode_decode_u8() {
@@ -18,7 +23,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "u8");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "u8");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "u8"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -42,7 +50,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "u16");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "u16");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "u16"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -66,7 +77,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "u32");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "u32");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "u32"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -90,7 +104,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "u64");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "u64");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "u64"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -117,7 +134,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "u128");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "u128");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "u128"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -141,7 +161,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "bool");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "bool");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "bool"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -165,7 +188,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "i8");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "i8");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "i8"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -189,7 +215,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "i16");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "i16");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "i16"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -213,7 +242,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "i32");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "i32");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "i32"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -237,7 +269,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "i64");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "i64");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "i64"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -267,7 +302,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "i128");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "i128");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "i128"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -294,8 +332,14 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "array_char_13");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "char");
-        assert_eq!(get_length_by_description_bytes(descriptor[0].0.as_ref()), Some(13));
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "char"
+        );
+        assert_eq!(
+            get_length_by_description_bytes(descriptor[0].0.as_ref()),
+            Some(13)
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -319,7 +363,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "f32");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "f32");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "f32"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -343,7 +390,10 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "f64");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "f64");
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "f64"
+        );
 
         let mut decoder = StorageDecoder;
 
@@ -367,8 +417,14 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "array_u8_4");
-        assert_eq!(get_type_by_description_bytes(descriptor[0].0.as_ref()), "u8");
-        assert_eq!(get_length_by_description_bytes(descriptor[0].0.as_ref()), Some(4));
+        assert_eq!(
+            get_type_by_description_bytes(descriptor[0].0.as_ref()),
+            "u8"
+        );
+        assert_eq!(
+            get_length_by_description_bytes(descriptor[0].0.as_ref()),
+            Some(4)
+        );
 
         let mut decoder = StorageDecoder;
 

@@ -1,4 +1,3 @@
-
 pub fn get_type_by_description_bytes(value: &[u8]) -> &'static str {
     match value[0] & 0b0111_1111 {
         0 => "bool",
