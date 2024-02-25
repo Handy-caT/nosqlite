@@ -257,6 +257,21 @@ impl<T: Default + Clone> IndexMut<usize> for NormalizedTreeVector<T> {
     }
 }
 
+impl<T: Clone> Clone for NormalizedTreeVector<T> {
+    fn clone(&self) -> Self {
+        let mut vec = NormalizedTreeVector {
+            allocated_levels: self.allocated_levels,
+            max_length: self.max_length,
+            length: self.length,
+            data: self.data.clone(),
+            indexes: self.indexes.clone(),
+            empty: self.empty.clone(),
+        };
+
+        vec
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::vectors::{

@@ -188,6 +188,22 @@ impl<T: Default + Clone> Backward for BackwardsTreeVec<T> {
     }
 }
 
+impl<T: Clone> Clone for BackwardsTreeVec<T> {
+    fn clone(&self) -> Self {
+        let mut vec = BackwardsTreeVec {
+            allocated_levels: self.allocated_levels,
+            max_length: self.max_length,
+            length: self.length,
+            data: self.data.clone(),
+            indexes: self.indexes.clone(),
+            empty: self.empty.clone(),
+            parents: self.parents.clone(),
+        };
+
+        vec
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::vectors::{

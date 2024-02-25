@@ -14,7 +14,7 @@ use std::cmp::Ordering;
 pub use decoratable::Decoratable;
 
 /// Balanced tree object
-/// This structure represents balanced tree that is stored in vector
+/// This structure represents balanced tree that is stored in vector.
 /// Vector must implement [`TreeVec`] trait
 /// In balanced tree all nodes have no more than 2 children
 /// It also can be customized with compare function
@@ -469,6 +469,17 @@ impl<T: Default + PartialOrd + Clone, M: TreeVec<T> + Indexes<T> + Sized>
                 self.nodes[last.0.unwrap()].clone(),
             ))
         };
+    }
+}
+
+impl<T: Clone, M: Clone + TreeVec<T>> Clone for BalancedTree<T, M> {
+    fn clone(&self) -> Self {
+        BalancedTree {
+            root: self.root,
+            nodes: self.nodes.clone(),
+            compare: self.compare,
+            len: self.len,
+        }
     }
 }
 

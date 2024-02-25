@@ -172,6 +172,17 @@ impl<T> Levels for DefaultTreeVec<T> {
     }
 }
 
+impl<T: Clone> Clone for DefaultTreeVec<T> {
+    fn clone(&self) -> Self {
+        DefaultTreeVec {
+            data: self.data.clone(),
+            empty: self.empty.clone(),
+            indexes: self.indexes.clone(),
+            length: self.length,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

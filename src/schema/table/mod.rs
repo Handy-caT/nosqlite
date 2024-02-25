@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// Represents a database table.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Table {
     /// The name of the table.
     name: String,
@@ -33,14 +33,14 @@ impl Table {
             primary_key: PrimaryKey::default(),
         }
     }
-    
+
     /// Returns the name of the table.
     /// # Returns
     /// * `&String` - The name of the table.
     pub fn get_name(&self) -> &String {
         &self.name
     }
-    
+
     /// Adds a column to the table.
     /// # Arguments
     /// * `name` - The name of the column.
@@ -48,7 +48,7 @@ impl Table {
     pub fn add_column(&mut self, name: String, column: Column) {
         self.columns.insert(name, column);
     }
-    
+
     /// Returns the column with the given name.
     /// # Arguments
     /// * `name` - The name of the column.
@@ -57,14 +57,14 @@ impl Table {
     pub fn get_column(&mut self, name: &String) -> Option<Column> {
         self.columns.get(name)
     }
-    
+
     /// Returns the primary key of the table.
     /// # Returns
     /// * `&PrimaryKey` - The primary key of the table.
     pub fn get_primary_key(&self) -> &PrimaryKey {
         &self.primary_key
     }
-    
+
     /// Sets the primary key of the table.
     /// # Arguments
     /// * `primary_key` - The primary key of the table.
@@ -73,12 +73,21 @@ impl Table {
     }
 }
 
+impl PartialEq for Table {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::HashTable;
-    use crate::schema::column::Column;
-    use crate::schema::column::primary_key::PrimaryKey;
-    use crate::schema::table::Table;
+    use crate::{
+        core::structs::hash_table::HashTable,
+        schema::{
+            column::{primary_key::PrimaryKey, Column},
+            table::Table,
+        },
+    };
 
     #[test]
     fn test_table_new() {
@@ -116,7 +125,10 @@ mod tests {
     #[test]
     fn test_table_set_primary_key() {
         let mut table = Table::new("table".to_string());
-        let primary_key = PrimaryKey::new("primary_key".to_string(), vec!["column".to_string()]);
+        let primary_key = PrimaryKey::new(
+            "primary_key".to_string(),
+            vec!["column".to_string()],
+        );
         table.set_primary_key(primary_key.clone());
         assert_eq!(table.get_primary_key(), &primary_key);
     }

@@ -18,7 +18,7 @@ impl Column {
     pub fn set_not_null(&mut self, not_null: bool) {
         self.not_null = not_null;
     }
-    
+
     /// Sets the default value for the column.
     /// # Arguments
     /// * `default` - The default value.
@@ -27,21 +27,20 @@ impl Column {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::schema::{
         column::Column,
         r#type::r#enum::{Integer, StorageData},
     };
-    
+
     #[test]
     fn test_set_not_null() {
         let mut column = Column::default();
         column.set_not_null(true);
         assert_eq!(column.not_null, true);
     }
-    
+
     #[test]
     fn test_set_default() {
         let mut column = Column::default();

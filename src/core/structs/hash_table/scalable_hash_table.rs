@@ -234,6 +234,23 @@ where
     }
 }
 
+impl<K, V, H> Clone for ScalableHashTable<K, V, H>
+where
+    H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V> + Clone,
+    K: Clone + CustomHash,
+    V: Clone,
+{
+    fn clone(&self) -> Self {
+        ScalableHashTable {
+            table: self.table.clone(),
+            len: self.len,
+            v: PhantomData,
+            k: PhantomData,
+            hash: self.hash,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::hash_table::{

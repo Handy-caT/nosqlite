@@ -18,6 +18,7 @@ use std::cmp::Ordering;
 /// So you can create various tree indexes on the
 /// same data using custom compare functions.
 /// You can also use [`BinHeap`] to decorate it.
+#[derive(Debug)]
 pub struct Decoratable<
     T,
     V: TreeVec<T> + Sized,
@@ -350,6 +351,23 @@ impl<
         self.base.remove_by_index(index);
 
         Some(value)
+    }
+}
+
+impl<
+        T: Clone,
+        V: TreeVec<T> + Sized + Clone,
+        M: Tree<T> + Sized + VecFunctions<T, V> + Clone,
+    > Clone for Decoratable<T, V, M>
+{
+    fn clone(&self) -> Self {
+        Decoratable {
+            base: self.base.clone(),
+            root: self.root,
+            indexes: self.indexes.clone(),
+            compare: self.compare,
+            v: std::marker::PhantomData,
+        }
     }
 }
 

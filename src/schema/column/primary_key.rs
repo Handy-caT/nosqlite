@@ -17,14 +17,14 @@ impl PrimaryKey {
     pub fn new(name: String, columns: Vec<String>) -> Self {
         PrimaryKey { name, columns }
     }
-    
+
     /// Returns the name of the primary key.
     /// # Returns
     /// * `&String` - The name of the primary key.
     pub fn get_name(&self) -> &String {
         &self.name
     }
-    
+
     /// Returns the column names that make up the primary key.
     /// # Returns
     /// * `&Vec<String>` - The column names that make up the primary key.
@@ -55,7 +55,7 @@ mod tests {
         assert_eq!(pk.name, name);
         assert_eq!(pk.columns, columns);
     }
-    
+
     #[test]
     fn test_get_name() {
         let name = "pk".to_string();
@@ -64,7 +64,7 @@ mod tests {
 
         assert_eq!(pk.get_name(), &name);
     }
-    
+
     #[test]
     fn test_get_columns() {
         let name = "pk".to_string();

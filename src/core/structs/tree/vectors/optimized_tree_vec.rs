@@ -169,6 +169,19 @@ impl<T: Default + Clone> IndexMut<usize> for OptimizedTreeVec<T> {
     }
 }
 
+impl<T: Clone> Clone for OptimizedTreeVec<T> {
+    fn clone(&self) -> Self {
+        OptimizedTreeVec {
+            allocated_levels: self.allocated_levels,
+            max_length: self.max_length,
+            length: self.length,
+            data: self.data.clone(),
+            indexes: self.indexes.clone(),
+            empty: self.empty.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

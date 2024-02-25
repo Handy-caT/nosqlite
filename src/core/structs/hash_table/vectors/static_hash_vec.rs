@@ -202,6 +202,20 @@ impl<K, V> InternalStatistics<K, V> for StaticHashVec<K, V> {
     }
 }
 
+impl<K, V> Clone for StaticHashVec<K, V>
+where
+    K: Clone,
+    V: Clone,
+{
+    fn clone(&self) -> Self {
+        StaticHashVec {
+            data: self.data.clone(),
+            size: self.size,
+            statistics: self.statistics.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::hash_table::vectors::{

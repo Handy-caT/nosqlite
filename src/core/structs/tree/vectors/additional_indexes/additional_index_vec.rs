@@ -90,6 +90,18 @@ impl IndexMut<usize> for AdditionalIndexVec {
     }
 }
 
+impl Clone for AdditionalIndexVec {
+    fn clone(&self) -> Self {
+        let mut vec = AdditionalIndexVec {
+            indexes: self.indexes.clone(),
+            allocated_levels: self.allocated_levels,
+            max_length: self.max_length,
+        };
+
+        vec
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::vectors::{

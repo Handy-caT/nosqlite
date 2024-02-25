@@ -217,6 +217,15 @@ impl<T: Default + PartialOrd + Clone> VecFunctions<T, NormalizedTreeVector<T>>
     }
 }
 
+impl<T: Clone> Clone for BinHeap<T> {
+    fn clone(&self) -> Self {
+        BinHeap {
+            data: self.data.clone(),
+            compare: self.compare,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::{
