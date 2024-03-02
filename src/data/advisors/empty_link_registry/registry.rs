@@ -39,7 +39,7 @@ where
 impl<V, M> Registry<V, M>
 where
     V: TreeVec<PageLink> + Levels + Sized,
-    M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
+    M: Tree<PageLink> + Sized + VecFunctions<PageLink, V> + Default,
 {
     pub(crate) fn new(data: Decoratable<PageLink, V, M>) -> Self {
         Registry { data }
@@ -64,7 +64,7 @@ where
 impl<V, M> EmptyLinkStorage for Registry<V, M>
 where
     V: TreeVec<PageLink> + Levels + Sized,
-    M: Tree<PageLink> + Sized + VecFunctions<PageLink, V>,
+    M: Tree<PageLink> + Sized + VecFunctions<PageLink, V> + Default,
 {
     fn add_link(&mut self, link: PageLink) {
         self.data.push(link);

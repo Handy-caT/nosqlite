@@ -19,7 +19,7 @@ pub use decoratable::Decoratable;
 /// In balanced tree all nodes have no more than 2 children
 /// It also can be customized with compare function
 #[derive(Debug)]
-pub struct BalancedTree<T, M: TreeVec<T> + Sized> {
+pub struct BalancedTree<T, M> {
     /// Index of the root node
     root: Option<usize>,
 
@@ -34,7 +34,7 @@ pub struct BalancedTree<T, M: TreeVec<T> + Sized> {
 }
 
 /// Default comparator for the balanced tree
-fn default_compare<T: PartialOrd + Clone>(a: &T, b: &T) -> Ordering {
+fn default_compare<T: PartialOrd>(a: &T, b: &T) -> Ordering {
     if a < b {
         Ordering::Less
     } else if a > b {
@@ -170,15 +170,6 @@ impl<
         M: TreeVec<T> + Indexes<T> + Levels + Sized,
     > Tree<T> for BalancedTree<T, M>
 {
-    fn new() -> BalancedTree<T, M> {
-        BalancedTree {
-            root: None,
-            nodes: M::new(),
-            compare: default_compare,
-            len: 0,
-        }
-    }
-
     fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> BalancedTree<T, M> {
         BalancedTree {
             root: None,
@@ -483,6 +474,21 @@ impl<T: Clone, M: Clone + TreeVec<T>> Clone for BalancedTree<T, M> {
     }
 }
 
+impl<T, M> Default for BalancedTree<T, M>
+where
+    M: TreeVec<T> + Sized,
+    T: PartialOrd,
+{
+    fn default() -> Self {
+        Self {
+            root: None,
+            nodes: M::new(),
+            compare: default_compare,
+            len: 0,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -490,7 +496,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         assert_eq!(tree.nodes.len(), 0);
         assert_eq!(tree.root, None);
@@ -498,7 +504,7 @@ mod tests {
 
     #[test]
     fn test_add_from_root() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
 
@@ -512,7 +518,7 @@ mod tests {
 
     #[test]
     fn test_add_root() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
 
@@ -523,7 +529,7 @@ mod tests {
 
     #[test]
     fn test_add_root_after_remove() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -544,7 +550,7 @@ mod tests {
 
     #[test]
     fn test_add_left() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(0);
@@ -558,7 +564,7 @@ mod tests {
 
     #[test]
     fn test_add_right() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -572,7 +578,7 @@ mod tests {
 
     #[test]
     fn test_add_left_right() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(0);
@@ -589,7 +595,7 @@ mod tests {
 
     #[test]
     fn test_balance() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -604,7 +610,7 @@ mod tests {
 
     #[test]
     fn test_balance_long() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -621,7 +627,7 @@ mod tests {
 
     #[test]
     fn test_balance_long2() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(7);
         tree.push(6);
@@ -638,7 +644,7 @@ mod tests {
 
     #[test]
     fn test_remove_root() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.remove_by_value(&1);
@@ -649,7 +655,7 @@ mod tests {
 
     #[test]
     fn test_remove_left() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(0);
@@ -662,7 +668,7 @@ mod tests {
 
     #[test]
     fn test_remove_right() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -699,7 +705,7 @@ mod tests {
 
     #[test]
     fn test_remove() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -713,7 +719,7 @@ mod tests {
 
     #[test]
     fn test_remove_from_long() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -734,7 +740,7 @@ mod tests {
 
     #[test]
     fn test_find() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(1);
         tree.push(2);
@@ -756,7 +762,7 @@ mod tests {
 
     #[test]
     fn test_find_more_equal() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(100);
         tree.push(450);
@@ -787,7 +793,7 @@ mod tests {
 
     #[test]
     fn test_find_less_equal() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(100);
         tree.push(450);
@@ -818,7 +824,7 @@ mod tests {
 
     #[test]
     fn test_remove_by_index() {
-        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::new();
+        let mut tree = BalancedTree::<u64, DefaultTreeVec<u64>>::default();
 
         tree.push(100);
         tree.push(450);

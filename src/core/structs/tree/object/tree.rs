@@ -4,14 +4,6 @@ use std::cmp::Ordering;
 /// [`Tree`] is a trait that defines the basic operations that
 /// a tree object must implement.
 pub trait Tree<T> {
-    /// Creates new [`Tree`] using specified vector.
-    /// Vector must implement [`TreeVec`] trait.
-    /// # Arguments
-    /// * `vec` - Vector to be used as a tree.
-    /// # Returns
-    /// * `BalancedTree<T, M>` - New [`Tree`].
-    fn new() -> Self;
-
     /// Creates new [`Tree`] using specified vector and compare function
     /// # Arguments
     /// * `vec` - Vector to be used as a tree.

@@ -64,7 +64,7 @@ impl<
             vec.data.push(BalancedTree::<
                 KeyValue<K, V>,
                 OptimizedTreeVec<KeyValue<K, V>>,
-            >::new());
+            >::default());
         }
 
         vec.size = size;

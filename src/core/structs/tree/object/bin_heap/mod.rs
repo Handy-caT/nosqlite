@@ -90,13 +90,6 @@ impl<T: Default + PartialOrd + Clone> BinHeap<T> {
 /// Implementation of [`Tree`] trait for [`BinHeap`] struct
 /// It is used for tree operations and to use as part of [`TreeDecorator`]
 impl<T: Default + PartialOrd + Clone> Tree<T> for BinHeap<T> {
-    fn new() -> Self {
-        BinHeap {
-            data: NormalizedTreeVector::new(),
-            compare: |a, b| a.partial_cmp(&b).unwrap(),
-        }
-    }
-
     fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self {
         BinHeap {
             data: NormalizedTreeVector::new(),
@@ -226,6 +219,15 @@ impl<T: Clone> Clone for BinHeap<T> {
     }
 }
 
+impl<T: Clone + PartialOrd + Default> Default for BinHeap<T> {
+    fn default() -> Self {
+        BinHeap {
+            data: NormalizedTreeVector::new(),
+            compare: |a, b| a.partial_cmp(&b).unwrap(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::{
@@ -241,7 +243,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_new() {
-        let heap = BinHeap::<u64>::new();
+        let heap = BinHeap::<u64>::default();
 
         assert_eq!(heap.data.len(), 0);
         assert_eq!(heap.data.get_allocated_levels(), INITIAL_LEVELS);
@@ -250,7 +252,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_push() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -268,7 +270,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_get_max() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -288,7 +290,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_peek_max() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -300,7 +302,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_find() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -315,7 +317,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_remove_by_value() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -330,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_remove_by_index() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -345,7 +347,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_get() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -361,7 +363,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_push_index() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         assert_eq!(heap.push(1), 0);
         assert_eq!(heap.push(2), 1);
