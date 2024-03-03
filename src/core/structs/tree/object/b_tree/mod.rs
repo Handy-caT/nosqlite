@@ -33,7 +33,28 @@ where
     }
 
     pub fn add_from_root(&mut self, root: usize, value: T) -> usize {
-        todo!("Add from root");
+        let mut node = self.data.get_node(root).unwrap();
+        if node.is_leaf() {
+            if node.is_full() {
+                todo!()
+            } else {
+                node.add_value(value);
+                node.index.index
+            }
+        } else {
+            let child = node.get_index_by_value(&value);
+            if let Some(child) = child {
+                self.add_from_root(child, value)
+            } else if node.is_full() {
+                todo!()
+            } else {
+                let leaf_index = self.data.add_leaf(value);
+                
+                node.add_link_index(leaf_index).unwrap();
+                self.data.update_node(root, node);
+                leaf_index
+            }
+        }
     }
 }
 
@@ -58,7 +79,7 @@ where
             
             let mut node = self.data.get_node(node_index).unwrap();
             node.add_value(value).unwrap();
-            node.add_link_index(leaf_index as u32).unwrap();
+            node.add_link_index(leaf_index).unwrap();
             self.data.update_node(node_index, node);
 
             leaf_index
@@ -144,6 +165,40 @@ mod test {
         let leaf = tree.data.get_node(1).unwrap();
         assert_eq!(leaf.keys.len(), 1);
         assert_eq!(leaf.keys[0], 1);
+        assert!(leaf.is_leaf());
+    }
+    
+    #[test]
+    fn test_btree_push_second() {
+        let mut tree: BTree<
+            u16,
+            MockNodeLoader,
+            ScalableHashTable<usize, Node<u16, 3>>,
+            3,
+        > = BTree::new(MockNodeLoader {});
+
+        tree.push(1);
+        let index = tree.push(2);
+        
+        assert_eq!(tree.root, Some(0));
+        assert_eq!(index, 2);
+        
+        let node = tree.data.get_node(0).unwrap();
+        assert_eq!(node.keys.len(), 1);
+        assert_eq!(node.keys[0], 1);
+        assert_eq!(node.link_indexes.len(), 2);
+        assert_eq!(node.link_indexes[0], 1);
+        assert_eq!(node.link_indexes[1], 2);
+        assert!(!node.is_leaf());
+        
+        let leaf = tree.data.get_node(1).unwrap();
+        assert_eq!(leaf.keys.len(), 1);
+        assert_eq!(leaf.keys[0], 1);
+        assert!(leaf.is_leaf());
+        
+        let leaf = tree.data.get_node(2).unwrap();
+        assert_eq!(leaf.keys.len(), 1);
+        assert_eq!(leaf.keys[0], 2);
         assert!(leaf.is_leaf());
     }
 }

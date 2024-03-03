@@ -39,9 +39,9 @@ pub struct Node<T, const NODE_SIZE: u8> {
     pub(crate) keys: Vec<T>,
 
     /// Vector that stores the children indexes.
-    pub(crate) link_indexes: Vec<u32>,
+    pub(crate) link_indexes: Vec<usize>,
 
-    index: Index,
+    pub(crate) index: Index,
 }
 
 impl<T, const NODE_SIZE: u8> Node<T, NODE_SIZE>
@@ -77,7 +77,7 @@ where
     /// Adds a child node index to the node.
     /// # Arguments
     /// * `index` - Child node index.
-    pub fn add_link_index(&mut self, index: u32) -> Result<(), Error> {
+    pub fn add_link_index(&mut self, index: usize) -> Result<(), Error> {
         if self.link_indexes.len() <= self.keys.len() {
             self.link_indexes.push(index);
         } else {
@@ -97,7 +97,7 @@ where
     /// Pops the last child node index from the node.
     /// # Returns
     /// * Option<u32> - Popped index.
-    pub fn pop_link_index(&mut self) -> Option<u32> {
+    pub fn pop_link_index(&mut self) -> Option<usize> {
         self.link_indexes.pop()
     }
 
@@ -106,15 +106,22 @@ where
     /// * `value` - Value to search.
     /// # Returns
     /// * u32 - Index to child.
-    pub fn get_index_by_value(&self, value: T) -> u32 {
-        let find_index = self.keys.binary_search(&value);
+    pub fn get_index_by_value(&self, value: &T) -> Option<usize> {
+        let find_index = self.keys.binary_search(value);
         let index = if let Ok(index) = find_index {
             index
         } else {
             find_index.unwrap_err()
         };
 
-        *self.link_indexes.get(index).unwrap()
+        self.link_indexes.get(index).map(|x| *x)
+    }
+    
+    /// Checks if the node is full.
+    /// # Returns
+    /// * bool - True if the node is full, false otherwise.
+    pub fn is_full(&self) -> bool {
+        self.keys.len() == NODE_SIZE as usize
     }
 
     /// Checks if the node is a leaf.
@@ -220,6 +227,26 @@ mod tests {
     }
 
     #[test]
+    fn test_node_get_index_by_one_value() {
+        let mut node = Node::<i32, 3>::new(0);
+
+        let _ = node.add_value(1);
+        let _ = node.add_link_index(0);
+
+        let index = node.get_index_by_value(&0);
+        assert_eq!(index, Some(0));
+
+        let index = node.get_index_by_value(&1);
+        assert_eq!(index, Some(0));
+
+        let index = node.get_index_by_value(&2);
+        assert_eq!(index, None);
+
+        let index = node.get_index_by_value(&11);
+        assert_eq!(index, None);
+    }
+    
+    #[test]
     fn test_node_get_index_by_value() {
         let mut node = Node::<i32, 3>::new(0);
 
@@ -231,17 +258,17 @@ mod tests {
         let _ = node.add_value(10);
         let _ = node.add_link_index(3);
 
-        let index = node.get_index_by_value(0);
-        assert_eq!(index, 0);
+        let index = node.get_index_by_value(&0);
+        assert_eq!(index, Some(0));
 
-        let index = node.get_index_by_value(2);
-        assert_eq!(index, 1);
+        let index = node.get_index_by_value(&2);
+        assert_eq!(index, Some(1));
 
-        let index = node.get_index_by_value(8);
-        assert_eq!(index, 2);
+        let index = node.get_index_by_value(&8);
+        assert_eq!(index, Some(2));
 
-        let index = node.get_index_by_value(11);
-        assert_eq!(index, 3);
+        let index = node.get_index_by_value(&11);
+        assert_eq!(index, Some(3));
     }
 
     #[test]
