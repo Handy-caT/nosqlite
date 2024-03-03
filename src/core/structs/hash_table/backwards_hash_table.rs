@@ -138,6 +138,10 @@ where
     fn len(&self) -> usize {
         self.len
     }
+    
+    fn is_empty(&self) -> bool {
+        self.len == 0
+    }
 }
 
 impl<K, V, HK, HV> ExtendedFunctions<K, V> for BackwardsHashTable<K, V, HK, HV>

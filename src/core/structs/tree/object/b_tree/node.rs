@@ -1,20 +1,50 @@
+/// [`Node`] index of a B-Tree.
+/// It stores the index of the node, the left and right brother indexes and
+/// the parent index.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct Index {
+    /// Index of the [`Node`].
+    pub index: usize,
+
+    /// Index of the left brother.
+    pub left: Option<usize>,
+
+    /// Index of the right brother.
+    pub right: Option<usize>,
+
+    /// Index of the parent.
+    pub parent: Option<usize>,
+}
+
+impl Index {
+    /// Creates a new node index.
+    /// # Arguments
+    /// * `index` - Index of the node.
+    /// # Returns
+    /// * Index - New node index.
+    pub fn new(index: usize) -> Index {
+        Index {
+            index,
+            left: None,
+            right: None,
+            parent: None,
+        }
+    }
+}
+
 /// Node of a B-Tree.
-#[derive(Debug)]
-pub struct Node<T> {
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+pub struct Node<T, const NODE_SIZE: u8> {
     /// Vector that stores the keys.
     keys: Vec<T>,
 
     /// Vector that stores the children indexes.
     link_indexes: Vec<u32>,
 
-    /// Next node index.
-    next: u32,
-
-    /// Max size of the node.
-    max_size: u16,
+    index: Index,
 }
 
-impl<T> Node<T>
+impl<T, const NODE_SIZE: u8> Node<T, NODE_SIZE>
 where
     T: Ord,
 {
@@ -23,12 +53,11 @@ where
     /// * `max_size` - Maximum size of the node.
     /// # Returns
     /// * Node<T> - New node.
-    pub fn new(max_size: u16) -> Node<T> {
+    pub fn new(index: usize) -> Node<T, NODE_SIZE> {
         Node {
             keys: Vec::new(),
             link_indexes: Vec::new(),
-            next: 0,
-            max_size,
+            index: Index::new(index),
         }
     }
 
@@ -87,6 +116,13 @@ where
 
         *self.link_indexes.get(index).unwrap()
     }
+
+    /// Checks if the node is a leaf.
+    /// # Returns
+    /// * bool - True if the node is a leaf, false otherwise.
+    pub fn is_leaf(&self) -> bool {
+        self.link_indexes.is_empty()
+    }
 }
 
 /// Error type for the node.
@@ -101,16 +137,21 @@ mod tests {
 
     #[test]
     fn test_node_new() {
-        let node = Node::<i32>::new(3);
+        let node = Node::<i32, 3>::new(0);
         assert_eq!(node.keys.len(), 0);
         assert_eq!(node.link_indexes.len(), 0);
-        assert_eq!(node.next, 0);
-        assert_eq!(node.max_size, 3);
+
+        let index = node.index;
+
+        assert_eq!(index.index, 0);
+        assert_eq!(index.left, None);
+        assert_eq!(index.right, None);
+        assert_eq!(index.parent, None);
     }
 
     #[test]
     fn test_node_add_value() {
-        let mut node = Node::<i32>::new(3);
+        let mut node = Node::<i32, 3>::new(0);
         let res = node.add_value(1);
 
         assert!(res.is_ok());
@@ -120,7 +161,7 @@ mod tests {
 
     #[test]
     fn test_node_add_value_invalid() {
-        let mut node = Node::<i32>::new(3);
+        let mut node = Node::<i32, 3>::new(0);
         let _ = node.add_value(2);
         let res = node.add_value(1);
 
@@ -131,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_node_add_link_index() {
-        let mut node = Node::<i32>::new(3);
+        let mut node = Node::<i32, 3>::new(0);
         let _ = node.add_value(1);
         let _ = node.add_link_index(0);
         let _ = node.add_link_index(1);
@@ -143,7 +184,7 @@ mod tests {
 
     #[test]
     fn test_node_add_link_index_invalid() {
-        let mut node = Node::<i32>::new(3);
+        let mut node = Node::<i32, 3>::new(0);
         let _ = node.add_value(1);
         let _ = node.add_link_index(0);
         let _ = node.add_link_index(1);
@@ -160,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_node_pop_value() {
-        let mut node = Node::<i32>::new(3);
+        let mut node = Node::<i32, 3>::new(0);
         node.add_value(1);
         let value = node.pop_value();
 
@@ -170,7 +211,7 @@ mod tests {
 
     #[test]
     fn test_node_pop_link_index() {
-        let mut node = Node::<i32>::new(3);
+        let mut node = Node::<i32, 3>::new(0);
         node.add_link_index(1);
         let index = node.pop_link_index();
 
@@ -180,7 +221,7 @@ mod tests {
 
     #[test]
     fn test_node_get_index_by_value() {
-        let mut node = Node::<i32>::new(3);
+        let mut node = Node::<i32, 3>::new(0);
 
         let _ = node.add_value(1);
         let _ = node.add_link_index(0);
@@ -201,5 +242,17 @@ mod tests {
 
         let index = node.get_index_by_value(11);
         assert_eq!(index, 3);
+    }
+
+    #[test]
+    fn test_node_is_leaf() {
+        let mut node = Node::<i32, 3>::new(0);
+        assert!(node.is_leaf());
+
+        let _ = node.add_value(1);
+        assert!(node.is_leaf());
+
+        let _ = node.add_link_index(0);
+        assert!(!node.is_leaf());
     }
 }
