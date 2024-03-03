@@ -3,31 +3,31 @@ use crate::core::structs::{
     tree::object::{b_tree::node::Node, tree::Tree},
 };
 use std::cmp::Ordering;
+use crate::core::structs::tree::object::b_tree::node_loader::NodeLoader;
+use crate::core::structs::tree::object::b_tree::node_vector::BTreeVec;
 
 mod node;
 mod node_loader;
 mod node_vector;
 
 struct BTree<T, L, M, const NODE_SIZE: u8> {
-    preloaded_data: M,
+    data: BTreeVec<T, L, M, NODE_SIZE>,
 
     root: Option<usize>,
-
-    node_loader: L,
 
     compare: fn(&T, &T) -> Ordering,
 }
 
 impl<T, L, M, const NODE_SIZE: u8> BTree<T, L, M, NODE_SIZE>
 where
+    L: NodeLoader<T, NODE_SIZE>,
     T: Ord,
     M: HashTable<usize, Node<T, NODE_SIZE>>,
 {
     pub fn new(node_loader: L) -> BTree<T, L, M, NODE_SIZE> {
         BTree {
-            preloaded_data: M::new(8),
+            data: BTreeVec::new(node_loader),
             root: None,
-            node_loader,
             compare: |a, b| a.cmp(b),
         }
     }
@@ -39,7 +39,8 @@ where
 
 impl<T, L, M, const NODE_SIZE: u8> Tree<T> for BTree<T, L, M, NODE_SIZE>
 where
-    T: Ord,
+    L: NodeLoader<T, NODE_SIZE>,
+    T: Ord + Clone,
     M: HashTable<usize, Node<T, NODE_SIZE>>,
 {
     fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self {
@@ -50,12 +51,17 @@ where
         if let Some(root) = self.root {
             self.add_from_root(root, value)
         } else {
-            // let node_index = self.add_node();
-            // let leaf_index = self.add_leaf(value);
-            //
-            // let mut node = self
+            let node_index = self.data.add_node();
+            self.root = Some(node_index);
+            
+            let leaf_index = self.data.add_leaf(value.clone());
+            
+            let mut node = self.data.get_node(node_index).unwrap();
+            node.add_value(value).unwrap();
+            node.add_link_index(leaf_index as u32).unwrap();
+            self.data.update_node(node_index, node);
 
-            todo!("Push to empty tree");
+            leaf_index
         }
     }
 
@@ -110,8 +116,7 @@ mod test {
             ScalableHashTable<usize, Node<u16, 3>>,
             3,
         > = BTree::new(MockNodeLoader {});
-
-        //assert!(tree.preloaded_data.l);
+        
         assert!(tree.root.is_none());
     }
 
@@ -125,9 +130,20 @@ mod test {
         > = BTree::new(MockNodeLoader {});
 
         let index = tree.push(1);
-
-        assert_eq!(tree.preloaded_data.len(), 1);
+        
         assert_eq!(tree.root, Some(0));
-        assert_eq!(index, 0);
+        assert_eq!(index, 1);
+        
+        let node = tree.data.get_node(0).unwrap();
+        assert_eq!(node.keys.len(), 1);
+        assert_eq!(node.keys[0], 1);
+        assert_eq!(node.link_indexes.len(), 1);
+        assert_eq!(node.link_indexes[0], 1);
+        assert!(!node.is_leaf());
+        
+        let leaf = tree.data.get_node(1).unwrap();
+        assert_eq!(leaf.keys.len(), 1);
+        assert_eq!(leaf.keys[0], 1);
+        assert!(leaf.is_leaf());
     }
 }

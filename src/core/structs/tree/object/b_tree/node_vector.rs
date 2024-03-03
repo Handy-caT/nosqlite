@@ -3,11 +3,14 @@ use crate::core::structs::{
     tree::object::b_tree::{node::Node, node_loader::NodeLoader},
 };
 
-struct BTreeVec<T, L, M, const NODE_SIZE: u8> {
+pub struct BTreeVec<T, L, M, const NODE_SIZE: u8> {
+    /// Preloaded data.
     preloaded_data: M,
 
+    /// Node loader.
     node_loader: L,
 
+    /// Current max index.
     max_index: usize,
 
     /// Vector that stores the empty indexes.
@@ -17,10 +20,10 @@ struct BTreeVec<T, L, M, const NODE_SIZE: u8> {
 }
 
 impl<T, L, M, const NODE_SIZE: u8> BTreeVec<T, L, M, NODE_SIZE>
-    where
-        T: Ord,
-        L: NodeLoader<T, NODE_SIZE>,
-        M: HashTable<usize, Node<T, NODE_SIZE>>,
+where
+    T: Ord,
+    L: NodeLoader<T, NODE_SIZE>,
+    M: HashTable<usize, Node<T, NODE_SIZE>>,
 {
     /// Creates a new B-Tree vector.
     /// # Arguments
@@ -40,12 +43,12 @@ impl<T, L, M, const NODE_SIZE: u8> BTreeVec<T, L, M, NODE_SIZE>
     /// Adds a new node to the tree.
     /// # Returns
     /// * usize - Index of the new node.
-    fn add_node(&mut self) -> usize {
+    pub fn add_node(&mut self) -> usize {
         let index = if let Some(index) = self.empty.pop() {
             index
         } else {
             self.max_index += 1;
-            self.max_index
+            self.max_index - 1
         };
 
         let node = Node::new(index);
@@ -59,12 +62,12 @@ impl<T, L, M, const NODE_SIZE: u8> BTreeVec<T, L, M, NODE_SIZE>
     /// * `value` - Value to add.
     /// # Returns
     /// * usize - Index of the new leaf.
-    fn add_leaf(&mut self, value: T) -> usize {
+    pub fn add_leaf(&mut self, value: T) -> usize {
         let index = if let Some(index) = self.empty.pop() {
             index
         } else {
             self.max_index += 1;
-            self.max_index
+            self.max_index - 1
         };
 
         let mut node = Node::new(index);
@@ -82,7 +85,7 @@ impl<T, L, M, const NODE_SIZE: u8> BTreeVec<T, L, M, NODE_SIZE>
     pub fn get_node(&mut self, index: usize) -> Option<Node<T, NODE_SIZE>> {
         self.preloaded_data.get(&index)
     }
-    
+
     /// Updates node by index.
     /// # Arguments
     /// * `index` - Index of the node.
@@ -94,10 +97,11 @@ impl<T, L, M, const NODE_SIZE: u8> BTreeVec<T, L, M, NODE_SIZE>
 
 #[cfg(test)]
 mod tests {
-    use crate::core::structs::hash_table::scalable_hash_table::ScalableHashTable;
-    use crate::core::structs::hash_table::vectors::static_hash_vec::StaticHashVec;
     use super::*;
-    use crate::core::structs::tree::object::b_tree::node_loader::NodeLoader;
+    use crate::core::structs::{
+        hash_table::scalable_hash_table::ScalableHashTable,
+        tree::object::b_tree::node_loader::NodeLoader,
+    };
 
     struct MockNodeLoader {}
 
@@ -113,7 +117,12 @@ mod tests {
 
     #[test]
     fn new() {
-        let b_tree_vec = BTreeVec::<usize, MockNodeLoader, ScalableHashTable<usize, Node<usize, 4>>, 4>::new(MockNodeLoader{});
+        let b_tree_vec = BTreeVec::<
+            usize,
+            MockNodeLoader,
+            ScalableHashTable<usize, Node<usize, 4>>,
+            4,
+        >::new(MockNodeLoader {});
 
         assert_eq!(b_tree_vec.max_index, 0);
         assert_eq!(b_tree_vec.empty, Vec::new());
@@ -121,46 +130,66 @@ mod tests {
 
     #[test]
     fn add_node() {
-        let mut b_tree_vec = BTreeVec::<usize, MockNodeLoader, ScalableHashTable<usize, Node<usize, 4>>, 4>::new(MockNodeLoader{});
+        let mut b_tree_vec = BTreeVec::<
+            usize,
+            MockNodeLoader,
+            ScalableHashTable<usize, Node<usize, 4>>,
+            4,
+        >::new(MockNodeLoader {});
 
         let index = b_tree_vec.add_node();
 
-        assert_eq!(index, 1);
+        assert_eq!(index, 0);
         assert_eq!(b_tree_vec.max_index, 1);
         assert_eq!(b_tree_vec.empty, Vec::new());
     }
 
     #[test]
     fn add_leaf() {
-        let mut b_tree_vec = BTreeVec::<usize, MockNodeLoader, ScalableHashTable<usize, Node<usize, 4>>, 4>::new(MockNodeLoader{});
+        let mut b_tree_vec = BTreeVec::<
+            usize,
+            MockNodeLoader,
+            ScalableHashTable<usize, Node<usize, 4>>,
+            4,
+        >::new(MockNodeLoader {});
 
         let index = b_tree_vec.add_leaf(1);
 
-        assert_eq!(index, 1);
+        assert_eq!(index, 0);
         assert_eq!(b_tree_vec.max_index, 1);
         assert_eq!(b_tree_vec.empty, Vec::new());
     }
-    
+
     #[test]
     fn get_node() {
-        let mut b_tree_vec = BTreeVec::<usize, MockNodeLoader, ScalableHashTable<usize, Node<usize, 4>>, 4>::new(MockNodeLoader{});
+        let mut b_tree_vec = BTreeVec::<
+            usize,
+            MockNodeLoader,
+            ScalableHashTable<usize, Node<usize, 4>>,
+            4,
+        >::new(MockNodeLoader {});
 
         let index = b_tree_vec.add_node();
         let node = b_tree_vec.get_node(index);
 
         assert_eq!(node, Some(Node::new(index)));
     }
-    
+
     #[test]
     fn update_node() {
-        let mut b_tree_vec = BTreeVec::<usize, MockNodeLoader, ScalableHashTable<usize, Node<usize, 4>>, 4>::new(MockNodeLoader{});
+        let mut b_tree_vec = BTreeVec::<
+            usize,
+            MockNodeLoader,
+            ScalableHashTable<usize, Node<usize, 4>>,
+            4,
+        >::new(MockNodeLoader {});
 
         let index = b_tree_vec.add_node();
         let node = Node::new(index);
         b_tree_vec.update_node(index, node);
-        
+
         let node = b_tree_vec.get_node(index);
-        
+
         assert_eq!(node, Some(Node::new(index)));
     }
 }

@@ -47,7 +47,7 @@ pub trait HashTable<K, V> {
     /// # Returns
     /// * `usize` - Number of elements in the hash table
     fn len(&self) -> usize;
-    
+
     /// Checks if the hash table is empty
     /// # Returns
     /// * `bool` - True if the hash table is empty, false otherwise.

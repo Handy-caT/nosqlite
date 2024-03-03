@@ -36,10 +36,10 @@ impl Index {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Node<T, const NODE_SIZE: u8> {
     /// Vector that stores the keys.
-    keys: Vec<T>,
+    pub(crate) keys: Vec<T>,
 
     /// Vector that stores the children indexes.
-    link_indexes: Vec<u32>,
+    pub(crate) link_indexes: Vec<u32>,
 
     index: Index,
 }
