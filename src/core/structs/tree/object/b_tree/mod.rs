@@ -1,12 +1,13 @@
 use crate::core::structs::{
     hash_table::HashTable,
-    tree::object::{b_tree::node::Node, tree::Tree},
+    tree::object::{
+        b_tree::{node::Node, node_loader::NodeLoader, node_vector::BTreeVec},
+        tree::Tree,
+    },
 };
 use std::cmp::Ordering;
-use crate::core::structs::tree::object::b_tree::node_loader::NodeLoader;
-use crate::core::structs::tree::object::b_tree::node_vector::BTreeVec;
 
-mod node;
+pub mod node;
 mod node_loader;
 mod node_vector;
 
@@ -38,8 +39,11 @@ where
             if node.is_full() {
                 todo!()
             } else {
-                node.add_value(value);
-                node.index.index
+                let index = node.get_position_by_value(&value);
+                node.add_value(value, index);
+                let result = node.index.index;
+                self.data.update_node(root, node);
+                result
             }
         } else {
             let child = node.get_index_by_value(&value);
@@ -49,8 +53,8 @@ where
                 todo!()
             } else {
                 let leaf_index = self.data.add_leaf(value);
-                
-                node.add_link_index(leaf_index).unwrap();
+
+                node.push_link_index(leaf_index).unwrap();
                 self.data.update_node(root, node);
                 leaf_index
             }
@@ -74,12 +78,12 @@ where
         } else {
             let node_index = self.data.add_node();
             self.root = Some(node_index);
-            
+
             let leaf_index = self.data.add_leaf(value.clone());
-            
+
             let mut node = self.data.get_node(node_index).unwrap();
-            node.add_value(value).unwrap();
-            node.add_link_index(leaf_index).unwrap();
+            node.push_value(value).unwrap();
+            node.push_link_index(leaf_index).unwrap();
             self.data.update_node(node_index, node);
 
             leaf_index
@@ -110,7 +114,7 @@ where
 #[cfg(test)]
 mod test {
     use crate::core::structs::{
-        hash_table::{scalable_hash_table::ScalableHashTable, HashTable},
+        hash_table::{scalable_hash_table::ScalableHashTable},
         tree::object::{
             b_tree::{node::Node, node_loader::NodeLoader, BTree},
             tree::Tree,
@@ -137,7 +141,7 @@ mod test {
             ScalableHashTable<usize, Node<u16, 3>>,
             3,
         > = BTree::new(MockNodeLoader {});
-        
+
         assert!(tree.root.is_none());
     }
 
@@ -151,25 +155,25 @@ mod test {
         > = BTree::new(MockNodeLoader {});
 
         let index = tree.push(1);
-        
+
         assert_eq!(tree.root, Some(0));
         assert_eq!(index, 1);
-        
+
         let node = tree.data.get_node(0).unwrap();
         assert_eq!(node.keys.len(), 1);
         assert_eq!(node.keys[0], 1);
         assert_eq!(node.link_indexes.len(), 1);
         assert_eq!(node.link_indexes[0], 1);
         assert!(!node.is_leaf());
-        
+
         let leaf = tree.data.get_node(1).unwrap();
         assert_eq!(leaf.keys.len(), 1);
         assert_eq!(leaf.keys[0], 1);
         assert!(leaf.is_leaf());
     }
-    
+
     #[test]
-    fn test_btree_push_second() {
+    fn test_btree_push_second_bigger() {
         let mut tree: BTree<
             u16,
             MockNodeLoader,
@@ -179,10 +183,10 @@ mod test {
 
         tree.push(1);
         let index = tree.push(2);
-        
+
         assert_eq!(tree.root, Some(0));
         assert_eq!(index, 2);
-        
+
         let node = tree.data.get_node(0).unwrap();
         assert_eq!(node.keys.len(), 1);
         assert_eq!(node.keys[0], 1);
@@ -190,15 +194,44 @@ mod test {
         assert_eq!(node.link_indexes[0], 1);
         assert_eq!(node.link_indexes[1], 2);
         assert!(!node.is_leaf());
-        
+
         let leaf = tree.data.get_node(1).unwrap();
         assert_eq!(leaf.keys.len(), 1);
         assert_eq!(leaf.keys[0], 1);
         assert!(leaf.is_leaf());
-        
+
         let leaf = tree.data.get_node(2).unwrap();
         assert_eq!(leaf.keys.len(), 1);
         assert_eq!(leaf.keys[0], 2);
+        assert!(leaf.is_leaf());
+    }
+
+    #[test]
+    fn test_btree_push_second_lower() {
+        let mut tree: BTree<
+            u16,
+            MockNodeLoader,
+            ScalableHashTable<usize, Node<u16, 3>>,
+            3,
+        > = BTree::new(MockNodeLoader {});
+
+        tree.push(2);
+        let index = tree.push(1);
+
+        assert_eq!(tree.root, Some(0));
+        assert_eq!(index, 1);
+
+        let node = tree.data.get_node(0).unwrap();
+        assert_eq!(node.keys.len(), 1);
+        assert_eq!(node.keys[0], 2);
+        assert_eq!(node.link_indexes.len(), 1);
+        assert_eq!(node.link_indexes[0], 1);
+        assert!(!node.is_leaf());
+
+        let leaf = tree.data.get_node(1).unwrap();
+        assert_eq!(leaf.keys.len(), 2);
+        assert_eq!(leaf.keys[0], 1);
+        assert_eq!(leaf.keys[1], 2);
         assert!(leaf.is_leaf());
     }
 }

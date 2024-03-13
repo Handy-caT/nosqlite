@@ -71,7 +71,7 @@ where
         };
 
         let mut node = Node::new(index);
-        node.add_value(value).unwrap();
+        node.add_value(value, 0).unwrap();
         self.preloaded_data.insert(index, node);
 
         index
