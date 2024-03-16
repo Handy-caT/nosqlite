@@ -13,8 +13,8 @@ pub struct NumericIdGenerator {
     counter: u64,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct NumericId(pub(crate) u64);
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
+pub struct NumericId(pub u64);
 
 impl IdGenerator<NumericId> for NumericIdGenerator {
     fn new() -> NumericIdGenerator {

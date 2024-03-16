@@ -1,13 +1,13 @@
-use crate::{
-    core::structs::hash_table::{
-        scalable_hash_table::ScalableHashTable, HashTable as _,
-    },
-    schema::table::Table,
+pub mod column;
+pub mod table;
+pub mod r#type;
+
+use crate::core::structs::hash_table::{
+    scalable_hash_table::ScalableHashTable, HashTable as _,
 };
 
-mod column;
-mod table;
-mod r#type;
+pub use column::Column;
+pub use table::Table;
 
 /// Represents a database schema.
 pub struct Schema {

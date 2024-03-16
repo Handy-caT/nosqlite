@@ -1,5 +1,5 @@
 /// A primary key constraint.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct PrimaryKey {
     /// The name of the primary key.
     name: String,
@@ -30,15 +30,6 @@ impl PrimaryKey {
     /// * `&Vec<String>` - The column names that make up the primary key.
     pub fn get_columns(&self) -> &Vec<String> {
         &self.columns
-    }
-}
-
-impl Default for PrimaryKey {
-    fn default() -> Self {
-        PrimaryKey {
-            name: "".to_string(),
-            columns: vec![],
-        }
     }
 }
 

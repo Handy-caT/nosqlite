@@ -1,5 +1,6 @@
 #![feature(core_intrinsics)]
 
+mod controller;
 mod core;
 mod data;
 mod page;

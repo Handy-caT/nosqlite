@@ -11,7 +11,7 @@ use crate::core::structs::hash_table::vectors::{
 /// # Arguments
 /// * `V` - Type of the value
 /// * `K` - Type of the key
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct StaticHashVec<K, V> {
     /// The data of the hash vector as a vector of vectors.
     data: Vec<Vec<KeyValue<K, V>>>,

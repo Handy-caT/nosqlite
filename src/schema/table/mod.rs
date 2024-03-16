@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// Represents a database table.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Table {
     /// The name of the table.
     name: String,
@@ -85,6 +85,7 @@ mod tests {
         core::structs::hash_table::HashTable,
         schema::{
             column::{primary_key::PrimaryKey, Column},
+            r#type::r#enum::StorageDataType,
             table::Table,
         },
     };
@@ -101,7 +102,7 @@ mod tests {
     #[test]
     fn test_table_add_column() {
         let mut table = Table::new("table".to_string());
-        let column = Column::default();
+        let column = Column::new(StorageDataType::Integer);
         table.add_column("column".to_string(), column.clone());
         assert_eq!(table.columns.len(), 1);
         assert_eq!(table.get_column(&"column".to_string()), Some(column));
@@ -110,7 +111,7 @@ mod tests {
     #[test]
     fn test_table_get_column() {
         let mut table = Table::new("table".to_string());
-        let column = Column::default();
+        let column = Column::new(StorageDataType::Integer);
         table.add_column("column".to_string(), column.clone());
         assert_eq!(table.get_column(&"column".to_string()), Some(column));
     }

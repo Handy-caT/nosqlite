@@ -73,19 +73,18 @@ where
                 }
             }
         }
-        
+
         let next = self.keys.get(pos);
         if let Some(next) = next {
             if next < &value {
                 return Err(Error::InvalidValue);
             }
         }
-        
+
         self.keys.insert(pos, value);
         Ok(())
     }
-    
-    
+
     pub fn push_value(&mut self, value: T) -> Result<(), Error> {
         if let Some(last) = self.keys.last() {
             if last > &value {
@@ -99,11 +98,19 @@ where
     /// Adds a child node index to the node.
     /// # Arguments
     /// * `index` - Child node index.
-    pub fn add_link_index(&mut self, index: usize, pos: usize) -> Result<(), Error> {
-        self.link_indexes.insert(pos, index);
+    pub fn add_link_index(
+        &mut self,
+        index: usize,
+        pos: usize,
+    ) -> Result<(), Error> {
+        if self.link_indexes.len() <= self.keys.len() {
+            self.link_indexes.insert(pos, index);
+        } else {
+            return Err(Error::InvalidValue);
+        }
         Ok(())
     }
-    
+
     pub fn push_link_index(&mut self, index: usize) -> Result<(), Error> {
         if self.link_indexes.len() <= self.keys.len() {
             self.link_indexes.push(index);
@@ -142,7 +149,7 @@ where
 
         self.link_indexes.get(index).map(|x| *x)
     }
-    
+
     /// Returns position of the value in the node.
     /// # Arguments
     /// * `value` - Value to search.
@@ -150,12 +157,21 @@ where
     /// * usize - Position of the value.
     pub fn get_position_by_value(&self, value: &T) -> usize {
         let find_index = self.keys.binary_search(value);
-        let index = if let Ok(index) = find_index {
+        if let Ok(index) = find_index {
             index
         } else {
             find_index.unwrap_err()
-        };
-        index
+        }
+    }
+    
+    /// Checks if the node contains the value.
+    /// # Arguments
+    /// * `value` - Value to search.
+    /// # Returns
+    /// * bool - True if the node contains the value, false otherwise.
+    pub fn contains_value(&self, value: &T) -> bool {
+        let find_index = self.keys.binary_search(value);
+        find_index.is_ok()
     }
 
     /// Checks if the node is full.
@@ -211,7 +227,7 @@ mod tests {
     fn test_node_add_value_invalid() {
         let mut node = Node::<i32, 3>::new(0);
         let _ = node.add_value(2, 0);
-        let res = node.add_value(1, 0);
+        let res = node.add_value(1, 1);
 
         assert!(res.is_err());
         assert_eq!(node.keys.len(), 1);
@@ -222,8 +238,8 @@ mod tests {
     fn test_node_add_link_index() {
         let mut node = Node::<i32, 3>::new(0);
         let _ = node.add_value(1, 0);
-        let _ = node.add_link_index(0,0 );
-        let _ = node.add_link_index(1,1);
+        let _ = node.add_link_index(0, 0);
+        let _ = node.add_link_index(1, 1);
 
         assert_eq!(node.link_indexes.len(), 2);
         assert_eq!(node.link_indexes[0], 0);
@@ -297,7 +313,7 @@ mod tests {
         let _ = node.add_value(7, 1);
         let _ = node.add_link_index(2, 2);
         let _ = node.add_value(10, 2);
-        let _ = node.add_link_index(3 ,3);
+        let _ = node.add_link_index(3, 3);
 
         let index = node.get_index_by_value(&0);
         assert_eq!(index, Some(0));
@@ -322,5 +338,15 @@ mod tests {
 
         let _ = node.add_link_index(0, 0);
         assert!(!node.is_leaf());
+    }
+    
+    #[test]
+    fn test_node_contains_value() {
+        let mut node = Node::<i32, 3>::new(0);
+        assert!(!node.contains_value(&0));
+
+        let _ = node.add_value(1, 0);
+        assert!(node.contains_value(&1));
+        assert!(!node.contains_value(&0));
     }
 }

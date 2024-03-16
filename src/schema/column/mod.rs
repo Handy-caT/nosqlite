@@ -1,17 +1,32 @@
 pub mod primary_key;
 
-use crate::schema::r#type::r#enum::StorageData;
+use crate::schema::r#type::r#enum::{StorageData, StorageDataType};
 
 /// Represents database column.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Column {
     /// Marks column as not null.
     not_null: bool,
     /// Default value for column.
     default: Option<StorageData>,
+    /// The type of the column.
+    type_: StorageDataType,
 }
 
 impl Column {
+    /// Creates a new column with the given [`StorageDataType`].
+    /// # Arguments
+    /// * `type_` - The type of the column.
+    /// # Returns
+    /// A new column with the given type.
+    pub fn new(type_: StorageDataType) -> Self {
+        Column {
+            not_null: false,
+            default: None,
+            type_,
+        }
+    }
+
     /// Sets the column not null state.
     /// # Arguments
     /// * `not_null` - The not null state.
@@ -31,19 +46,19 @@ impl Column {
 mod tests {
     use crate::schema::{
         column::Column,
-        r#type::r#enum::{Integer, StorageData},
+        r#type::r#enum::{Integer, StorageData, StorageDataType},
     };
 
     #[test]
     fn test_set_not_null() {
-        let mut column = Column::default();
+        let mut column = Column::new(StorageDataType::Integer);
         column.set_not_null(true);
         assert_eq!(column.not_null, true);
     }
 
     #[test]
     fn test_set_default() {
-        let mut column = Column::default();
+        let mut column = Column::new(StorageDataType::Integer);
         column.set_default(Some(StorageData::Integer(Integer(1))));
         assert_eq!(column.default, Some(StorageData::Integer(Integer(1))));
     }

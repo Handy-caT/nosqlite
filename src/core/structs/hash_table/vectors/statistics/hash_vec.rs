@@ -1,6 +1,6 @@
 /// Struct that stores statistics about a hash vector.
 /// Now implemented only for the maximum length of the buckets.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Stats {
     /// Size of the hash vector.
     pub size: usize,
