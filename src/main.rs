@@ -3,9 +3,9 @@
 mod controller;
 mod core;
 mod data;
+mod fasade;
 mod page;
 mod schema;
-mod fasade;
 
 fn main() {
     // let bytes: [u8; 8] = [0, 0, 0, 0, 0, 0, 1, 125];

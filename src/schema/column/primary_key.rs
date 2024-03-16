@@ -1,3 +1,8 @@
+use crate::schema::r#type::{
+    data_types::{Integer, Long, UInteger, ULong, UShort},
+    r#enum::{StorageData, StorageDataType},
+};
+
 /// A primary key constraint.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct PrimaryKey {
@@ -30,6 +35,50 @@ impl PrimaryKey {
     /// * `&Vec<String>` - The column names that make up the primary key.
     pub fn get_columns(&self) -> &Vec<String> {
         &self.columns
+    }
+}
+
+/// Enum that represents the primary key type.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Type {
+    Integer,
+    Long,
+    UShort,
+    UInteger,
+    ULong,
+}
+
+impl From<Type> for StorageDataType {
+    fn from(pk_type: Type) -> Self {
+        match pk_type {
+            Type::Integer => StorageDataType::Integer,
+            Type::Long => StorageDataType::Long,
+            Type::UShort => StorageDataType::UShort,
+            Type::UInteger => StorageDataType::UInteger,
+            Type::ULong => StorageDataType::ULong,
+        }
+    }
+}
+
+/// Enum that represents the primary key data.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Data {
+    Integer(Integer),
+    Long(Long),
+    UShort(UShort),
+    UInteger(UInteger),
+    ULong(ULong),
+}
+
+impl From<Data> for StorageData {
+    fn from(pk_data: Data) -> Self {
+        match pk_data {
+            Data::Integer(data) => StorageData::Integer(data),
+            Data::Long(data) => StorageData::Long(data),
+            Data::UShort(data) => StorageData::UShort(data),
+            Data::UInteger(data) => StorageData::UInteger(data),
+            Data::ULong(data) => StorageData::ULong(data),
+        }
     }
 }
 

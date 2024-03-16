@@ -2,7 +2,38 @@ use crate::{
     core::structs::tree::object::{tree::Tree as _, BTree},
     data::id::NumericId,
     schema,
+    schema::column::primary_key,
 };
+
+/// Represents a mapper from a primary key to a unique identifier.
+#[derive(Debug, Clone)]
+pub struct KeyId {
+    /// The unique identifier.
+    pub id: NumericId,
+
+    /// The primary key value.
+    pub key: primary_key::Data,
+}
+
+impl PartialEq for KeyId {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+    }
+}
+
+impl Eq for KeyId {}
+
+impl PartialOrd for KeyId {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for KeyId {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.key.cmp(&other.key)
+    }
+}
 
 /// Controller for a single table.
 /// Is used to change the table's schema and data.
@@ -12,7 +43,7 @@ pub struct TableController<const NODE_SIZE: u8> {
     info: schema::Table,
 
     /// B-Tree to store primary key indexes.
-    index: BTree<NumericId, NODE_SIZE>,
+    index: BTree<KeyId, NODE_SIZE>,
 
     /// Vector of page indexes that store the table's data.
     table_pages: Vec<usize>,
@@ -61,8 +92,8 @@ impl<const NODE_SIZE: u8> TableController<NODE_SIZE> {
     /// * `data` - The data to add.
     /// # Returns
     /// * `NumericId` - The index of the new row.
-    pub fn add_data(&mut self, data: NumericId) {
-        self.index.push(data);
+    pub fn add_data(&mut self, id: NumericId, key: primary_key::Data) {
+        self.index.push(KeyId { id, key });
     }
 
     /// Adds a page to the table.
@@ -76,9 +107,11 @@ impl<const NODE_SIZE: u8> TableController<NODE_SIZE> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        controller::table::TableController,
-        core::structs::tree::object::tree::Tree as _, data::id::NumericId,
-        schema, schema::r#type::r#enum::StorageDataType,
+        controller::table::{KeyId, TableController},
+        core::structs::tree::object::tree::Tree as _,
+        data::id::NumericId,
+        schema,
+        schema::{column::primary_key, r#type::r#enum::StorageDataType},
     };
 
     #[test]
@@ -94,9 +127,13 @@ mod tests {
         let name = "table".to_string();
         let mut table = TableController::<16>::new(name.clone());
 
-        table.add_data(NumericId::new(0));
+        table.add_data(NumericId::new(3), primary_key::Data::Integer(0.into()));
 
-        assert!(table.index.find(&NumericId::new(0)).is_some());
+        let key_id = KeyId {
+            id: NumericId::default(),
+            key: primary_key::Data::Integer(0.into()),
+        };
+        assert!(table.index.find(&key_id).is_some());
     }
 
     #[test]
