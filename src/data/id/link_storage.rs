@@ -8,6 +8,7 @@ use crate::{
 
 /// A registry for getting [`NumericId`]s from [`PageLink`]s
 /// and vice versa.
+#[derive(Debug)]
 pub struct LinkStorage {
     /// A [`BackwardsHashTable`] for getting [`NumericId`]s from [`PageLink`]s.
     data: BackwardsHashTable<PageLink, NumericId>,

@@ -163,7 +163,7 @@ where
             find_index.unwrap_err()
         }
     }
-    
+
     /// Checks if the node contains the value.
     /// # Arguments
     /// * `value` - Value to search.
@@ -339,7 +339,7 @@ mod tests {
         let _ = node.add_link_index(0, 0);
         assert!(!node.is_leaf());
     }
-    
+
     #[test]
     fn test_node_contains_value() {
         let mut node = Node::<i32, 3>::new(0);

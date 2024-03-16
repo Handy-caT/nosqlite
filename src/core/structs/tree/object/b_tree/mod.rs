@@ -110,7 +110,7 @@ where
                         Some(current)
                     } else {
                         None
-                    }
+                    };
                 } else {
                     let child = node.get_index_by_value(value);
                     if let Some(child) = child {
@@ -256,7 +256,7 @@ mod test {
         assert_eq!(leaf.keys[1], 2);
         assert!(leaf.is_leaf());
     }
-    
+
     #[test]
     fn test_btree_find() {
         let mut tree: BTree<u16, 3, MockNodeLoader> =

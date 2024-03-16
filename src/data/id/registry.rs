@@ -9,6 +9,7 @@ use crate::{
 
 /// A registry for [`Id`]s.
 /// It can be used to store [`Id`]s and retrieve them.
+#[derive(Debug)]
 pub struct Registry<G = NumericIdGenerator> {
     id_generator: G,
     link_storage: LinkStorage,

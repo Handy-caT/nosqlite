@@ -1,5 +1,6 @@
 use crate::page::page_struct::Page;
 
+#[derive(Debug)]
 pub struct PageController {
     pages: Vec<Page>,
     page_count: usize,

@@ -1,34 +1,33 @@
+use std::sync::{Arc, Mutex};
 use crate::{
     data::{data_allocator::DataAllocator, id},
     page::page_controller::PageController,
 };
 
 /// [`DataStorage`] is a struct that is used to store various data.
+#[derive(Debug)]
 pub struct DataStorage {
     /// [`PageController`] is used to control pages.
     /// It is used to add new pages and get pages.
-    page_controller: PageController,
-
-    /// [`DataAllocator`] is used to find free space in pages.
-    data_allocator: DataAllocator,
+    page_controller: Arc<Mutex<PageController>>,
 
     /// [`id::Registry`] is used to store [`Id`]s and [`PageLink`]s
     /// that are used to access data.
-    id_registry: id::Registry,
+    id_registry: Arc<Mutex<id::Registry>>,
+
+    /// [`DataAllocator`] is used to find free space in pages.
+    data_allocator: DataAllocator,
 }
 
 impl DataStorage {
     /// Creates a new [`DataStorage`].
     /// # Returns
     /// * `Self` - [`DataStorage`].
-    pub fn new() -> Self {
-        let mut page_controller = PageController::new();
-        page_controller.add_page();
-
+    pub fn new(controller: Arc<Mutex<PageController>>, registry: Arc<Mutex<id::Registry>>) -> Self {
         Self {
-            page_controller,
+            page_controller: controller,
             data_allocator: DataAllocator::new(),
-            id_registry: id::Registry::new(),
+            id_registry: registry,
         }
     }
 
@@ -50,10 +49,16 @@ impl DataStorage {
         let len = slice.len();
 
         let link = self.data_allocator.allocate(len as u16);
-        let id = self.id_registry.add_link(link);
+        let id = {
+            let mut registry = self.id_registry.lock().unwrap();
+            registry.add_link(link)
+        };
 
-        let page = self.page_controller.get_page(link.page_index);
-        let _ = page.update_data(slice, link);
+        {
+            let mut controller = self.page_controller.lock().unwrap();
+            let page = controller.get_page(link.page_index);
+            let _ = page.update_data(slice, link);
+        };
 
         id
     }
@@ -69,10 +74,17 @@ impl DataStorage {
         &mut self,
         id: id::NumericId,
     ) -> Result<(), DataStorageError> {
-        let link = self.id_registry.get_link(id);
+        let link = {
+            let mut registry = self.id_registry.lock().unwrap();
+            registry.get_link(id)
+        };
+        
         if let Some(link) = link {
             self.data_allocator.remove(link);
-            let res = self.id_registry.remove_id(id);
+            let res = {
+                let mut registry = self.id_registry.lock().unwrap();
+                registry.remove_id(id)
+            };
             if res.is_err() {
                 return Err(DataStorageError::IdNotFound);
             }
@@ -116,84 +128,153 @@ pub enum DataStorageError {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::{Arc, Mutex};
     use crate::data::data_storage::DataStorage;
+    use crate::data::id;
+    use crate::page::page_controller::PageController;
 
     #[test]
     fn test_data_storage_new() {
-        let data_storage = DataStorage::new();
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        
+        let data_storage = DataStorage::new(controller, registry);
 
-        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+        {
+            let controller = data_storage.page_controller.lock().unwrap();
+            assert_eq!(controller.get_page_count(), 1);
+        }
         assert_eq!(data_storage.data_allocator.allocated_size(), 0);
-        assert_eq!(data_storage.id_registry.get_id_count(), 0);
+        {
+            let registry = data_storage.id_registry.lock().unwrap();
+            assert_eq!(registry.get_id_count(), 0);
+        }
     }
 
     #[test]
     fn test_data_storage_add_data() {
-        let mut data_storage = DataStorage::new();
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
 
         let data = 10u32;
         let id = data_storage.add_data(&data);
 
-        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+        {
+            let controller = data_storage.page_controller.lock().unwrap();
+            assert_eq!(controller.get_page_count(), 1);
+        }
         assert_eq!(data_storage.data_allocator.allocated_size(), 4);
-        assert_eq!(data_storage.id_registry.get_id_count(), 1);
+        {
+            let registry = data_storage.id_registry.lock().unwrap();
+            assert_eq!(registry.get_id_count(), 1);
+        }
         assert_eq!(id.0, 1);
     }
 
     #[test]
     fn test_data_storage_remove_data() {
-        let mut data_storage = DataStorage::new();
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
 
         let data = 10u32;
         let id = data_storage.add_data(&data);
         let res = data_storage.remove_data(id);
 
-        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+        {
+            let controller = data_storage.page_controller.lock().unwrap();
+            assert_eq!(controller.get_page_count(), 1);
+        }
         assert_eq!(data_storage.data_allocator.allocated_size(), 4);
-        assert_eq!(data_storage.id_registry.get_id_count(), 0);
+        {
+            let registry = data_storage.id_registry.lock().unwrap();
+            assert_eq!(registry.get_id_count(), 0);
+        }
         assert!(res.is_ok());
     }
 
     #[test]
     fn test_data_storage_remove_data_not_found() {
-        let mut data_storage = DataStorage::new();
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
 
         let data = 10u32;
         let id = data_storage.add_data(&data);
         let res = data_storage.remove_data(id);
         let res = data_storage.remove_data(id);
 
-        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+        {
+            let controller = data_storage.page_controller.lock().unwrap();
+            assert_eq!(controller.get_page_count(), 1);
+        }
         assert_eq!(data_storage.data_allocator.allocated_size(), 4);
-        assert_eq!(data_storage.id_registry.get_id_count(), 0);
+        {
+            let registry = data_storage.id_registry.lock().unwrap();
+            assert_eq!(registry.get_id_count(), 0);
+        }
         assert!(res.is_err());
     }
 
     #[test]
     fn test_data_storage_add_data_after_remove() {
-        let mut data_storage = DataStorage::new();
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
 
         let data = 10u32;
         let id = data_storage.add_data(&data);
         let res = data_storage.remove_data(id);
 
-        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+        {
+            let controller = data_storage.page_controller.lock().unwrap();
+            assert_eq!(controller.get_page_count(), 1);
+        }
         assert_eq!(data_storage.data_allocator.allocated_size(), 4);
-        assert_eq!(data_storage.id_registry.get_id_count(), 0);
+        {
+            let registry = data_storage.id_registry.lock().unwrap();
+            assert_eq!(registry.get_id_count(), 0);
+        }
         assert!(res.is_ok());
 
         let data = 87614u32;
         let id = data_storage.add_data(&data);
 
-        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+        {
+            let controller = data_storage.page_controller.lock().unwrap();
+            assert_eq!(controller.get_page_count(), 1);
+        }
         assert_eq!(data_storage.data_allocator.allocated_size(), 4);
-        assert_eq!(data_storage.id_registry.get_id_count(), 1);
+        {
+            let registry = data_storage.id_registry.lock().unwrap();
+            assert_eq!(registry.get_id_count(), 1);
+        }
         assert_eq!(id.0, 1);
     }
 
     #[test]
     fn test_data_storage_update_data() {
-        let mut data_storage = DataStorage::new();
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
 
         let data = 10u32;
         let id = data_storage.add_data(&data);
@@ -201,9 +282,15 @@ mod tests {
         let updated_data = 87614u64;
         let res = data_storage.update_data(id, &updated_data);
 
-        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+        {
+            let controller = data_storage.page_controller.lock().unwrap();
+            assert_eq!(controller.get_page_count(), 1);
+        }
         assert_eq!(data_storage.data_allocator.allocated_size(), 12);
-        assert_eq!(data_storage.id_registry.get_id_count(), 1);
+        {
+            let registry = data_storage.id_registry.lock().unwrap();
+            assert_eq!(registry.get_id_count(), 1);
+        }
         assert!(res.is_ok());
     }
 }

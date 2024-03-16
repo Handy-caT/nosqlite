@@ -18,11 +18,12 @@ use crate::{
 
 /// [`DataAllocator`] is a struct that is responsible for allocating and
 /// deallocating memory.
+#[derive(Debug)]
 pub struct DataAllocator {
     /// [`EmptyLinkRegistry`] that is used to find empty places.
     empty_link_registry: EmptyLinkRegistry,
 
-    /// Lin to the first free space in memory.
+    /// Link to the first free space in memory.
     tail_link: PageLink,
 }
 

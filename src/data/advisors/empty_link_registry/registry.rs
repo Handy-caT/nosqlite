@@ -28,6 +28,7 @@ pub trait EmptyLinkStorage {
     fn pop(&mut self) -> Option<PageLink>;
 }
 
+#[derive(Debug)]
 pub struct Registry<V, M>
 where
     V: TreeVec<PageLink> + Sized,

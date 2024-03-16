@@ -13,6 +13,9 @@ pub struct TableController<const NODE_SIZE: u8> {
 
     /// B-Tree to store primary key indexes.
     index: BTree<NumericId, NODE_SIZE>,
+
+    /// Vector of page indexes that store the table's data.
+    table_pages: Vec<usize>,
 }
 
 impl<const NODE_SIZE: u8> TableController<NODE_SIZE> {
@@ -25,6 +28,7 @@ impl<const NODE_SIZE: u8> TableController<NODE_SIZE> {
         TableController {
             info: schema::Table::new(name),
             index: BTree::default(),
+            table_pages: Vec::new(),
         }
     }
 
@@ -60,16 +64,22 @@ impl<const NODE_SIZE: u8> TableController<NODE_SIZE> {
     pub fn add_data(&mut self, data: NumericId) {
         self.index.push(data);
     }
+
+    /// Adds a page to the table.
+    /// # Arguments
+    /// * `index` - The index of the page to add.
+    pub fn add_page(&mut self, index: usize) {
+        self.table_pages.push(index);
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fmt::Debug;
-    use crate::controller::table::TableController;
-    use crate::core::structs::tree::object::tree::Tree;
-    use crate::data::id::NumericId;
-    use crate::schema;
-    use crate::schema::r#type::r#enum::StorageDataType;
+    use crate::{
+        controller::table::TableController,
+        core::structs::tree::object::tree::Tree as _, data::id::NumericId,
+        schema, schema::r#type::r#enum::StorageDataType,
+    };
 
     #[test]
     fn test_new() {
@@ -77,6 +87,35 @@ mod tests {
         let table = TableController::<16>::new(name.clone());
 
         assert_eq!(table.get_name(), &name);
+    }
+
+    #[test]
+    fn test_add_data() {
+        let name = "table".to_string();
+        let mut table = TableController::<16>::new(name.clone());
+
+        table.add_data(NumericId::new(0));
+
+        assert!(table.index.find(&NumericId::new(0)).is_some());
+    }
+
+    #[test]
+    fn test_get_name() {
+        let name = "table".to_string();
+        let table = TableController::<16>::new(name.clone());
+
+        assert_eq!(table.get_name(), &name);
+    }
+
+    #[test]
+    fn test_get_column() {
+        let name = "table".to_string();
+        let mut table = TableController::<16>::new(name.clone());
+
+        let column = schema::Column::new(StorageDataType::Integer);
+        table.add_column("column".to_string(), column.clone());
+
+        assert_eq!(table.get_column(&"column".to_string()), Some(column));
     }
 
     #[test]
@@ -91,12 +130,33 @@ mod tests {
     }
 
     #[test]
-    fn test_add_data() {
+    fn test_add_column_multiple() {
         let name = "table".to_string();
         let mut table = TableController::<16>::new(name.clone());
 
-        table.add_data(NumericId::new(0));
+        let column = schema::Column::new(StorageDataType::Integer);
+        table.add_column("column".to_string(), column.clone());
 
-        assert!(table.index.find(&NumericId::new(0)).is_some());
+        let column = schema::Column::new(StorageDataType::Integer);
+        table.add_column("column2".to_string(), column.clone());
+
+        assert_eq!(
+            table.get_column(&"column".to_string()),
+            Some(schema::Column::new(StorageDataType::Integer))
+        );
+        assert_eq!(
+            table.get_column(&"column2".to_string()),
+            Some(schema::Column::new(StorageDataType::Integer))
+        );
+    }
+
+    #[test]
+    fn test_add_page() {
+        let name = "table".to_string();
+        let mut table = TableController::<16>::new(name.clone());
+
+        table.add_page(0);
+
+        assert_eq!(table.table_pages.len(), 1);
     }
 }
