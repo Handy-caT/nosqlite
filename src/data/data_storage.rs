@@ -1,12 +1,14 @@
 use crate::{
     data::{data_allocator::DataAllocator, id},
     page::page_controller::PageController,
-    schema::r#type::r#enum::StorageData,
+    schema::r#type::r#enum::{StorageData, StorageDataType},
 };
-use std::sync::{Arc, Mutex};
 use serde_storage::ser::encoder::StorageEncoder;
+use std::sync::{Arc, Mutex};
 
-/// [`DataStorage`] is a struct that is used to store various data.
+/// [`DataStorage`] is a struct that is used to store data of provided format.
+/// This object is supposed to be used with [`TableController`] to store
+/// table's data.
 #[derive(Debug)]
 pub struct DataStorage {
     /// [`PageController`] is used to control pages.
@@ -19,9 +21,28 @@ pub struct DataStorage {
 
     /// [`DataAllocator`] is used to find free space in pages.
     data_allocator: DataAllocator,
+
+    /// [`StorageDataType`] is used to describe storable data types.
+    data_type: Vec<StorageDataType>,
 }
 
 impl DataStorage {
+    /// Checks if the provided data type matches the data type of the
+    /// [`DataStorage`].
+    fn check_data_type(&self, data: &Vec<StorageData>) -> bool {
+        if data.len() != self.data_type.len() {
+            return false;
+        }
+
+        for (i, d) in data.iter().enumerate() {
+            if d.data_type() != self.data_type[i] {
+                return false;
+            }
+        }
+
+        true
+    }
+    
     /// Creates a new [`DataStorage`].
     /// # Returns
     /// * `Self` - [`DataStorage`].
@@ -33,6 +54,7 @@ impl DataStorage {
             page_controller: controller,
             data_allocator: DataAllocator::new(),
             id_registry: registry,
+            data_type: Vec::new(),
         }
     }
 
@@ -41,12 +63,16 @@ impl DataStorage {
     /// * `data` - Data to add.
     /// # Returns
     /// * `NumericId` - [`NumericId`] of the data.
-    pub fn add_data<T>(&mut self, data: Vec<T>) -> id::NumericId
+    pub fn add_data<T>(&mut self, data: Vec<T>) -> Result<id::NumericId, DataStorageError>
     where
         T: Into<StorageData> + Clone,
     {
         let mut encoder = StorageEncoder::new();
         
+        if !self.check_data_type(&data.iter().map(|d| d.clone().into()).collect()) {
+            return Err(DataStorageError::TypeMismatch);
+        }
+
         let _ = data
             .iter()
             .map(|d| encoder.emit::<StorageData>(d.clone().into()))
@@ -66,7 +92,7 @@ impl DataStorage {
             let _ = page.update_data(bytes.as_ref(), link);
         };
 
-        id
+        Ok(id)
     }
 
     /// Removes data from the [`DataStorage`].
@@ -112,24 +138,47 @@ impl DataStorage {
     pub fn update_data<T>(
         &mut self,
         id: id::NumericId,
-        data: Vec<T>
+        data: Vec<T>,
     ) -> Result<(), DataStorageError>
-        where
-            T: Into<StorageData> + Clone,
+    where
+        T: Into<StorageData> + Clone,
     {
         self.remove_data(id)?;
 
-        self.add_data(data);
+        self.add_data(data)?;
 
         Ok(())
     }
+    
+    /// Gets data type of the [`DataStorage`].
+    /// # Returns
+    /// * `&Vec<StorageDataType>` - Data type of the [`DataStorage`].
+    pub fn get_data_type(&self) -> &Vec<StorageDataType> {
+        &self.data_type
+    }
+    
+    /// Sets data type of the [`DataStorage`].
+    /// # Arguments
+    /// * `data_type` - Data type to set.
+    pub fn set_data_type(&mut self, data_type: Vec<StorageDataType>) {
+        self.data_type = data_type;
+    }
+    
+    /// Appends data type to the [`DataStorage`].
+    /// # Arguments
+    /// * `data_type` - Data type to append.
+    pub fn append_data_type(&mut self, data_type: StorageDataType) {
+        self.data_type.push(data_type);
+    }
 }
 
+#[derive(Debug)]
 pub enum DataStorageError {
     IdNotFound,
     LinkNotFound,
     PageNotFound,
     DataLengthMismatch,
+    TypeMismatch,
 }
 
 #[cfg(test)]
@@ -137,9 +186,10 @@ mod tests {
     use crate::{
         data::{data_storage::DataStorage, id},
         page::page_controller::PageController,
+        schema::r#type::data_types::{Integer, Long},
     };
     use std::sync::{Arc, Mutex};
-    use crate::schema::r#type::data_types::{Integer, Long};
+    use crate::schema::r#type::r#enum::StorageDataType;
 
     #[test]
     fn test_data_storage_new() {
@@ -160,6 +210,49 @@ mod tests {
             assert_eq!(registry.get_id_count(), 0);
         }
     }
+    
+    #[test]
+    fn test_data_storage_check_data_type() {
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
+
+        let data = Integer(10);
+        let res = data_storage.check_data_type(&vec![data.into()]);
+
+        assert!(res);
+    }
+    
+    #[test]
+    fn test_data_storage_set_data_type() {
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
+
+        assert_eq!(data_storage.get_data_type(), &vec![StorageDataType::Integer]);
+    }
+    
+    #[test]
+    fn test_data_storage_append_data_type() {
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
+        data_storage.append_data_type(StorageDataType::UInteger);
+
+        assert_eq!(data_storage.get_data_type(), &vec![StorageDataType::Integer, StorageDataType::UInteger]);
+    }
 
     #[test]
     fn test_data_storage_add_data() {
@@ -169,10 +262,13 @@ mod tests {
         let registry = Arc::new(Mutex::new(id::Registry::new()));
 
         let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
         let id = data_storage.add_data(vec![data]);
 
+        assert!(id.is_ok());
+        let id = id.unwrap();
         {
             let controller = data_storage.page_controller.lock().unwrap();
             assert_eq!(controller.get_page_count(), 1);
@@ -193,11 +289,15 @@ mod tests {
         let registry = Arc::new(Mutex::new(id::Registry::new()));
 
         let mut data_storage = DataStorage::new(controller, registry);
-
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
+        
         let data = Integer(10);
         let id = data_storage.add_data(vec![data]);
+        assert!(id.is_ok());
+        let id = id.unwrap();
+        
         let res = data_storage.remove_data(id);
-
+        
         {
             let controller = data_storage.page_controller.lock().unwrap();
             assert_eq!(controller.get_page_count(), 1);
@@ -218,9 +318,13 @@ mod tests {
         let registry = Arc::new(Mutex::new(id::Registry::new()));
 
         let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
         let id = data_storage.add_data(vec![data]);
+        assert!(id.is_ok());
+        let id = id.unwrap();
+        
         let res = data_storage.remove_data(id);
         let res = data_storage.remove_data(id);
 
@@ -244,9 +348,13 @@ mod tests {
         let registry = Arc::new(Mutex::new(id::Registry::new()));
 
         let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
         let id = data_storage.add_data(vec![data]);
+        assert!(id.is_ok());
+        let id = id.unwrap();
+        
         let res = data_storage.remove_data(id);
 
         {
@@ -259,10 +367,12 @@ mod tests {
             assert_eq!(registry.get_id_count(), 0);
         }
         assert!(res.is_ok());
-        
+
         let data = Integer(87614);
         let id = data_storage.add_data(vec![data]);
 
+        assert!(id.is_ok());
+        let id = id.unwrap();
         {
             let controller = data_storage.page_controller.lock().unwrap();
             assert_eq!(controller.get_page_count(), 1);
@@ -283,18 +393,21 @@ mod tests {
         let registry = Arc::new(Mutex::new(id::Registry::new()));
 
         let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
         let id = data_storage.add_data(vec![data]);
+        assert!(id.is_ok());
+        let id = id.unwrap();
 
-        let updated_data = Long(87614);
+        let updated_data = Integer(87614);
         let res = data_storage.update_data(id, vec![updated_data]);
 
         {
             let controller = data_storage.page_controller.lock().unwrap();
             assert_eq!(controller.get_page_count(), 1);
         }
-        assert_eq!(data_storage.data_allocator.allocated_size(), 20);
+        assert_eq!(data_storage.data_allocator.allocated_size(), 4);
         {
             let registry = data_storage.id_registry.lock().unwrap();
             assert_eq!(registry.get_id_count(), 1);

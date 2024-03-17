@@ -2,6 +2,7 @@ pub mod single_item;
 pub mod storable;
 
 use crate::de::{decoder::single_item::SingleItemDecoder, error::Error};
+use std::mem::size_of;
 
 pub use storable::Storable;
 
@@ -27,7 +28,7 @@ impl StorageDecoder {
 
     /// Emit a u8.
     pub fn emit_u8(&mut self, value: Vec<u8>) -> Result<u8, Error> {
-        if value.len() != 1 {
+        if value.len() != size_of::<u8>() {
             return Err(Error::InvalidLength);
         }
 
@@ -36,7 +37,7 @@ impl StorageDecoder {
 
     /// Emit a u16.
     pub fn emit_u16(&mut self, value: Vec<u8>) -> Result<u16, Error> {
-        if value.len() != 2 {
+        if value.len() != size_of::<u16>() {
             return Err(Error::InvalidLength);
         }
 
@@ -46,7 +47,7 @@ impl StorageDecoder {
 
     /// Emit a u32.
     pub fn emit_u32(&mut self, value: Vec<u8>) -> Result<u32, Error> {
-        if value.len() != 4 {
+        if value.len() != size_of::<u32>() {
             return Err(Error::InvalidLength);
         }
 
@@ -56,7 +57,7 @@ impl StorageDecoder {
 
     /// Emit a u64.
     pub fn emit_u64(&mut self, value: Vec<u8>) -> Result<u64, Error> {
-        if value.len() != 8 {
+        if value.len() != size_of::<u64>() {
             return Err(Error::InvalidLength);
         }
 
@@ -66,7 +67,7 @@ impl StorageDecoder {
 
     /// Emit a u128.
     pub fn emit_u128(&mut self, value: Vec<u8>) -> Result<u128, Error> {
-        if value.len() != 16 {
+        if value.len() != size_of::<u128>() {
             return Err(Error::InvalidLength);
         }
 
@@ -76,7 +77,7 @@ impl StorageDecoder {
 
     /// Emit a `bool`.
     pub fn emit_bool(&mut self, value: Vec<u8>) -> Result<bool, Error> {
-        if value.len() != 1 {
+        if value.len() != size_of::<bool>() {
             return Err(Error::InvalidLength);
         }
 
@@ -89,7 +90,7 @@ impl StorageDecoder {
 
     /// Emit a i8.
     pub fn emit_i8(&mut self, value: Vec<u8>) -> Result<i8, Error> {
-        if value.len() != 1 {
+        if value.len() != size_of::<i8>() {
             return Err(Error::InvalidLength);
         }
 
@@ -98,7 +99,7 @@ impl StorageDecoder {
 
     /// Emit a i16.
     pub fn emit_i16(&mut self, value: Vec<u8>) -> Result<i16, Error> {
-        if value.len() != 2 {
+        if value.len() != size_of::<i16>() {
             return Err(Error::InvalidLength);
         }
 
@@ -108,7 +109,7 @@ impl StorageDecoder {
 
     /// Emit a i32.
     pub fn emit_i32(&mut self, value: Vec<u8>) -> Result<i32, Error> {
-        if value.len() != 4 {
+        if value.len() != size_of::<i32>() {
             return Err(Error::InvalidLength);
         }
 
@@ -118,7 +119,7 @@ impl StorageDecoder {
 
     /// Emit a i64.
     pub fn emit_i64(&mut self, value: Vec<u8>) -> Result<i64, Error> {
-        if value.len() != 8 {
+        if value.len() != size_of::<i64>() {
             return Err(Error::InvalidLength);
         }
 
@@ -128,7 +129,7 @@ impl StorageDecoder {
 
     /// Emit a i128.
     pub fn emit_i128(&mut self, value: Vec<u8>) -> Result<i128, Error> {
-        if value.len() != 16 {
+        if value.len() != size_of::<i128>() {
             return Err(Error::InvalidLength);
         }
 
@@ -145,7 +146,7 @@ impl StorageDecoder {
 
     /// Emit a f32.
     pub fn emit_f32(&mut self, value: Vec<u8>) -> Result<f32, Error> {
-        if value.len() != 4 {
+        if value.len() != size_of::<f32>() {
             return Err(Error::InvalidLength);
         }
 
@@ -155,7 +156,7 @@ impl StorageDecoder {
 
     /// Emit a f64.
     pub fn emit_f64(&mut self, value: Vec<u8>) -> Result<f64, Error> {
-        if value.len() != 8 {
+        if value.len() != size_of::<f64>() {
             return Err(Error::InvalidLength);
         }
 
