@@ -22,9 +22,10 @@ type TreeBuckets<K, V> =
 /// A hash vector that uses a tree to store the values.
 /// * `V` - Type of the value
 /// * `K` - Type of the key
+#[derive(Debug)]
 pub struct TreeHashVec<
-    K: Copy + Default + PartialOrd,
-    V: Copy + Default + PartialOrd,
+    K: Clone + Default + PartialOrd,
+    V: Clone + Default + PartialOrd,
 > {
     /// The data of the hash vector as a vector of trees.
     /// [`OptimizedTreeVec`] is used as the underlying data
@@ -42,8 +43,8 @@ pub struct TreeHashVec<
 
 /// Implementation of basic [`HashVec`] trait for [`TreeHashVec`]
 impl<
-        K: Default + Eq + Copy + PartialOrd,
-        V: Default + Eq + Copy + PartialOrd,
+        K: Default + Eq + Clone + PartialOrd,
+        V: Default + Eq + Clone + PartialOrd,
     > HashVec<K, V> for TreeHashVec<K, V>
 {
     fn new(size: usize) -> TreeHashVec<K, V> {
@@ -63,7 +64,7 @@ impl<
             vec.data.push(BalancedTree::<
                 KeyValue<K, V>,
                 OptimizedTreeVec<KeyValue<K, V>>,
-            >::new());
+            >::default());
         }
 
         vec.size = size;
@@ -80,9 +81,9 @@ impl<
         (index, data_index)
     }
 
-    fn get(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>> {
-        let item = KeyValue::new(key, V::default());
-        let item_index = self.data[index].find(item);
+    fn get(&mut self, index: usize, key: &K) -> Option<KeyValue<K, V>> {
+        let item = KeyValue::new(key.clone(), V::default());
+        let item_index = self.data[index].find(&item);
 
         match item_index {
             Some(i) => self.data[index].get(i),
@@ -93,36 +94,36 @@ impl<
     fn update(
         &mut self,
         index: usize,
-        key: K,
+        key: &K,
         value: V,
     ) -> Option<KeyValue<K, V>> {
-        let item = KeyValue::new(key, V::default());
-        let item_index = self.data[index].find(item);
+        let item = KeyValue::new(key.clone(), V::default());
+        let item_index = self.data[index].find(&item);
 
         match item_index {
             Some(i) => {
-                let item = KeyValue::new(key, value);
+                let item = KeyValue::new(key.clone(), value);
                 self.data[index].remove_by_index(i);
-                self.data[index].push(item);
+                self.data[index].push(item.clone());
                 Some(item)
             }
             None => None,
         }
     }
 
-    fn have_key(&mut self, index: usize, key: K) -> bool {
+    fn have_key(&mut self, index: usize, key: &K) -> bool {
         let item_index = self.find_key(index, key);
         item_index.is_some()
     }
 
-    fn remove(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>> {
-        let item = KeyValue::new(key, V::default());
-        let has_item = self.data[index].find(item);
+    fn remove(&mut self, index: usize, key: &K) -> Option<KeyValue<K, V>> {
+        let item = KeyValue::new(key.clone(), V::default());
+        let has_item = self.data[index].find(&item);
 
         match has_item {
             Some(_) => {
                 statistics_remove_actions(self, index);
-                let item = self.data[index].remove_by_value(item);
+                let item = self.data[index].remove_by_value(&item);
                 Some(item.unwrap())
             }
             None => None,
@@ -140,8 +141,8 @@ impl<
 
 /// Implementation of [`InternalStatistics`] trait for [`TreeHashVec`]
 impl<
-        K: Default + Eq + Copy + PartialOrd,
-        V: Default + Eq + Copy + PartialOrd,
+        K: Default + Eq + Clone + PartialOrd,
+        V: Default + Eq + Clone + PartialOrd,
     > InternalStatistics<K, V> for TreeHashVec<K, V>
 {
     fn get_max_len(&self) -> usize {
@@ -167,8 +168,8 @@ impl<
 
 /// Implementation of [`Indexes`] trait for [`TreeHashVec`]
 impl<
-        K: Default + Eq + Copy + PartialOrd,
-        V: Eq + Copy + Default + PartialOrd,
+        K: Default + Eq + Clone + PartialOrd,
+        V: Eq + Clone + Default + PartialOrd,
     > Indexes<K, V> for TreeHashVec<K, V>
 {
     fn remove_by_index(
@@ -195,9 +196,9 @@ impl<
         self.data[index].get(value_index)
     }
 
-    fn find_key(&mut self, index: usize, key: K) -> Option<usize> {
-        let item = KeyValue::new(key, V::default());
-        self.data[index].find(item)
+    fn find_key(&mut self, index: usize, key: &K) -> Option<usize> {
+        let item = KeyValue::new(key.clone(), V::default());
+        self.data[index].find(&item)
     }
 }
 
@@ -259,14 +260,14 @@ mod tests {
         assert_eq!(vec.len(), 2);
         assert_eq!(vec.statistics.size, 2);
 
-        assert_eq!(vec.get(0, 1), Some(KeyValue::new(1, 1)));
-        assert_eq!(vec.get(0, 2), Some(KeyValue::new(2, 2)));
+        assert_eq!(vec.get(0, &1), Some(KeyValue::new(1, 1)));
+        assert_eq!(vec.get(0, &2), Some(KeyValue::new(2, 2)));
 
-        vec.update(0, 1, 2);
+        vec.update(0, &1, 2);
 
         assert_eq!(vec.len(), 2);
         assert_eq!(vec.statistics.size, 2);
-        assert_eq!(vec.get(0, 1), Some(KeyValue::new(1, 2)));
+        assert_eq!(vec.get(0, &1), Some(KeyValue::new(1, 2)));
     }
 
     #[test]
@@ -298,9 +299,9 @@ mod tests {
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
 
-        assert_eq!(vec.get(0, 1), Some(KeyValue::new(1, 1)));
-        assert_eq!(vec.get(0, 2), Some(KeyValue::new(2, 2)));
-        assert_eq!(vec.get(0, 3), None);
+        assert_eq!(vec.get(0, &1), Some(KeyValue::new(1, 1)));
+        assert_eq!(vec.get(0, &2), Some(KeyValue::new(2, 2)));
+        assert_eq!(vec.get(0, &3), None);
     }
 
     #[test]
@@ -310,9 +311,9 @@ mod tests {
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
 
-        assert!(vec.have_key(0, 1));
-        assert!(vec.have_key(0, 2));
-        assert!(!vec.have_key(0, 3));
+        assert!(vec.have_key(0, &1));
+        assert!(vec.have_key(0, &2));
+        assert!(!vec.have_key(0, &3));
     }
 
     #[test]
@@ -334,9 +335,9 @@ mod tests {
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
 
-        assert_eq!(vec.find_key(0, 1), Some(0));
-        assert_eq!(vec.find_key(0, 2), Some(1));
-        assert_eq!(vec.find_key(0, 3), None);
+        assert_eq!(vec.find_key(0, &1), Some(0));
+        assert_eq!(vec.find_key(0, &2), Some(1));
+        assert_eq!(vec.find_key(0, &3), None);
     }
 
     #[test]
@@ -361,19 +362,19 @@ mod tests {
         assert_eq!(vec.statistics.get_count(), 1);
         assert_eq!(vec.statistics.max_length, 2);
 
-        assert_eq!(vec.remove(0, 1), Some(KeyValue::new(1, 1)));
-        assert_eq!(vec.find_key(0, 1), None);
-        assert!(!vec.have_key(0, 1));
+        assert_eq!(vec.remove(0, &1), Some(KeyValue::new(1, 1)));
+        assert_eq!(vec.find_key(0, &1), None);
+        assert!(!vec.have_key(0, &1));
         assert_eq!(vec.statistics.get_count(), 1);
         assert_eq!(vec.statistics.max_length, 1);
 
-        assert_eq!(vec.remove(0, 2), Some(KeyValue::new(2, 2)));
-        assert_eq!(vec.find_key(0, 2), None);
-        assert!(!vec.have_key(0, 2));
+        assert_eq!(vec.remove(0, &2), Some(KeyValue::new(2, 2)));
+        assert_eq!(vec.find_key(0, &2), None);
+        assert!(!vec.have_key(0, &2));
         assert_eq!(vec.statistics.get_count(), 0);
         assert_eq!(vec.statistics.max_length, 0);
 
-        assert_eq!(vec.remove(0, 3), None);
+        assert_eq!(vec.remove(0, &3), None);
 
         assert_eq!(vec.len(), 0);
         assert_eq!(vec.statistics.size, 0);

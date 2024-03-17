@@ -1,17 +1,23 @@
 pub trait CustomHash {
     fn hash(&self, hash: fn(&[u8]) -> u64) -> u64;
 }
-
-impl CustomHash for u64 {
-    fn hash(&self, hash: fn(&[u8]) -> u64) -> u64 {
-        let bytes = self.to_be_bytes();
-        hash(&bytes)
-    }
+macro_rules! impl_custom_hash {
+    ($($t:ty),*) => {
+        $(
+            impl CustomHash for $t {
+                fn hash(&self, hash: fn(&[u8]) -> u64) -> u64 {
+                    let bytes = self.to_be_bytes();
+                    hash(&bytes)
+                }
+            }
+        )*
+    };
 }
 
-impl CustomHash for usize {
+impl_custom_hash!(usize, u64, u32);
+
+impl CustomHash for String {
     fn hash(&self, hash: fn(&[u8]) -> u64) -> u64 {
-        let bytes = self.to_be_bytes();
-        hash(&bytes)
+        hash(self.as_bytes())
     }
 }

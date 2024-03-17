@@ -20,6 +20,7 @@ use std::marker::PhantomData;
 /// * `K` - key type.
 /// * `V` - value type.
 /// * `H` - [`HashVec`] implementation.
+#[derive(Debug)]
 pub struct StaticHashTable<K, V, H = StaticHashVec<K, V>> {
     /// [`HashVec`] implementation for storing key-value pairs.
     table: H,
@@ -40,8 +41,8 @@ pub struct StaticHashTable<K, V, H = StaticHashVec<K, V>> {
 impl<K, V, H> HashTable<K, V> for StaticHashTable<K, V, H>
 where
     H: HashVec<K, V>,
-    K: Copy + CustomHash,
-    V: Copy,
+    K: Clone + CustomHash,
+    V: Clone,
 {
     fn new(size: usize) -> Self {
         StaticHashTable {
@@ -57,11 +58,11 @@ where
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
-        let mut result = KeyValue::new(key, value);
+        let mut result = KeyValue::new(key.clone(), value.clone());
 
-        let has_key = self.table.have_key(index, key);
+        let has_key = self.table.have_key(index, &key);
         if has_key {
-            let updated = self.table.update(index, key, value).unwrap().value;
+            let updated = self.table.update(index, &key, value).unwrap().value;
             result.value = updated;
         } else {
             self.table.push(index, key, value);
@@ -71,7 +72,7 @@ where
         Some(result)
     }
 
-    fn remove(&mut self, key: K) -> Option<V> {
+    fn remove(&mut self, key: &K) -> Option<V> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
@@ -85,7 +86,7 @@ where
         }
     }
 
-    fn get(&mut self, key: K) -> Option<V> {
+    fn get(&mut self, key: &K) -> Option<V> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
@@ -100,13 +101,17 @@ where
     fn len(&self) -> usize {
         self.len
     }
+
+    fn is_empty(&self) -> bool {
+        self.len == 0
+    }
 }
 
 impl<K, V, H> VecFunctions<K, V> for StaticHashTable<K, V, H>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-    K: Eq + Copy + CustomHash,
-    V: Eq + Copy,
+    K: PartialEq + Clone + CustomHash,
+    V: PartialEq + Clone,
 {
     fn get_keys(&mut self) -> Vec<K> {
         let mut keys = Vec::<K>::new();
@@ -145,8 +150,8 @@ where
 impl<K, V, H> ExtendedFunctions<K, V> for StaticHashTable<K, V, H>
 where
     H: HashVec<K, V>,
-    K: Copy + CustomHash,
-    V: Copy,
+    K: Clone + CustomHash,
+    V: Clone,
 {
     fn new_with_hash(size: usize, hash: fn(&[u8]) -> u64) -> Self {
         StaticHashTable {
@@ -224,7 +229,7 @@ mod tests {
         assert_eq!(result.unwrap(), KeyValue::new(0, 10));
 
         assert_eq!(hash_table.len(), 8);
-        assert_eq!(hash_table.get(0), Some(10));
+        assert_eq!(hash_table.get(&0), Some(10));
     }
 
     #[test]
@@ -239,17 +244,17 @@ mod tests {
             hash_table.insert(i, i);
         }
 
-        let item = hash_table.remove(0);
+        let item = hash_table.remove(&0);
         assert_eq!(item, Some(0));
         assert_eq!(hash_table.len(), 7);
 
         for i in 1..8 {
-            hash_table.remove(i);
+            hash_table.remove(&i);
         }
 
         assert_eq!(hash_table.len(), 0);
 
-        let item = hash_table.remove(0);
+        let item = hash_table.remove(&0);
         assert_eq!(item, None);
     }
 
@@ -265,10 +270,10 @@ mod tests {
             hash_table.insert(i, i);
         }
 
-        let item = hash_table.get(0);
+        let item = hash_table.get(&0);
         assert_eq!(item, Some(0));
 
-        let item = hash_table.get(8);
+        let item = hash_table.get(&8);
         assert_eq!(item, None);
     }
 

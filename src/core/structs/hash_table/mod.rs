@@ -1,7 +1,7 @@
 pub mod backwards_hash_table;
 pub mod hash;
-mod scalable_hash_table;
-mod static_hash_table;
+pub mod scalable_hash_table;
+pub mod static_hash_table;
 pub mod vectors;
 
 use crate::core::structs::hash_table::vectors::key_value::KeyValue;
@@ -29,14 +29,14 @@ pub trait HashTable<K, V> {
     /// # Returns
     /// * `Option<V>` - The value removed.
     /// None if the key is not in the hash table.
-    fn remove(&mut self, key: K) -> Option<V>;
+    fn remove(&mut self, key: &K) -> Option<V>;
 
     /// Gets a value from the hash table
     /// # Arguments
     /// * `key` - key of the value
     /// # Returns
     /// * `Option<V>` - The value. None if the key is not in the hash table.
-    fn get(&mut self, key: K) -> Option<V>;
+    fn get(&mut self, key: &K) -> Option<V>;
 
     /// Returns number of buckets in the [`HashTable`].
     /// # Returns
@@ -47,6 +47,11 @@ pub trait HashTable<K, V> {
     /// # Returns
     /// * `usize` - Number of elements in the hash table
     fn len(&self) -> usize;
+
+    /// Checks if the hash table is empty
+    /// # Returns
+    /// * `bool` - True if the hash table is empty, false otherwise.
+    fn is_empty(&self) -> bool;
 }
 
 /// Some additional methods for [`HashTable`]

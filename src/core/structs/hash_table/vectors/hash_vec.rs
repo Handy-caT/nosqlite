@@ -29,7 +29,7 @@ pub trait HashVec<K, V> {
     /// # Returns
     /// * `Option<KeyValue<K, V>>` - Value that was found,
     /// None if value was not found.
-    fn get(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>>;
+    fn get(&mut self, index: usize, key: &K) -> Option<KeyValue<K, V>>;
 
     /// Updates value in the [`HashVec`] by underlying vector index and key.
     /// # Arguments
@@ -42,7 +42,7 @@ pub trait HashVec<K, V> {
     fn update(
         &mut self,
         index: usize,
-        key: K,
+        key: &K,
         value: V,
     ) -> Option<KeyValue<K, V>>;
 
@@ -52,7 +52,7 @@ pub trait HashVec<K, V> {
     /// * `key` - Key to check.
     /// # Returns
     /// * `bool` - True if the [`HashVec`] has key, false otherwise.
-    fn have_key(&mut self, index: usize, key: K) -> bool;
+    fn have_key(&mut self, index: usize, key: &K) -> bool;
 
     /// Removes value from the [`HashVec`] by underlying vector
     /// index and value itself.
@@ -62,7 +62,7 @@ pub trait HashVec<K, V> {
     /// # Returns
     /// * `Option<KeyValue<K, V>>` - Value that was removed,
     /// None if value was not found.
-    fn remove(&mut self, index: usize, key: K) -> Option<KeyValue<K, V>>;
+    fn remove(&mut self, index: usize, key: &K) -> Option<KeyValue<K, V>>;
 
     /// Returns number of buckets in the [`HashVec`].
     /// # Returns
@@ -113,7 +113,7 @@ pub trait Indexes<K, V> {
     /// # Returns
     /// * `Option<usize>` - Index of the key in the vector if it was found,
     /// None otherwise
-    fn find_key(&mut self, index: usize, key: K) -> Option<usize>;
+    fn find_key(&mut self, index: usize, key: &K) -> Option<usize>;
 }
 
 /// Internal trait for [`HashTable`] to get underlying vectors by

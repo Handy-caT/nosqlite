@@ -4,21 +4,13 @@ use std::cmp::Ordering;
 /// [`Tree`] is a trait that defines the basic operations that
 /// a tree object must implement.
 pub trait Tree<T> {
-    /// Creates new [`Tree`] using specified vector.
-    /// Vector must implement [`TreeVec`] trait.
-    /// # Arguments
-    /// * `vec` - Vector to be used as a tree.
-    /// # Returns
-    /// * `BalancedTree<T, M>` - New [`Tree`].
-    fn new() -> Self;
-
     /// Creates new [`Tree`] using specified vector and compare function
     /// # Arguments
     /// * `vec` - Vector to be used as a tree.
     /// * `compare` - Compare function.
     /// # Returns
     /// * `BalancedTree<T, M>` - New [`Tree`].
-    fn new_with_compare(compare: fn(T, T) -> Ordering) -> Self;
+    fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self;
 
     /// Pushes a value into the tree. Returns the index of the value.
     /// # Arguments
@@ -33,7 +25,7 @@ pub trait Tree<T> {
     /// * `value` - The value to be found.
     /// # Returns
     /// * `Option<usize>` - The index of the value.
-    fn find(&mut self, value: T) -> Option<usize>;
+    fn find(&mut self, value: &T) -> Option<usize>;
 
     /// Removes a value from the tree. Returns the value.
     /// If the value is not found, returns None.
@@ -41,7 +33,7 @@ pub trait Tree<T> {
     /// * `value` - The value to be removed.
     /// # Returns
     /// * `Option<T>` - The value.
-    fn remove_by_value(&mut self, value: T) -> Option<T>;
+    fn remove_by_value(&mut self, value: &T) -> Option<T>;
 
     /// Removes some object from a tree
     /// # Returns
@@ -101,12 +93,12 @@ pub trait FindFunctions<T> {
     /// * `value` - The value to be found.
     /// # Returns
     /// * `Option<(usize,T)>` - The index of the value and the value itself.
-    fn find_greater_equal(&mut self, value: T) -> Option<(usize, T)>;
+    fn find_greater_equal(&mut self, value: &T) -> Option<(usize, T)>;
     /// Finds the first value that is less than the given value or equal to it.
     /// Returns the index of the value and the value itself.
     /// # Arguments
     /// * `value` - The value to be found.
     /// # Returns
     /// * `Option<(usize,T)>` - The index of the value and the value itself.
-    fn find_less_equal(&mut self, value: T) -> Option<(usize, T)>;
+    fn find_less_equal(&mut self, value: &T) -> Option<(usize, T)>;
 }

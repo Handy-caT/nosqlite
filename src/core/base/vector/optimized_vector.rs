@@ -4,6 +4,7 @@ pub const INITIAL_SIZE: usize = 16;
 /// It has a vector of data and vector of empty indexes.
 /// If the empty vector is empty, then the data vector is extended.
 /// If the empty vector is not empty, then index from the empty vector is used.
+#[derive(Debug)]
 pub struct OptimizedVector<T> {
     /// Vector of data.
     data: Vec<T>,
@@ -21,7 +22,7 @@ pub struct OptimizedVector<T> {
     max_length: usize,
 }
 
-impl<T: Copy> OptimizedVector<T> {
+impl<T: Clone> OptimizedVector<T> {
     /// Creates a new [`OptimizedVector`].
     /// # Returns
     /// * `OptimizedVector<T>`: New [`OptimizedVector`].
@@ -79,7 +80,7 @@ impl<T: Copy> OptimizedVector<T> {
             return None;
         }
 
-        Some(self.data[index])
+        Some(self.data[index].clone())
     }
 
     /// Gets a mutable value from the vector.
@@ -119,7 +120,7 @@ impl<T: Copy> OptimizedVector<T> {
         self.empty.push(index);
         self.length -= 1;
 
-        Some(self.data[index])
+        Some(self.data[index].clone())
     }
 
     /// Gets the data vector.

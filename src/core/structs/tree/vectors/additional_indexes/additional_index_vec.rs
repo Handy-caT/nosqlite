@@ -4,6 +4,7 @@ use crate::core::structs::tree::{
 };
 use std::ops::{Index, IndexMut};
 
+#[derive(Debug)]
 pub struct AdditionalIndexVec {
     pub indexes: Vec<TreeIndex>,
     allocated_levels: u8,
@@ -24,7 +25,7 @@ impl AdditionalIndexVec {
     }
 
     pub fn new_with_existing<
-        T: Default + Copy,
+        T: Default + Clone,
         M: TreeVec<T> + Levels + Sized,
     >(
         tree_vec: &M,
@@ -86,6 +87,18 @@ impl Index<usize> for AdditionalIndexVec {
 impl IndexMut<usize> for AdditionalIndexVec {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.indexes[index]
+    }
+}
+
+impl Clone for AdditionalIndexVec {
+    fn clone(&self) -> Self {
+        let mut vec = AdditionalIndexVec {
+            indexes: self.indexes.clone(),
+            allocated_levels: self.allocated_levels,
+            max_length: self.max_length,
+        };
+
+        vec
     }
 }
 

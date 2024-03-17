@@ -120,7 +120,7 @@ cargo.lint:
 #	make test.unit
 
 test.unit:
-	cargo test
+	cargo test --all
 
 
 ###################

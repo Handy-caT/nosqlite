@@ -52,7 +52,7 @@ pub(in crate::core::structs::tree::vectors) fn push<
 /// * `T` - Type of the data that the vector stores
 /// * `V` - Type of the vector
 pub(in crate::core::structs::tree::vectors) fn get<
-    T: Default + Copy,
+    T: Default + Clone,
     V: DefaultFunctions<T> + OptimizedFunctions<T> + Levels,
 >(
     vec: &V,
@@ -65,7 +65,7 @@ pub(in crate::core::structs::tree::vectors) fn get<
         } else {
             let value = vec.get_data().get(index);
             Some(TreeNode {
-                value: *value.unwrap(),
+                value: value.unwrap().clone(),
                 indexes: *item,
             })
         }
@@ -84,7 +84,7 @@ pub(in crate::core::structs::tree::vectors) fn get<
 /// * `T` - Type of the data that the vector stores
 /// * `V` - Type of the vector
 pub(in crate::core::structs::tree::vectors) fn remove<
-    T: Default + Copy,
+    T: Default + Clone,
     V: DefaultFunctions<T> + OptimizedFunctions<T> + Levels,
 >(
     vec: &mut V,
@@ -104,7 +104,7 @@ pub(in crate::core::structs::tree::vectors) fn remove<
     let value = vec.get_data().get(index);
 
     Some(TreeNode {
-        value: *value.unwrap(),
+        value: value.unwrap().clone(),
         indexes: item,
     })
 }
@@ -116,7 +116,7 @@ pub(in crate::core::structs::tree::vectors) fn remove<
 /// * `T` - Type of the data that the vector stores
 /// * `V` - Type of the vector
 pub(in crate::core::structs::tree::vectors) fn allocate_level<
-    T: Default + Copy,
+    T: Default,
     V: DefaultFunctions<T> + OptimizedFunctions<T> + Levels,
 >(
     vec: &mut V,

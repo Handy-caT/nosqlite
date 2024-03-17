@@ -8,6 +8,7 @@ use std::ops::{Index, IndexMut};
 /// It has empty spaces that can be filled.
 /// # Type parameters
 /// * `T` - Type of the data that the vector stores
+#[derive(Debug)]
 pub struct DefaultTreeVec<T: Sized> {
     /// Vector that stores the data
     data: Vec<T>,
@@ -22,7 +23,7 @@ pub struct DefaultTreeVec<T: Sized> {
     length: usize,
 }
 
-impl<T: Default + Copy> Indexes<T> for DefaultTreeVec<T> {
+impl<T: Default + Clone> Indexes<T> for DefaultTreeVec<T> {
     fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex {
         &mut self.indexes[index]
     }
@@ -36,7 +37,7 @@ impl<T: Default + Copy> Indexes<T> for DefaultTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
+impl<T: Default + Clone> TreeVec<T> for DefaultTreeVec<T> {
     fn new() -> DefaultTreeVec<T> {
         DefaultTreeVec {
             data: Vec::new(),
@@ -75,7 +76,7 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
             } else {
                 let value = self.data.get(index);
                 Some(TreeNode {
-                    value: *value.unwrap(),
+                    value: value.unwrap().clone(),
                     indexes: *item,
                 })
             }
@@ -107,7 +108,7 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
         let value = self.data.get(index);
 
         Some(TreeNode {
-            value: *value.unwrap(),
+            value: value.unwrap().clone(),
             indexes: item,
         })
     }
@@ -117,7 +118,7 @@ impl<T: Default + Copy> TreeVec<T> for DefaultTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> Index<usize> for DefaultTreeVec<T> {
+impl<T: Default + Clone> Index<usize> for DefaultTreeVec<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -125,13 +126,13 @@ impl<T: Default + Copy> Index<usize> for DefaultTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> IndexMut<usize> for DefaultTreeVec<T> {
+impl<T: Default + Clone> IndexMut<usize> for DefaultTreeVec<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.data[index]
     }
 }
 
-impl<T: Default + Copy> DefaultFunctions<T> for DefaultTreeVec<T> {
+impl<T: Default + Clone> DefaultFunctions<T> for DefaultTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }
@@ -168,6 +169,17 @@ impl<T> Levels for DefaultTreeVec<T> {
     fn get_max_length(&self) -> usize {
         let levels = self.get_allocated_levels();
         2usize.pow(u32::from(levels))
+    }
+}
+
+impl<T: Clone> Clone for DefaultTreeVec<T> {
+    fn clone(&self) -> Self {
+        DefaultTreeVec {
+            data: self.data.clone(),
+            empty: self.empty.clone(),
+            indexes: self.indexes.clone(),
+            length: self.length,
+        }
     }
 }
 

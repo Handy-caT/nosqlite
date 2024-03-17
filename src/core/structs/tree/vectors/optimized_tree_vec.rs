@@ -15,6 +15,7 @@ pub const INITIAL_LEVELS: u8 = 6;
 /// It allocates memory for a tree level when it is needed.
 /// # Type parameters
 /// * `T`: Type of the data that will be stored in the tree.
+#[derive(Debug)]
 pub struct OptimizedTreeVec<T> {
     /// Number of allocated levels.
     allocated_levels: u8,
@@ -45,7 +46,7 @@ impl<T> Levels for OptimizedTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
+impl<T: Default + Clone> DefaultFunctions<T> for OptimizedTreeVec<T> {
     fn get_data(&self) -> &Vec<T> {
         &self.data
     }
@@ -71,7 +72,7 @@ impl<T: Default + Copy> DefaultFunctions<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
+impl<T: Default + Clone> OptimizedFunctions<T> for OptimizedTreeVec<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8 {
         &mut self.allocated_levels
     }
@@ -93,7 +94,7 @@ impl<T: Default + Copy> OptimizedFunctions<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> Indexes<T> for OptimizedTreeVec<T> {
+impl<T: Default + Clone> Indexes<T> for OptimizedTreeVec<T> {
     fn get_index_mut(&mut self, index: usize) -> &mut TreeIndex {
         &mut self.indexes[index]
     }
@@ -107,7 +108,7 @@ impl<T: Default + Copy> Indexes<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
+impl<T: Default + Clone> TreeVec<T> for OptimizedTreeVec<T> {
     fn new() -> OptimizedTreeVec<T> {
         let mut vec = OptimizedTreeVec {
             allocated_levels: 0,
@@ -154,7 +155,7 @@ impl<T: Default + Copy> TreeVec<T> for OptimizedTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> Index<usize> for OptimizedTreeVec<T> {
+impl<T: Default + Clone> Index<usize> for OptimizedTreeVec<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -162,9 +163,22 @@ impl<T: Default + Copy> Index<usize> for OptimizedTreeVec<T> {
     }
 }
 
-impl<T: Default + Copy> IndexMut<usize> for OptimizedTreeVec<T> {
+impl<T: Default + Clone> IndexMut<usize> for OptimizedTreeVec<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.data[index]
+    }
+}
+
+impl<T: Clone> Clone for OptimizedTreeVec<T> {
+    fn clone(&self) -> Self {
+        OptimizedTreeVec {
+            allocated_levels: self.allocated_levels,
+            max_length: self.max_length,
+            length: self.length,
+            data: self.data.clone(),
+            indexes: self.indexes.clone(),
+            empty: self.empty.clone(),
+        }
     }
 }
 

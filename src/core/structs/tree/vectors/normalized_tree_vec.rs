@@ -17,6 +17,7 @@ use std::ops::{Index, IndexMut};
 /// so data is independent from indexes.
 /// # Type parameters
 /// * `T` - Type of the data that the vector stores.
+#[derive(Debug)]
 pub struct NormalizedTreeVector<T> {
     /// Number of allocated levels.
     allocated_levels: u8,
@@ -38,7 +39,7 @@ pub struct NormalizedTreeVector<T> {
 }
 
 /// [`NormalizedTreeVector`] implementation.
-impl<T: Default + Copy> NormalizedTreeVector<T> {
+impl<T: Default + Clone> NormalizedTreeVector<T> {
     /// Swaps two indexes.
     /// Indexes must be in bounds.
     /// # Arguments
@@ -79,7 +80,7 @@ impl<T> Levels for NormalizedTreeVector<T> {
     }
 }
 
-impl<T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
+impl<T: Default + Clone> OptimizedFunctions<T> for NormalizedTreeVector<T> {
     fn get_allocated_levels_mut(&mut self) -> &mut u8 {
         &mut self.allocated_levels
     }
@@ -107,7 +108,7 @@ impl<T: Default + Copy> OptimizedFunctions<T> for NormalizedTreeVector<T> {
     }
 }
 
-impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
+impl<T: Default + Clone> TreeVec<T> for NormalizedTreeVector<T> {
     fn new() -> NormalizedTreeVector<T> {
         let mut vec = NormalizedTreeVector {
             allocated_levels: 0,
@@ -168,7 +169,7 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
                 right_index: Some(2 * index + 2),
                 height: self.indexes[index].height,
             };
-            let data = self.data[tree_index.index.unwrap()];
+            let data = self.data[tree_index.index.unwrap()].clone();
 
             let node = TreeNode {
                 value: data,
@@ -196,7 +197,7 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
             let data_index = item.index.unwrap();
             let height = item.height;
 
-            let data = self.data[data_index];
+            let data = self.data[data_index].clone();
             if data_index == index {
                 self.data.pop();
             } else {
@@ -228,7 +229,7 @@ impl<T: Default + Copy> TreeVec<T> for NormalizedTreeVector<T> {
     }
 }
 
-impl<T: Default + Copy> NormalizedIndexes<T> for NormalizedTreeVector<T> {
+impl<T: Default + Clone> NormalizedIndexes<T> for NormalizedTreeVector<T> {
     fn get_index_mut(&mut self, index: usize) -> &mut NormalizedTreeIndex {
         &mut self.indexes[index]
     }
@@ -242,7 +243,7 @@ impl<T: Default + Copy> NormalizedIndexes<T> for NormalizedTreeVector<T> {
     }
 }
 
-impl<T: Default + Copy> Index<usize> for NormalizedTreeVector<T> {
+impl<T: Default + Clone> Index<usize> for NormalizedTreeVector<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -250,9 +251,24 @@ impl<T: Default + Copy> Index<usize> for NormalizedTreeVector<T> {
     }
 }
 
-impl<T: Default + Copy> IndexMut<usize> for NormalizedTreeVector<T> {
+impl<T: Default + Clone> IndexMut<usize> for NormalizedTreeVector<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.data[index]
+    }
+}
+
+impl<T: Clone> Clone for NormalizedTreeVector<T> {
+    fn clone(&self) -> Self {
+        let mut vec = NormalizedTreeVector {
+            allocated_levels: self.allocated_levels,
+            max_length: self.max_length,
+            length: self.length,
+            data: self.data.clone(),
+            indexes: self.indexes.clone(),
+            empty: self.empty.clone(),
+        };
+
+        vec
     }
 }
 

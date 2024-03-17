@@ -11,16 +11,17 @@ use std::cmp::Ordering;
 /// It is implemented using a vector.
 /// It is using custom [`NormalizedTreeVector`] struct that represents the tree,
 /// where childrens are on 2*i + 1 and 2*i + 2 positions.
+#[derive(Debug)]
 pub struct BinHeap<T> {
     /// [`NormalizedTreeVector`] that represents the tree
     /// It is used to store the data
     data: NormalizedTreeVector<T>,
     /// Compare function that is used to compare the nodes
-    compare: fn(T, T) -> Ordering,
+    compare: fn(&T, &T) -> Ordering,
 }
 
 /// Implementation of [`BinHeap`] struct
-impl<T: Default + PartialOrd + Copy> BinHeap<T> {
+impl<T: Default + PartialOrd + Clone> BinHeap<T> {
     /// Function that heapifies the object
     /// It is used when we remove the root node
     /// # Arguments
@@ -33,8 +34,8 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
 
         if left_index < self.data.len()
             && (self.compare)(
-                self.data.get(left_index).unwrap().value,
-                self.data.get(index).unwrap().value,
+                &self.data.get(left_index).unwrap().value,
+                &self.data.get(index).unwrap().value,
             ) == Ordering::Greater
         {
             largest_index = left_index;
@@ -42,8 +43,8 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
 
         if right_index < self.data.len()
             && (self.compare)(
-                self.data.get(right_index).unwrap().value,
-                self.data.get(largest_index).unwrap().value,
+                &self.data.get(right_index).unwrap().value,
+                &self.data.get(largest_index).unwrap().value,
             ) == Ordering::Greater
         {
             largest_index = right_index;
@@ -88,15 +89,8 @@ impl<T: Default + PartialOrd + Copy> BinHeap<T> {
 
 /// Implementation of [`Tree`] trait for [`BinHeap`] struct
 /// It is used for tree operations and to use as part of [`TreeDecorator`]
-impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
-    fn new() -> Self {
-        BinHeap {
-            data: NormalizedTreeVector::new(),
-            compare: |a, b| a.partial_cmp(&b).unwrap(),
-        }
-    }
-
-    fn new_with_compare(compare: fn(T, T) -> Ordering) -> Self {
+impl<T: Default + PartialOrd + Clone> Tree<T> for BinHeap<T> {
+    fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self {
         BinHeap {
             data: NormalizedTreeVector::new(),
             compare,
@@ -117,8 +111,8 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
 
         while parent_index.is_some()
             && (self.compare)(
-                self.data.get(index).unwrap().value,
-                self.data.get(parent_index.unwrap()).unwrap().value,
+                &self.data.get(index).unwrap().value,
+                &self.data.get(parent_index.unwrap()).unwrap().value,
             ) == Ordering::Greater
         {
             self.data.swap_indexes(index, parent_index.unwrap());
@@ -129,7 +123,7 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
         result_index
     }
 
-    fn find(&mut self, value: T) -> Option<usize> {
+    fn find(&mut self, value: &T) -> Option<usize> {
         if self.data.len() == 0 {
             None
         } else {
@@ -137,7 +131,7 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
             let mut found = false;
 
             while index < self.data.len() && !found {
-                if self.data.get(index).unwrap().value == value {
+                if &self.data.get(index).unwrap().value == value {
                     found = true;
                 } else {
                     index += 1;
@@ -152,7 +146,7 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
         }
     }
 
-    fn remove_by_value(&mut self, value: T) -> Option<T> {
+    fn remove_by_value(&mut self, value: &T) -> Option<T> {
         if self.data.len() == 0 {
             None
         } else {
@@ -179,7 +173,7 @@ impl<T: Default + PartialOrd + Copy> Tree<T> for BinHeap<T> {
 }
 
 /// Implementation of [`TreeObjectVec`] trait for [`BinHeap`] struct
-impl<T: Default + PartialOrd + Copy> VecFunctions<T, NormalizedTreeVector<T>>
+impl<T: Default + PartialOrd + Clone> VecFunctions<T, NormalizedTreeVector<T>>
     for BinHeap<T>
 {
     fn get(&mut self, index: usize) -> Option<T> {
@@ -216,6 +210,24 @@ impl<T: Default + PartialOrd + Copy> VecFunctions<T, NormalizedTreeVector<T>>
     }
 }
 
+impl<T: Clone> Clone for BinHeap<T> {
+    fn clone(&self) -> Self {
+        BinHeap {
+            data: self.data.clone(),
+            compare: self.compare,
+        }
+    }
+}
+
+impl<T: Clone + PartialOrd + Default> Default for BinHeap<T> {
+    fn default() -> Self {
+        BinHeap {
+            data: NormalizedTreeVector::new(),
+            compare: |a, b| a.partial_cmp(&b).unwrap(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::core::structs::tree::{
@@ -231,7 +243,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_new() {
-        let heap = BinHeap::<u64>::new();
+        let heap = BinHeap::<u64>::default();
 
         assert_eq!(heap.data.len(), 0);
         assert_eq!(heap.data.get_allocated_levels(), INITIAL_LEVELS);
@@ -240,7 +252,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_push() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -258,7 +270,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_get_max() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -278,7 +290,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_peek_max() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -290,29 +302,29 @@ mod tests {
 
     #[test]
     fn test_bin_heap_find() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
         heap.push(3);
 
-        assert_eq!(heap.find(1).unwrap(), 1);
-        assert_eq!(heap.find(2).unwrap(), 2);
-        assert_eq!(heap.find(3).unwrap(), 0);
-        assert_eq!(heap.find(4), None);
-        assert_eq!(heap.find(0), None)
+        assert_eq!(heap.find(&1).unwrap(), 1);
+        assert_eq!(heap.find(&2).unwrap(), 2);
+        assert_eq!(heap.find(&3).unwrap(), 0);
+        assert_eq!(heap.find(&4), None);
+        assert_eq!(heap.find(&0), None)
     }
 
     #[test]
     fn test_bin_heap_remove_by_value() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
         heap.push(3);
         heap.push(4);
 
-        assert_eq!(heap.remove_by_value(2).unwrap(), 2);
+        assert_eq!(heap.remove_by_value(&2).unwrap(), 2);
         assert_eq!(heap.data.len(), 3);
         assert!(heap.peek_max().is_some());
         assert_eq!(heap.peek_max().unwrap(), 4);
@@ -320,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_remove_by_index() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -335,7 +347,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_get() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         heap.push(1);
         heap.push(2);
@@ -351,7 +363,7 @@ mod tests {
 
     #[test]
     fn test_bin_heap_push_index() {
-        let mut heap = BinHeap::<u64>::new();
+        let mut heap = BinHeap::<u64>::default();
 
         assert_eq!(heap.push(1), 0);
         assert_eq!(heap.push(2), 1);
