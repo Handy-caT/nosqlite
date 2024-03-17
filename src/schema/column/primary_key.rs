@@ -1,6 +1,9 @@
-use crate::schema::r#type::{
-    data_types::{Integer, Long, UInteger, ULong, UShort},
-    r#enum::{StorageData, StorageDataType},
+use crate::schema::{
+    r#type::{
+        data_types::{Integer, Long, UInteger, ULong, UShort},
+        r#enum::{StorageData, StorageDataType},
+    },
+    Column,
 };
 
 /// A primary key constraint.
@@ -9,7 +12,7 @@ pub struct PrimaryKey {
     /// The name of the primary key.
     name: String,
     /// The column names that make up the primary key.
-    columns: Vec<String>,
+    columns: String,
 }
 
 impl PrimaryKey {
@@ -19,7 +22,7 @@ impl PrimaryKey {
     /// * `columns` - The column names that make up the primary key.
     /// # Returns
     /// A new [`PrimaryKey`] with the given parameters.
-    pub fn new(name: String, columns: Vec<String>) -> Self {
+    pub fn new(name: String, columns: String) -> Self {
         PrimaryKey { name, columns }
     }
 
@@ -33,8 +36,29 @@ impl PrimaryKey {
     /// Returns the column names that make up the primary key.
     /// # Returns
     /// * `&Vec<String>` - The column names that make up the primary key.
-    pub fn get_columns(&self) -> &Vec<String> {
+    pub fn get_column(&self) -> &String {
         &self.columns
+    }
+
+    /// Checks if the column type is valid for primary key.
+    /// # Arguments
+    /// * `column` - The column to check.
+    /// # Returns
+    /// * `bool` - True if the column type is valid for primary key, false otherwise.
+    pub fn check_type(column: Column) -> bool {
+        match column.get_type() {
+            StorageDataType::Integer
+            | StorageDataType::Long
+            | StorageDataType::UShort
+            | StorageDataType::UInteger
+            | StorageDataType::ULong => true,
+            StorageDataType::Bool
+            | StorageDataType::Byte
+            | StorageDataType::Short
+            | StorageDataType::Float
+            | StorageDataType::Double
+            | StorageDataType::VarChar(_) => false,
+        }
     }
 }
 
@@ -89,18 +113,18 @@ mod tests {
     #[test]
     fn test_new() {
         let name = "pk".to_string();
-        let columns = vec!["id".to_string()];
-        let pk = PrimaryKey::new(name.clone(), columns.clone());
+        let column = "id".to_string();
+        let pk = PrimaryKey::new(name.clone(), column.clone());
 
         assert_eq!(pk.name, name);
-        assert_eq!(pk.columns, columns);
+        assert_eq!(pk.columns, column);
     }
 
     #[test]
     fn test_get_name() {
         let name = "pk".to_string();
-        let columns = vec!["id".to_string()];
-        let pk = PrimaryKey::new(name.clone(), columns.clone());
+        let column = "id".to_string();
+        let pk = PrimaryKey::new(name.clone(), column);
 
         assert_eq!(pk.get_name(), &name);
     }
@@ -108,9 +132,9 @@ mod tests {
     #[test]
     fn test_get_columns() {
         let name = "pk".to_string();
-        let columns = vec!["id".to_string()];
-        let pk = PrimaryKey::new(name.clone(), columns.clone());
+        let column = "id".to_string();
+        let pk = PrimaryKey::new(name.clone(), column.clone());
 
-        assert_eq!(pk.get_columns(), &columns);
+        assert_eq!(pk.get_column(), &column);
     }
 }

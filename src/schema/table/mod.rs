@@ -49,6 +49,31 @@ impl Table {
         self.columns.insert(name, column);
     }
 
+    /// Checks if the table has a column with the given name.
+    /// # Arguments
+    /// * `name` - The name of the column.
+    /// # Returns
+    /// * `bool` - True if the table has a column with the given name,
+    ///   false otherwise.
+    pub fn has_column(&mut self, name: &String) -> bool {
+        self.columns.get(name).is_some()
+    }
+
+    /// Checks if the table has columns with the given names.
+    /// # Arguments
+    /// * `name` - The names of the columns.
+    /// # Returns
+    /// * `bool` - True if the table has columns with the given names,
+    ///   false otherwise.
+    pub fn has_columns(&mut self, name: &Vec<String>) -> bool {
+        for column in name {
+            if !self.columns.get(column).is_some() {
+                return false;
+            }
+        }
+        true
+    }
+
     /// Returns the column with the given name.
     /// # Arguments
     /// * `name` - The name of the column.
@@ -96,7 +121,7 @@ mod tests {
         assert_eq!(table.get_name(), "table");
         assert_eq!(table.columns.len(), 0);
         assert_eq!(table.get_primary_key().get_name(), "");
-        assert_eq!(table.get_primary_key().get_columns().len(), 0);
+        assert_eq!(table.get_primary_key().get_column(), "");
     }
 
     #[test]
@@ -117,10 +142,19 @@ mod tests {
     }
 
     #[test]
+    fn test_table_has_column() {
+        let mut table = Table::new("table".to_string());
+        let column = Column::new(StorageDataType::Integer);
+        table.add_column("column".to_string(), column.clone());
+        assert!(table.has_column(&"column".to_string()));
+        assert!(!table.has_column(&"column2".to_string()));
+    }
+
+    #[test]
     fn test_table_get_primary_key() {
         let table = Table::new("table".to_string());
         assert_eq!(table.get_primary_key().get_name(), "");
-        assert_eq!(table.get_primary_key().get_columns().len(), 0);
+        assert_eq!(table.get_primary_key().get_column(), "");
     }
 
     #[test]
@@ -128,7 +162,7 @@ mod tests {
         let mut table = Table::new("table".to_string());
         let primary_key = PrimaryKey::new(
             "primary_key".to_string(),
-            vec!["column".to_string()],
+            "column".to_string(),
         );
         table.set_primary_key(primary_key.clone());
         assert_eq!(table.get_primary_key(), &primary_key);

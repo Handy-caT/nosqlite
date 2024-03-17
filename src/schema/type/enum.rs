@@ -40,7 +40,7 @@ impl<const N: u16> StorageData<N> {
 }
 
 /// Represents a storage data type.
-#[derive(Debug, Clone, PartialEq, PartialOrd, From)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, From)]
 pub enum StorageDataType {
     Bool,
     Byte,

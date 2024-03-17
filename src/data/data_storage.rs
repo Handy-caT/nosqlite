@@ -42,7 +42,7 @@ impl DataStorage {
 
         true
     }
-    
+
     /// Creates a new [`DataStorage`].
     /// # Returns
     /// * `Self` - [`DataStorage`].
@@ -63,13 +63,18 @@ impl DataStorage {
     /// * `data` - Data to add.
     /// # Returns
     /// * `NumericId` - [`NumericId`] of the data.
-    pub fn add_data<T>(&mut self, data: Vec<T>) -> Result<id::NumericId, DataStorageError>
+    pub fn add_data<T>(
+        &mut self,
+        data: Vec<T>,
+    ) -> Result<id::NumericId, DataStorageError>
     where
         T: Into<StorageData> + Clone,
     {
         let mut encoder = StorageEncoder::new();
-        
-        if !self.check_data_type(&data.iter().map(|d| d.clone().into()).collect()) {
+
+        if !self
+            .check_data_type(&data.iter().map(|d| d.clone().into()).collect())
+        {
             return Err(DataStorageError::TypeMismatch);
         }
 
@@ -149,21 +154,21 @@ impl DataStorage {
 
         Ok(())
     }
-    
+
     /// Gets data type of the [`DataStorage`].
     /// # Returns
     /// * `&Vec<StorageDataType>` - Data type of the [`DataStorage`].
     pub fn get_data_type(&self) -> &Vec<StorageDataType> {
         &self.data_type
     }
-    
+
     /// Sets data type of the [`DataStorage`].
     /// # Arguments
     /// * `data_type` - Data type to set.
     pub fn set_data_type(&mut self, data_type: Vec<StorageDataType>) {
         self.data_type = data_type;
     }
-    
+
     /// Appends data type to the [`DataStorage`].
     /// # Arguments
     /// * `data_type` - Data type to append.
@@ -186,10 +191,12 @@ mod tests {
     use crate::{
         data::{data_storage::DataStorage, id},
         page::page_controller::PageController,
-        schema::r#type::data_types::{Integer, Long},
+        schema::r#type::{
+            data_types::{Integer, Long},
+            r#enum::StorageDataType,
+        },
     };
     use std::sync::{Arc, Mutex};
-    use crate::schema::r#type::r#enum::StorageDataType;
 
     #[test]
     fn test_data_storage_new() {
@@ -210,7 +217,7 @@ mod tests {
             assert_eq!(registry.get_id_count(), 0);
         }
     }
-    
+
     #[test]
     fn test_data_storage_check_data_type() {
         let mut controller = PageController::new();
@@ -226,7 +233,7 @@ mod tests {
 
         assert!(res);
     }
-    
+
     #[test]
     fn test_data_storage_set_data_type() {
         let mut controller = PageController::new();
@@ -237,9 +244,12 @@ mod tests {
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
 
-        assert_eq!(data_storage.get_data_type(), &vec![StorageDataType::Integer]);
+        assert_eq!(
+            data_storage.get_data_type(),
+            &vec![StorageDataType::Integer]
+        );
     }
-    
+
     #[test]
     fn test_data_storage_append_data_type() {
         let mut controller = PageController::new();
@@ -251,7 +261,10 @@ mod tests {
         data_storage.set_data_type(vec![StorageDataType::Integer]);
         data_storage.append_data_type(StorageDataType::UInteger);
 
-        assert_eq!(data_storage.get_data_type(), &vec![StorageDataType::Integer, StorageDataType::UInteger]);
+        assert_eq!(
+            data_storage.get_data_type(),
+            &vec![StorageDataType::Integer, StorageDataType::UInteger]
+        );
     }
 
     #[test]
@@ -290,14 +303,14 @@ mod tests {
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
-        
+
         let data = Integer(10);
         let id = data_storage.add_data(vec![data]);
         assert!(id.is_ok());
         let id = id.unwrap();
-        
+
         let res = data_storage.remove_data(id);
-        
+
         {
             let controller = data_storage.page_controller.lock().unwrap();
             assert_eq!(controller.get_page_count(), 1);
@@ -324,7 +337,7 @@ mod tests {
         let id = data_storage.add_data(vec![data]);
         assert!(id.is_ok());
         let id = id.unwrap();
-        
+
         let res = data_storage.remove_data(id);
         let res = data_storage.remove_data(id);
 
@@ -354,7 +367,7 @@ mod tests {
         let id = data_storage.add_data(vec![data]);
         assert!(id.is_ok());
         let id = id.unwrap();
-        
+
         let res = data_storage.remove_data(id);
 
         {

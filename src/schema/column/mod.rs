@@ -40,6 +40,13 @@ impl Column {
     pub fn set_default(&mut self, default: Option<StorageData>) {
         self.default = default;
     }
+
+    /// Returns the type of the column.
+    /// # Returns
+    /// * `StorageDataType` - The type of the column.
+    pub fn get_type(&self) -> StorageDataType {
+        self.type_
+    }
 }
 
 #[cfg(test)]
@@ -61,5 +68,11 @@ mod tests {
         let mut column = Column::new(StorageDataType::Integer);
         column.set_default(Some(StorageData::Integer(Integer(1))));
         assert_eq!(column.default, Some(StorageData::Integer(Integer(1))));
+    }
+
+    #[test]
+    fn test_get_type() {
+        let column = Column::new(StorageDataType::Integer);
+        assert_eq!(column.get_type(), StorageDataType::Integer);
     }
 }

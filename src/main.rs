@@ -3,7 +3,7 @@
 mod controller;
 mod core;
 mod data;
-mod fasade;
+mod facade;
 mod page;
 mod schema;
 
