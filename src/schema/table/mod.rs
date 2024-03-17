@@ -15,7 +15,7 @@ pub struct Table {
     columns: ScalableHashTable<String, Column>,
 
     /// The primary key of the table.
-    primary_key: PrimaryKey,
+    primary_key: Option<PrimaryKey>,
 }
 
 impl Table {
@@ -30,7 +30,7 @@ impl Table {
         Table {
             name,
             columns: ScalableHashTable::default(),
-            primary_key: PrimaryKey::default(),
+            primary_key: None,
         }
     }
 
@@ -86,7 +86,7 @@ impl Table {
     /// Returns the primary key of the table.
     /// # Returns
     /// * `&PrimaryKey` - The primary key of the table.
-    pub fn get_primary_key(&self) -> &PrimaryKey {
+    pub fn get_primary_key(&self) -> &Option<PrimaryKey> {
         &self.primary_key
     }
 
@@ -94,7 +94,7 @@ impl Table {
     /// # Arguments
     /// * `primary_key` - The primary key of the table.
     pub fn set_primary_key(&mut self, primary_key: PrimaryKey) {
-        self.primary_key = primary_key;
+        self.primary_key = Some(primary_key);
     }
 }
 
@@ -120,8 +120,7 @@ mod tests {
         let table = Table::new("table".to_string());
         assert_eq!(table.get_name(), "table");
         assert_eq!(table.columns.len(), 0);
-        assert_eq!(table.get_primary_key().get_name(), "");
-        assert_eq!(table.get_primary_key().get_column(), "");
+        assert_eq!(table.get_primary_key(), &None);
     }
 
     #[test]
@@ -153,8 +152,7 @@ mod tests {
     #[test]
     fn test_table_get_primary_key() {
         let table = Table::new("table".to_string());
-        assert_eq!(table.get_primary_key().get_name(), "");
-        assert_eq!(table.get_primary_key().get_column(), "");
+        assert_eq!(table.get_primary_key(), &None);
     }
 
     #[test]
@@ -165,6 +163,6 @@ mod tests {
             "column".to_string(),
         );
         table.set_primary_key(primary_key.clone());
-        assert_eq!(table.get_primary_key(), &primary_key);
+        assert_eq!(table.get_primary_key(), &Some(primary_key));
     }
 }

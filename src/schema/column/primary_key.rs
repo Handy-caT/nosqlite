@@ -94,6 +94,21 @@ pub enum Data {
     ULong(ULong),
 }
 
+impl TryFrom<StorageData> for Data {
+    type Error = &'static str;
+
+    fn try_from(data: StorageData) -> Result<Self, Self::Error> {
+        match data {
+            StorageData::Integer(data) => Ok(Data::Integer(data)),
+            StorageData::Long(data) => Ok(Data::Long(data)),
+            StorageData::UShort(data) => Ok(Data::UShort(data)),
+            StorageData::UInteger(data) => Ok(Data::UInteger(data)),
+            StorageData::ULong(data) => Ok(Data::ULong(data)),
+            _ => Err("Invalid data type for primary key"),
+        }
+    }
+}
+
 impl From<Data> for StorageData {
     fn from(pk_data: Data) -> Self {
         match pk_data {

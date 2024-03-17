@@ -82,6 +82,7 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// * `name` - The name of the column.
     /// * `column` - The column to add.
     pub fn add_column(&mut self, name: String, column: schema::Column) {
+        self.data_storage.append_data_type(column.get_type());
         self.info.add_column(name, column);
 
         //todo!("Add data update when new column added")
@@ -108,7 +109,7 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// Returns the primary key of the table.
     /// # Returns
     /// * `&PrimaryKey` - The primary key of the table.
-    pub fn get_primary_key(&self) -> &PrimaryKey {
+    pub fn get_primary_key(&self) -> &Option<PrimaryKey> {
         self.info.get_primary_key()
     }
 
@@ -126,7 +127,30 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// * `data` - The data to add.
     /// # Returns
     /// * `NumericId` - The index of the new row.
-    pub fn add_data(&mut self, data: DataUnit) {}
+    pub fn add_data(&mut self, mut data: DataUnit) -> Result<(), TableControllerError> {
+        let Some(primary_key) = self.get_primary_key() else {
+            return Err(TableControllerError::PrimaryKeyDoesNotExist);
+        };
+        
+        let key = primary_key.get_column();
+        let Some(key) = data.get(key) else {
+            return Err(TableControllerError::ColumnNotProvided);
+        };
+
+        let values = data.get_values();
+        let Ok(id) = self.data_storage.add_data(values) else {
+            return Err(TableControllerError::DataStorageError);
+        };
+        
+        let key_id = KeyId {
+            id,
+            key: key.try_into().unwrap(),
+        };
+        
+        self.index.push(key_id);
+
+        Ok(())
+    }
 
     /// Adds a page to the table.
     /// # Arguments
@@ -138,11 +162,11 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
 
 #[derive(Debug, PartialEq)]
 pub enum TableControllerError {
-    ColumnAlreadyExists,
+    ColumnNotProvided,
     ColumnDoesNotExist,
-    PrimaryKeyAlreadyExists,
     WrongTypeForPrimaryKey,
     PrimaryKeyDoesNotExist,
+    DataStorageError,
 }
 
 #[cfg(test)]
@@ -156,6 +180,8 @@ mod tests {
         schema::{column::primary_key, r#type::r#enum::StorageDataType},
     };
     use std::sync::{Arc, Mutex};
+    use crate::data::DataUnit;
+    use crate::schema::r#type::r#enum::StorageData;
 
     /// Creates a new instance of `DataStorage`.
     fn data_storage_factory() -> DataStorage {
@@ -176,20 +202,29 @@ mod tests {
         assert_eq!(table.get_name(), &name);
     }
 
-    // #[test]
-    // fn test_add_data() {
-    //     let name = "table".to_string();
-    //     let data_storage = data_storage_factory();
-    //     let mut table = Table::<16>::new(name.clone(), data_storage);
-    //
-    // table.add_data(NumericId::new(3), primary_key::Data::Integer(0.into()));
-    //
-    //     let key_id = KeyId {
-    //         id: NumericId::default(),
-    //         key: primary_key::Data::Integer(0.into()),
-    //     };
-    //     assert!(table.index.find(&key_id).is_some());
-    // }
+    #[test]
+    fn test_add_data() {
+        let name = "table".to_string();
+        let data_storage = data_storage_factory();
+        let mut table = Table::<16>::new(name.clone(), data_storage);
+        table.add_column(
+            "id".to_string(),
+            schema::Column::new(StorageDataType::Integer),
+        );
+
+        let primary_key = primary_key::PrimaryKey::new(
+            "pk".to_string(),
+            "id".to_string(),
+        );
+        table.set_primary_key(primary_key.clone()).expect("Failed to set primary key");
+    
+        let mut data = DataUnit::new(1);
+        data.insert("id".to_string(), StorageData::Integer(0.into()));
+        
+        let res = table.add_data(data);
+    
+        assert!(res.is_ok());
+    }
 
     #[test]
     fn test_set_primary_key_without_column() {
@@ -224,7 +259,7 @@ mod tests {
 
         let res = table.set_primary_key(primary_key.clone());
         assert!(res.is_ok());
-        assert_eq!(table.get_primary_key(), &primary_key);
+        assert_eq!(table.get_primary_key(), &Some(primary_key));
     }
 
     #[test]
@@ -281,6 +316,7 @@ mod tests {
         table.add_column("column".to_string(), column.clone());
 
         assert_eq!(table.get_column(&"column".to_string()), Some(column));
+        assert_eq!(table.data_storage.get_data_type(), &vec![StorageDataType::Integer]);
     }
 
     #[test]
