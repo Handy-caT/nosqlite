@@ -6,4 +6,5 @@ pub enum Error {
     InvalidValue,
     InvalidUtf8,
     InvalidType,
+    NotDeserializable,
 }

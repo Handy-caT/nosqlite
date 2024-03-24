@@ -1,22 +1,23 @@
 pub mod single_item;
 pub mod storable;
 pub mod storable_integer;
+mod output_descriptor;
 
 use crate::{
     descriptor::{
-        integer::IntegerDescriptor, r#type::BoolDescription, Description,
+        integer::IntegerDescriptor, r#type::BoolDescription,
         Descriptor as _,
     },
     ser::{encoder::single_item::SingleItemEncoder, error::Error},
 };
-
-use smart_default::SmartDefault;
 
 use crate::descriptor::{
     array::ArrayDescription,
     integer::IntegerDescription,
     r#type::{CharDescription, F32Description, F64Description},
 };
+use crate::ser::encoder::output_descriptor::OutputDescriptor;
+
 pub use storable::Storable;
 pub use storable_integer::StorableInteger;
 
@@ -38,39 +39,6 @@ impl OutputBytes {
     /// Append bytes to the [`OutputBytes`].
     pub fn append(&mut self, bytes: Vec<u8>) {
         self.0.append(&mut bytes.clone());
-    }
-}
-
-/// Descriptor bytes after encoding.
-#[derive(SmartDefault, Debug, Clone)]
-pub struct OutputDescriptor {
-    /// List of descriptor of encoded values.
-    descriptors: Vec<(Vec<u8>, String)>,
-}
-
-impl OutputDescriptor {
-    /// Create a new [`OutputDescriptor`].
-    pub fn new() -> Self {
-        <Self as Default>::default()
-    }
-
-    /// Get the descriptors from the [`OutputDescriptor`].
-    pub fn get_descriptors<'a>(&self) -> Vec<(Vec<u8>, String)> {
-        self.descriptors.clone()
-    }
-
-    /// Get the descriptor bytes from the [`OutputDescriptor`].
-    pub fn get_descriptor_bytes(&self) -> Vec<u8> {
-        self.descriptors
-            .iter()
-            .flat_map(|(bytes, _)| bytes.clone())
-            .collect()
-    }
-
-    /// Append a description to the [`OutputDescriptor`].
-    pub fn append<D: Description>(&mut self, description: D) {
-        self.descriptors
-            .push((description.get_bytes(), description.get_name()));
     }
 }
 

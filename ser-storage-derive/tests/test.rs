@@ -16,6 +16,7 @@ fn test_storable() {
     let mut encoder = StorageEncoder::new();
 
     let res = encoder.emit(test);
+    assert!(res.is_ok());
 
     let bytes = encoder.output.get_bytes();
     assert_eq!(bytes, vec![0, 0, 0, 1, 0, 0, 0, 2]);
