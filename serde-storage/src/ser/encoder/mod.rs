@@ -54,8 +54,17 @@ impl OutputDescriptor {
         <Self as Default>::default()
     }
 
+    /// Get the descriptors from the [`OutputDescriptor`].
     pub fn get_descriptors<'a>(&self) -> Vec<(Vec<u8>, String)> {
         self.descriptors.clone()
+    }
+    
+    /// Get the descriptor bytes from the [`OutputDescriptor`].
+    pub fn get_descriptor_bytes(&self) -> Vec<u8> {
+        self.descriptors
+            .iter()
+            .flat_map(|(bytes, _)| bytes.clone())
+            .collect()
     }
 
     /// Append a description to the [`OutputDescriptor`].
@@ -170,7 +179,7 @@ impl StorageEncoder {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_storage_encoder {
     use super::*;
 
     #[test]

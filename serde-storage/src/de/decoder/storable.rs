@@ -251,7 +251,7 @@ impl Storable<String> for String {
         value: Vec<u8>,
         descriptor: Vec<u8>,
     ) -> Result<String, Error> {
-        if get_type_by_description_bytes(descriptor.as_slice()) != "String" {
+        if get_type_by_description_bytes(descriptor.as_slice()) != "char" {
             return Err(Error::InvalidType);
         }
 
@@ -314,7 +314,7 @@ impl Storable<Vec<u8>> for Vec<u8> {
         value: Vec<u8>,
         descriptor: Vec<u8>,
     ) -> Result<Vec<u8>, Error> {
-        if get_type_by_description_bytes(descriptor.as_slice()) != "Vec<u8>" {
+        if get_type_by_description_bytes(descriptor.as_slice()) != "u8" {
             return Err(Error::InvalidType);
         }
 

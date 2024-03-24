@@ -14,7 +14,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -30,7 +30,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_u8(bytes);
+        let res = decoder.emit::<u8>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<u8>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -41,7 +45,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -57,7 +61,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_u16(bytes);
+        let res = decoder.emit::<u16>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<u16>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -68,7 +76,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -84,7 +92,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_u32(bytes);
+        let res = decoder.emit::<u32>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<u32>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -95,7 +107,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -111,7 +123,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_u64(bytes);
+        let res = decoder.emit::<u64>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<u64>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -122,7 +138,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -141,7 +157,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_u128(bytes);
+        let res = decoder.emit::<u128>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<u128>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -152,7 +172,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_bool(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -168,7 +188,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_bool(bytes);
+        let res = decoder.emit::<bool>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<bool>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -179,7 +203,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -195,7 +219,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_i8(bytes);
+        let res = decoder.emit::<i8>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<i8>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -206,7 +234,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -222,7 +250,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_i16(bytes);
+        let res = decoder.emit::<i16>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<i16>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -233,7 +265,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -249,7 +281,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_i32(bytes);
+        let res = decoder.emit::<i32>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<i32>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -260,7 +296,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -276,7 +312,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_i64(bytes);
+        let res = decoder.emit::<i64>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<i64>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -287,7 +327,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_int(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -309,7 +349,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_i128(bytes);
+        let res = decoder.emit::<i128>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<i128>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -320,7 +364,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_str(value);
+        let res = encoder.emit(value.to_string());
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -343,7 +387,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_str(bytes);
+        let res = decoder.emit::<String>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<String>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -354,7 +402,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_f32(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -370,7 +418,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_f32(bytes);
+        let res = decoder.emit::<f32>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<f32>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -381,7 +433,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_f64(value);
+        let res = encoder.emit(value);
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -397,7 +449,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_f64(bytes);
+        let res = decoder.emit::<f64>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<f64>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -408,7 +464,7 @@ mod tests {
 
         let mut encoder = StorageEncoder::new();
 
-        let res = encoder.emit_bytes(value.as_slice());
+        let res = encoder.emit(value.as_slice());
         assert!(res.is_ok());
 
         let bytes = encoder.output.get_bytes();
@@ -428,7 +484,11 @@ mod tests {
 
         let mut decoder = StorageDecoder;
 
-        let res = decoder.emit_bytes(bytes.as_slice());
+        let res = decoder.emit::<Vec<u8>>(bytes.clone());
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), value);
+        
+        let res = decoder.emit_with_descriptor::<Vec<u8>>(bytes, encoder.descriptor.get_descriptor_bytes());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }

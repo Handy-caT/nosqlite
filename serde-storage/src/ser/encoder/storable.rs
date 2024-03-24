@@ -48,3 +48,9 @@ impl Storable for f64 {
         encoder.emit_f64(*self)
     }
 }
+
+impl Storable for &[u8] {
+    fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
+        encoder.emit_bytes(self)
+    }
+}
