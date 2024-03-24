@@ -176,6 +176,17 @@ impl StorageEncoder {
 
         Ok(())
     }
+    
+    pub fn emit_struct(&mut self, values: Vec<Box<dyn Storable>>) -> Result<(), Error> {
+        for value in values {
+            let encoder = SingleItemEncoder {
+                encoder: self,
+                value_written: &mut false,
+            };
+            value.encode(encoder)?;
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -268,5 +279,25 @@ mod tests_storage_encoder {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "f64");
+    }
+    
+    #[test]
+    fn test_struct() {
+        let value: Vec<Box<dyn Storable>> = vec![
+            Box::new(1u32),
+            Box::new(true),
+            Box::new("Hello, world!".to_string()),
+        ];
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_struct(value);
+        assert!(res.is_ok());
+
+        let descriptor = encoder.descriptor.get_descriptors();
+        assert_eq!(descriptor.len(), 3);
+        assert_eq!(descriptor[0].1, "u32");
+        assert_eq!(descriptor[1].1, "bool");
+        assert_eq!(descriptor[2].1, "array_char_13");
     }
 }

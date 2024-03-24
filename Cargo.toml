@@ -1,4 +1,4 @@
-workspace = { members = ["serde-storage"] }
+workspace = { members = [ "ser-storage-derive","serde-storage"] }
 [package]
 name = "nosqlite"
 version = "0.1.0"
