@@ -12,7 +12,7 @@ pub const PAGE_SIZE: u16 = 4096;
 pub struct PageInfo {
     /// The index of the page.
     index: usize,
-    
+
     /// The amount of free space in the page.
     free: u16,
 }
@@ -73,7 +73,7 @@ impl From<PageInfo> for [u8; 2 + USIZE_SIZE] {
 pub struct Page {
     /// The information of the page.
     info: PageInfo,
-    
+
     /// The data of the page.
     data: [u8; PAGE_SIZE as usize],
 }

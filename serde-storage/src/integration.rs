@@ -33,8 +33,11 @@ mod tests {
         let res = decoder.emit::<u8>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<u8>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<u8>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -64,8 +67,11 @@ mod tests {
         let res = decoder.emit::<u16>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<u16>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<u16>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -95,8 +101,11 @@ mod tests {
         let res = decoder.emit::<u32>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<u32>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<u32>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -126,8 +135,11 @@ mod tests {
         let res = decoder.emit::<u64>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<u64>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<u64>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -160,8 +172,11 @@ mod tests {
         let res = decoder.emit::<u128>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<u128>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<u128>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -191,8 +206,11 @@ mod tests {
         let res = decoder.emit::<bool>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<bool>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<bool>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -222,8 +240,11 @@ mod tests {
         let res = decoder.emit::<i8>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<i8>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<i8>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -253,8 +274,11 @@ mod tests {
         let res = decoder.emit::<i16>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<i16>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<i16>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -284,8 +308,11 @@ mod tests {
         let res = decoder.emit::<i32>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<i32>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<i32>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -315,8 +342,11 @@ mod tests {
         let res = decoder.emit::<i64>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<i64>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<i64>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -352,8 +382,11 @@ mod tests {
         let res = decoder.emit::<i128>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<i128>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<i128>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -390,8 +423,11 @@ mod tests {
         let res = decoder.emit::<String>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<String>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<String>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -421,8 +457,11 @@ mod tests {
         let res = decoder.emit::<f32>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<f32>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<f32>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -452,8 +491,11 @@ mod tests {
         let res = decoder.emit::<f64>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<f64>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<f64>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }
@@ -487,8 +529,11 @@ mod tests {
         let res = decoder.emit::<Vec<u8>>(bytes.clone());
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
-        
-        let res = decoder.emit_with_descriptor::<Vec<u8>>(bytes, encoder.descriptor.get_descriptor_bytes());
+
+        let res = decoder.emit_with_descriptor::<Vec<u8>>(
+            bytes,
+            encoder.descriptor.get_descriptor_bytes(),
+        );
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), value);
     }

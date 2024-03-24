@@ -58,7 +58,7 @@ impl OutputDescriptor {
     pub fn get_descriptors<'a>(&self) -> Vec<(Vec<u8>, String)> {
         self.descriptors.clone()
     }
-    
+
     /// Get the descriptor bytes from the [`OutputDescriptor`].
     pub fn get_descriptor_bytes(&self) -> Vec<u8> {
         self.descriptors
@@ -176,8 +176,11 @@ impl StorageEncoder {
 
         Ok(())
     }
-    
-    pub fn emit_struct(&mut self, values: Vec<Box<dyn Storable>>) -> Result<(), Error> {
+
+    pub fn emit_struct(
+        &mut self,
+        values: Vec<Box<dyn Storable>>,
+    ) -> Result<(), Error> {
         for value in values {
             let encoder = SingleItemEncoder {
                 encoder: self,
@@ -280,7 +283,7 @@ mod tests_storage_encoder {
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "f64");
     }
-    
+
     #[test]
     fn test_struct() {
         let value: Vec<Box<dyn Storable>> = vec![

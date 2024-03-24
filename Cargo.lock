@@ -128,6 +128,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
+ "serde-storage",
  "syn 2.0.48",
 ]
 

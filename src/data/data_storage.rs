@@ -154,8 +154,11 @@ impl DataStorage {
 
         Ok(())
     }
-    
-    pub fn get_data(&self, id: id::NumericId) -> Result<Vec<StorageData>, DataStorageError> {
+
+    pub fn get_data(
+        &self,
+        id: id::NumericId,
+    ) -> Result<Vec<StorageData>, DataStorageError> {
         let link = {
             let mut registry = self.id_registry.lock().unwrap();
             registry.get_link(id)

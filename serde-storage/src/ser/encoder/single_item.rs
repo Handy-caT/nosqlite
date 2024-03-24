@@ -62,8 +62,11 @@ impl<'e> SingleItemEncoder<'e> {
         *self.value_written = true;
         self.encoder.emit_f64(value)
     }
-    
-    pub fn emit_struct(self, values: Vec<Box<dyn Storable>>) -> Result<(), Error> {
+
+    pub fn emit_struct(
+        self,
+        values: Vec<Box<dyn Storable>>,
+    ) -> Result<(), Error> {
         *self.value_written = true;
         self.encoder.emit_struct(values)
     }

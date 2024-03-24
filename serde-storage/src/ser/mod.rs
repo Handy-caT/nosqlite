@@ -2,9 +2,9 @@ pub mod encoder;
 pub mod error;
 pub mod r#struct;
 
-use crate::ser::encoder::StorageEncoder;
 use serde::{ser, Serialize};
 
+pub use encoder::{single_item::SingleItemEncoder, Storable, StorageEncoder};
 pub use error::Error;
 
 pub struct StorageSerializer {
