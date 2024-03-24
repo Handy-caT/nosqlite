@@ -16,6 +16,17 @@ impl StorageDecoder {
         self.emit_with(|decoder| T::decode(decoder, value))
     }
 
+    /// Emit a value with a descriptor.
+    pub fn emit_with_descriptor<T: Storable<T>>(
+        &mut self,
+        value: Vec<u8>,
+        descriptor: Vec<u8>,
+    ) -> Result<T, Error> {
+        self.emit_with(|decoder| {
+            T::decode_with_descriptor(decoder, value, descriptor)
+        })
+    }
+
     /// Emit a value with a callback.
     pub fn emit_with<F, T>(&mut self, value_cb: F) -> Result<T, Error>
     where

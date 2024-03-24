@@ -1,7 +1,6 @@
 use crate::ser::{encoder::single_item::SingleItemEncoder, error::Error};
 
 pub trait Storable {
-    // fn to_storable(&self) -> Vec<u8>;
     fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error>;
 }
 

@@ -5,4 +5,5 @@ pub enum Error {
     InvalidLength,
     InvalidValue,
     InvalidUtf8,
+    InvalidType,
 }

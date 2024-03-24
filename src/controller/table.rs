@@ -44,13 +44,11 @@ impl Ord for KeyId {
 pub struct Table<const NODE_SIZE: u8> {
     /// Information about the table.
     info: schema::Table,
-
     /// B-Tree to store primary key indexes.
     index: BTree<KeyId, NODE_SIZE>,
-
     /// Vector of page indexes that store the table's data.
     table_pages: Vec<usize>,
-
+    /// The data storage to use.
     data_storage: DataStorage,
 }
 
@@ -127,11 +125,14 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// * `data` - The data to add.
     /// # Returns
     /// * `NumericId` - The index of the new row.
-    pub fn add_data(&mut self, mut data: DataUnit) -> Result<(), TableControllerError> {
+    pub fn add_data(
+        &mut self,
+        mut data: DataUnit,
+    ) -> Result<(), TableControllerError> {
         let Some(primary_key) = self.get_primary_key() else {
             return Err(TableControllerError::PrimaryKeyDoesNotExist);
         };
-        
+
         let key = primary_key.get_column();
         let Some(key) = data.get(key) else {
             return Err(TableControllerError::ColumnNotProvided);
@@ -141,12 +142,12 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
         let Ok(id) = self.data_storage.add_data(values) else {
             return Err(TableControllerError::DataStorageError);
         };
-        
+
         let key_id = KeyId {
             id,
             key: key.try_into().unwrap(),
         };
-        
+
         self.index.push(key_id);
 
         Ok(())
@@ -174,14 +175,15 @@ mod tests {
     use crate::{
         controller::table::{KeyId, Table, TableControllerError},
         core::structs::tree::object::tree::Tree as _,
-        data::{data_storage::DataStorage, id, id::NumericId},
+        data::{data_storage::DataStorage, id, id::NumericId, DataUnit},
         page::page_controller::PageController,
         schema,
-        schema::{column::primary_key, r#type::r#enum::StorageDataType},
+        schema::{
+            column::primary_key,
+            r#type::r#enum::{StorageData, StorageDataType},
+        },
     };
     use std::sync::{Arc, Mutex};
-    use crate::data::DataUnit;
-    use crate::schema::r#type::r#enum::StorageData;
 
     /// Creates a new instance of `DataStorage`.
     fn data_storage_factory() -> DataStorage {
@@ -212,17 +214,17 @@ mod tests {
             schema::Column::new(StorageDataType::Integer),
         );
 
-        let primary_key = primary_key::PrimaryKey::new(
-            "pk".to_string(),
-            "id".to_string(),
-        );
-        table.set_primary_key(primary_key.clone()).expect("Failed to set primary key");
-    
+        let primary_key =
+            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
+        table
+            .set_primary_key(primary_key.clone())
+            .expect("Failed to set primary key");
+
         let mut data = DataUnit::new(1);
         data.insert("id".to_string(), StorageData::Integer(0.into()));
-        
+
         let res = table.add_data(data);
-    
+
         assert!(res.is_ok());
     }
 
@@ -232,10 +234,8 @@ mod tests {
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
-        let primary_key = primary_key::PrimaryKey::new(
-            "pk".to_string(),
-            "id".to_string(),
-        );
+        let primary_key =
+            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
         let res = table.set_primary_key(primary_key.clone());
 
         assert!(res.is_err());
@@ -252,10 +252,8 @@ mod tests {
             schema::Column::new(StorageDataType::Integer),
         );
 
-        let primary_key = primary_key::PrimaryKey::new(
-            "pk".to_string(),
-            "id".to_string(),
-        );
+        let primary_key =
+            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
 
         let res = table.set_primary_key(primary_key.clone());
         assert!(res.is_ok());
@@ -272,10 +270,8 @@ mod tests {
             schema::Column::new(StorageDataType::VarChar(40)),
         );
 
-        let primary_key = primary_key::PrimaryKey::new(
-            "pk".to_string(),
-            "id".to_string(),
-        );
+        let primary_key =
+            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
 
         let res = table.set_primary_key(primary_key.clone());
         assert!(res.is_err());
@@ -316,7 +312,10 @@ mod tests {
         table.add_column("column".to_string(), column.clone());
 
         assert_eq!(table.get_column(&"column".to_string()), Some(column));
-        assert_eq!(table.data_storage.get_data_type(), &vec![StorageDataType::Integer]);
+        assert_eq!(
+            table.data_storage.get_data_type(),
+            &vec![StorageDataType::Integer]
+        );
     }
 
     #[test]

@@ -158,10 +158,8 @@ mod tests {
     #[test]
     fn test_table_set_primary_key() {
         let mut table = Table::new("table".to_string());
-        let primary_key = PrimaryKey::new(
-            "primary_key".to_string(),
-            "column".to_string(),
-        );
+        let primary_key =
+            PrimaryKey::new("primary_key".to_string(), "column".to_string());
         table.set_primary_key(primary_key.clone());
         assert_eq!(table.get_primary_key(), &Some(primary_key));
     }

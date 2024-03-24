@@ -68,7 +68,9 @@ impl OutputDescriptor {
 /// StorageEncoder is a helper for encoding items.
 #[derive(Default, Debug)]
 pub struct StorageEncoder {
+    /// [`OutputBytes`] is the output after encoding.
     pub output: OutputBytes,
+    /// [`OutputDescriptor`] is the descriptor.
     pub descriptor: OutputDescriptor,
 }
 

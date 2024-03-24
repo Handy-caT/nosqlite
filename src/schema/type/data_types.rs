@@ -54,12 +54,6 @@ pub struct Float(pub f32);
 #[derive(AsRef, Debug, Clone, Copy, PartialEq, PartialOrd, From)]
 pub struct Double(pub f64);
 
-/// Represents a boolean data type.
-#[derive(
-    AsRef, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From,
-)]
-pub struct Boolean(pub bool);
-
 /// Represents a char array data type.
 #[derive(AsRef, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VarChar<const N: u16> {

@@ -44,7 +44,8 @@ impl PrimaryKey {
     /// # Arguments
     /// * `column` - The column to check.
     /// # Returns
-    /// * `bool` - True if the column type is valid for primary key, false otherwise.
+    /// * `bool` - True if the column type is valid for primary key,
+    ///   false otherwise.
     pub fn check_type(column: Column) -> bool {
         match column.get_type() {
             StorageDataType::Integer

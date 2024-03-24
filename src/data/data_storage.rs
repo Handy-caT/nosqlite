@@ -154,6 +154,23 @@ impl DataStorage {
 
         Ok(())
     }
+    
+    pub fn get_data(&self, id: id::NumericId) -> Result<Vec<StorageData>, DataStorageError> {
+        let link = {
+            let mut registry = self.id_registry.lock().unwrap();
+            registry.get_link(id)
+        };
+
+        if let Some(link) = link {
+            let mut controller = self.page_controller.lock().unwrap();
+            let page = controller.get_page(link.page_index);
+            let data = page.get_by_link(link);
+
+            todo!()
+        } else {
+            Err(DataStorageError::LinkNotFound)
+        }
+    }
 
     /// Gets data type of the [`DataStorage`].
     /// # Returns
