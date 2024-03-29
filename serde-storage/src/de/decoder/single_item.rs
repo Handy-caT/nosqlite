@@ -14,6 +14,15 @@ impl<'d> SingleItemDecoder<'d> {
     pub fn emit<T: Storable<T>>(self, value: Vec<u8>) -> Result<T, Error> {
         T::decode(self, value)
     }
+    
+    /// Emit a value with descriptor.
+    pub fn emit_with_descriptor<T: Storable<T>>(
+        self,
+        value: Vec<u8>,
+        descriptor: Vec<u8>,
+    ) -> Result<T, Error> {
+        T::decode_with_descriptor(self, value, descriptor)
+    }
 
     /// Emit u8.
     pub fn emit_u8(self, value: Vec<u8>) -> Result<u8, Error> {

@@ -1,9 +1,10 @@
 use crate::{
-    data::{data_allocator::DataAllocator, id},
+    data::{data_allocator::DataAllocator, id, row_type::RowType},
     page::page_controller::PageController,
     schema::r#type::r#enum::{StorageData, StorageDataType},
 };
-use serde_storage::ser::encoder::StorageEncoder;
+
+use serde_storage::ser::encoder::{OutputDescriptor, StorageEncoder};
 use std::sync::{Arc, Mutex};
 
 /// [`DataStorage`] is a struct that is used to store data of provided format.
@@ -22,8 +23,8 @@ pub struct DataStorage {
     /// [`DataAllocator`] is used to find free space in pages.
     data_allocator: DataAllocator,
 
-    /// [`StorageDataType`] is used to describe storable data types.
-    data_type: Vec<StorageDataType>,
+    /// [`RowType`] is used to describe storable data types.
+    data_type: RowType,
 }
 
 impl DataStorage {
@@ -35,7 +36,7 @@ impl DataStorage {
         }
 
         for (i, d) in data.iter().enumerate() {
-            if d.data_type() != self.data_type[i] {
+            if d.data_type() != self.data_type.0[i] {
                 return false;
             }
         }
@@ -54,7 +55,7 @@ impl DataStorage {
             page_controller: controller,
             data_allocator: DataAllocator::new(),
             id_registry: registry,
-            data_type: Vec::new(),
+            data_type: RowType::default(),
         }
     }
 
@@ -167,6 +168,8 @@ impl DataStorage {
         if let Some(link) = link {
             let mut controller = self.page_controller.lock().unwrap();
             let page = controller.get_page(link.page_index);
+            let descriptor: OutputDescriptor = self.data_type.clone().into();
+
             let data = page.get_by_link(link);
 
             todo!()
@@ -179,21 +182,21 @@ impl DataStorage {
     /// # Returns
     /// * `&Vec<StorageDataType>` - Data type of the [`DataStorage`].
     pub fn get_data_type(&self) -> &Vec<StorageDataType> {
-        &self.data_type
+        &self.data_type.0
     }
 
     /// Sets data type of the [`DataStorage`].
     /// # Arguments
     /// * `data_type` - Data type to set.
     pub fn set_data_type(&mut self, data_type: Vec<StorageDataType>) {
-        self.data_type = data_type;
+        self.data_type = RowType(data_type);
     }
 
     /// Appends data type to the [`DataStorage`].
     /// # Arguments
     /// * `data_type` - Data type to append.
     pub fn append_data_type(&mut self, data_type: StorageDataType) {
-        self.data_type.push(data_type);
+        self.data_type.0.push(data_type);
     }
 }
 
@@ -211,10 +214,7 @@ mod tests {
     use crate::{
         data::{data_storage::DataStorage, id},
         page::page_controller::PageController,
-        schema::r#type::{
-            data_types::{Integer, Long},
-            r#enum::StorageDataType,
-        },
+        schema::r#type::{data_types::Integer, r#enum::StorageDataType},
     };
     use std::sync::{Arc, Mutex};
 

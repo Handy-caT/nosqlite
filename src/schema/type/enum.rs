@@ -1,4 +1,5 @@
 use derive_more::From;
+use std::fmt::Display;
 
 pub use crate::schema::r#type::data_types::*;
 
@@ -87,5 +88,24 @@ mod tests {
         let storage_data = StorageData::VarChar(value);
 
         assert_eq!(storage_data.data_type(), StorageDataType::VarChar(5));
+    }
+}
+
+impl Display for StorageDataType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            StorageDataType::Bool => "bool".to_string(),
+            StorageDataType::Byte => "u8".to_string(),
+            StorageDataType::Short => "i16".to_string(),
+            StorageDataType::Integer => "i32".to_string(),
+            StorageDataType::Long => "i128".to_string(),
+            StorageDataType::UShort => "u16".to_string(),
+            StorageDataType::UInteger => "u32".to_string(),
+            StorageDataType::ULong => "u128".to_string(),
+            StorageDataType::Float => "f32".to_string(),
+            StorageDataType::Double => "f64".to_string(),
+            StorageDataType::VarChar(size) => format!("array_char_{}", size),
+        };
+        write!(f, "{}", str)
     }
 }

@@ -1,12 +1,11 @@
+pub mod output_descriptor;
 pub mod single_item;
 pub mod storable;
 pub mod storable_integer;
-mod output_descriptor;
 
 use crate::{
     descriptor::{
-        integer::IntegerDescriptor, r#type::BoolDescription,
-        Descriptor as _,
+        integer::IntegerDescriptor, r#type::BoolDescription, Descriptor as _,
     },
     ser::{encoder::single_item::SingleItemEncoder, error::Error},
 };
@@ -16,8 +15,8 @@ use crate::descriptor::{
     integer::IntegerDescription,
     r#type::{CharDescription, F32Description, F64Description},
 };
-use crate::ser::encoder::output_descriptor::OutputDescriptor;
 
+pub use output_descriptor::OutputDescriptor;
 pub use storable::Storable;
 pub use storable_integer::StorableInteger;
 

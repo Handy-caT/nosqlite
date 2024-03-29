@@ -2,6 +2,7 @@ pub mod advisors;
 pub mod data_allocator;
 pub mod data_storage;
 pub mod id;
+pub mod row_type;
 
 use crate::{
     core::structs::hash_table::{
