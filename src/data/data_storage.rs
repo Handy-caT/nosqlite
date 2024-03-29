@@ -4,7 +4,11 @@ use crate::{
     schema::r#type::r#enum::{StorageData, StorageDataType},
 };
 
-use serde_storage::ser::encoder::{OutputDescriptor, StorageEncoder};
+use crate::schema::r#type::DataRow;
+use serde_storage::{
+    de::decoder::StorageDecoder,
+    ser::encoder::{OutputDescriptor, StorageEncoder},
+};
 use std::sync::{Arc, Mutex};
 
 /// [`DataStorage`] is a struct that is used to store data of provided format.
@@ -64,24 +68,22 @@ impl DataStorage {
     /// * `data` - Data to add.
     /// # Returns
     /// * `NumericId` - [`NumericId`] of the data.
-    pub fn add_data<T>(
+    pub fn add_data(
         &mut self,
-        data: Vec<T>,
+        data: DataRow,
     ) -> Result<id::NumericId, DataStorageError>
-    where
-        T: Into<StorageData> + Clone,
     {
         let mut encoder = StorageEncoder::new();
+        let data = data.0;
 
-        if !self
-            .check_data_type(&data.iter().map(|d| d.clone().into()).collect())
+        if !self.check_data_type(&data)
         {
             return Err(DataStorageError::TypeMismatch);
         }
 
         let _ = data
             .iter()
-            .map(|d| encoder.emit::<StorageData>(d.clone().into()))
+            .map(|d| encoder.emit::<StorageData>(d.clone()))
             .collect::<Vec<_>>();
         let bytes = encoder.output.get_bytes();
         let len = bytes.len();
@@ -141,13 +143,11 @@ impl DataStorage {
     /// * `Result<(), DataStorageError>` - Result of the operation.
     /// # Errors
     /// * `DataStorageError::IdNotFound` - [`NumericId`] was not found.
-    pub fn update_data<T>(
+    pub fn update_data(
         &mut self,
         id: id::NumericId,
-        data: Vec<T>,
+        data: DataRow,
     ) -> Result<(), DataStorageError>
-    where
-        T: Into<StorageData> + Clone,
     {
         self.remove_data(id)?;
 
@@ -159,7 +159,7 @@ impl DataStorage {
     pub fn get_data(
         &self,
         id: id::NumericId,
-    ) -> Result<Vec<StorageData>, DataStorageError> {
+    ) -> Result<DataRow, DataStorageError> {
         let link = {
             let mut registry = self.id_registry.lock().unwrap();
             registry.get_link(id)
@@ -169,10 +169,17 @@ impl DataStorage {
             let mut controller = self.page_controller.lock().unwrap();
             let page = controller.get_page(link.page_index);
             let descriptor: OutputDescriptor = self.data_type.clone().into();
-
             let data = page.get_by_link(link);
 
-            todo!()
+            let mut decoder = StorageDecoder;
+            let data = decoder
+                .emit_with_descriptor::<DataRow>(
+                    data.to_vec(),
+                    descriptor.get_descriptor_bytes(),
+                )
+                .map_err(|_| DataStorageError::DataDecodeError)?;
+
+            Ok(data)
         } else {
             Err(DataStorageError::LinkNotFound)
         }
@@ -207,6 +214,7 @@ pub enum DataStorageError {
     PageNotFound,
     DataLengthMismatch,
     TypeMismatch,
+    DataDecodeError,
 }
 
 #[cfg(test)]
@@ -217,6 +225,8 @@ mod tests {
         schema::r#type::{data_types::Integer, r#enum::StorageDataType},
     };
     use std::sync::{Arc, Mutex};
+    use crate::schema::r#type::DataRow;
+    use crate::schema::r#type::r#enum::StorageData;
 
     #[test]
     fn test_data_storage_new() {
@@ -298,7 +308,7 @@ mod tests {
         data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
-        let id = data_storage.add_data(vec![data]);
+        let id = data_storage.add_data(DataRow(vec![data.into()]));
 
         assert!(id.is_ok());
         let id = id.unwrap();
@@ -325,7 +335,7 @@ mod tests {
         data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
-        let id = data_storage.add_data(vec![data]);
+        let id = data_storage.add_data(DataRow(vec![data.into()]));
         assert!(id.is_ok());
         let id = id.unwrap();
 
@@ -354,7 +364,7 @@ mod tests {
         data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
-        let id = data_storage.add_data(vec![data]);
+        let id = data_storage.add_data(DataRow(vec![data.into()]));
         assert!(id.is_ok());
         let id = id.unwrap();
 
@@ -384,7 +394,7 @@ mod tests {
         data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
-        let id = data_storage.add_data(vec![data]);
+        let id = data_storage.add_data(DataRow(vec![data.into()]));
         assert!(id.is_ok());
         let id = id.unwrap();
 
@@ -402,7 +412,7 @@ mod tests {
         assert!(res.is_ok());
 
         let data = Integer(87614);
-        let id = data_storage.add_data(vec![data]);
+        let id = data_storage.add_data(DataRow(vec![data.into()]));
 
         assert!(id.is_ok());
         let id = id.unwrap();
@@ -429,12 +439,12 @@ mod tests {
         data_storage.set_data_type(vec![StorageDataType::Integer]);
 
         let data = Integer(10);
-        let id = data_storage.add_data(vec![data]);
+        let id = data_storage.add_data(DataRow(vec![data.into()]));
         assert!(id.is_ok());
         let id = id.unwrap();
 
         let updated_data = Integer(87614);
-        let res = data_storage.update_data(id, vec![updated_data]);
+        let res = data_storage.update_data(id, DataRow(vec![updated_data.into()]));
 
         {
             let controller = data_storage.page_controller.lock().unwrap();
@@ -446,5 +456,34 @@ mod tests {
             assert_eq!(registry.get_id_count(), 1);
         }
         assert!(res.is_ok());
+    }
+    
+    #[test]
+    fn test_data_storage_get_data() {
+        let mut controller = PageController::new();
+        controller.add_page();
+        let controller = Arc::new(Mutex::new(controller));
+        let registry = Arc::new(Mutex::new(id::Registry::new()));
+
+        let mut data_storage = DataStorage::new(controller, registry);
+        data_storage.set_data_type(vec![StorageDataType::Integer, StorageDataType::Byte, StorageDataType::UInteger]);
+        
+        let data_row = DataRow(vec![
+            StorageData::Integer(123.into()),
+            StorageData::Byte(1.into()),
+            StorageData::UInteger(321.into())
+        ]);
+        let id = data_storage.add_data(data_row);
+        assert!(id.is_ok());
+        let id = id.unwrap();
+        
+        let data = data_storage.get_data(id);
+        assert!(data.is_ok());
+        let data = data.unwrap();
+        
+        assert_eq!(data.0.len(), 3);
+        assert_eq!(data.0[0], StorageData::Integer(123.into()));
+        assert_eq!(data.0[1], StorageData::Byte(1.into()));
+        assert_eq!(data.0[2], StorageData::UInteger(321.into()));
     }
 }

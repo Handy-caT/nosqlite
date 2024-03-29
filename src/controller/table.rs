@@ -7,6 +7,7 @@ use crate::{
         r#type::r#enum::StorageData,
     },
 };
+use crate::schema::r#type::DataRow;
 
 /// Represents a mapper from a primary key to a unique identifier.
 #[derive(Debug, Clone)]
@@ -138,7 +139,7 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
             return Err(TableControllerError::ColumnNotProvided);
         };
 
-        let values = data.get_values();
+        let values = DataRow(data.get_values());
         let Ok(id) = self.data_storage.add_data(values) else {
             return Err(TableControllerError::DataStorageError);
         };

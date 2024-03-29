@@ -4,11 +4,9 @@ use serde_storage::{
         decoder::{single_item::SingleItemDecoder, Storable},
         Error,
     },
-    ser::encoder::OutputDescriptor,
+    ser::encoder::{output_descriptor::DescriptorBytes, OutputDescriptor},
 };
 use std::str::FromStr;
-use serde_storage::ser::encoder::output_descriptor::DescriptorBytes;
-use crate::data::row_type::RowType;
 
 pub mod data_types;
 pub mod r#enum;
@@ -104,7 +102,7 @@ mod test_descriptor {
 }
 
 #[derive(Debug, Clone)]
-pub struct DataRow(Vec<StorageData>);
+pub struct DataRow(pub Vec<StorageData>);
 
 impl Storable<Self> for DataRow {
     fn decode(_: SingleItemDecoder, _: Vec<u8>) -> Result<Self, Error> {
@@ -120,35 +118,39 @@ impl Storable<Self> for DataRow {
         let descriptor: OutputDescriptor = descriptor_bytes
             .try_into()
             .map_err(|_| Error::NotDeserializable)?;
-        
+
         let mut data_vec = Vec::new();
         let mut i = 0;
-        
+
         for (bytes, type_) in descriptor.get_descriptors() {
-            let type_ = StorageDataType::from_str(type_.as_str()).map_err(|_| Error::NotDeserializable)?;
+            let type_ = StorageDataType::from_str(type_.as_str())
+                .map_err(|_| Error::NotDeserializable)?;
             let part_len = type_.size();
             let part = value[i..i + part_len].to_vec();
             i += part_len;
-            
+
             let decoder = SingleItemDecoder {
-                decoder: decoder.decoder
+                decoder: decoder.decoder,
             };
-            
-            let data = decoder.emit_with_descriptor::<StorageData>(part, bytes)?;
+
+            let data =
+                decoder.emit_with_descriptor::<StorageData>(part, bytes)?;
             data_vec.push(data);
         }
-        
+
         Ok(DataRow(data_vec))
     }
 }
 
 #[cfg(test)]
 mod test_decode_data_row {
-    use serde_storage::de::decoder::StorageDecoder;
-    use serde_storage::ser::{Storable, StorageEncoder};
-    use crate::schema::r#type::data_types::VarChar;
-    use crate::schema::r#type::DataRow;
-    use crate::schema::r#type::r#enum::StorageData;
+    use crate::schema::r#type::{
+        data_types::VarChar, r#enum::StorageData, DataRow,
+    };
+    use serde_storage::{
+        de::decoder::StorageDecoder,
+        ser::{Storable, StorageEncoder},
+    };
 
     #[test]
     fn test_data_row() {
@@ -164,16 +166,21 @@ mod test_decode_data_row {
         assert!(res.is_ok());
         let bytes = encoder.output.get_bytes();
         let descriptor = encoder.descriptor.get_descriptor_bytes();
-        
+
         let mut decoder = StorageDecoder;
-        
+
         let data = decoder.emit_with_descriptor::<DataRow>(bytes, descriptor);
         assert!(data.is_ok());
-        
+
         let data = data.unwrap().0;
         assert_eq!(data.len(), 3);
         assert_eq!(data[0], StorageData::UInteger(1.into()));
         assert_eq!(data[1], StorageData::Bool(true.into()));
-        assert_eq!(data[2], StorageData::VarChar(VarChar::new("Hello, world!".to_string()).unwrap()));
+        assert_eq!(
+            data[2],
+            StorageData::VarChar(
+                VarChar::new("Hello, world!".to_string()).unwrap()
+            )
+        );
     }
 }
