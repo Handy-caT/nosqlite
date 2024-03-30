@@ -1,11 +1,12 @@
-use crate::{
-    core::structs::tree::{
-        object::{
-            tree::{FindFunctions, Tree},
-            BalancedTree,
-        },
-        vectors::tree_vec::{Indexes, Levels, TreeVec},
+use common::structs::tree::{
+    object::{
+        tree::{FindFunctions, Tree},
+        BalancedTree,
     },
+    vectors::tree_vec::{Indexes, Levels, TreeVec},
+};
+
+use crate::{
     data::advisors::{
         empty_link_registry::registry::{EmptyLinkStorage, Registry},
         strategies::place_advisor_strategy::PlaceAdvisorStrategy,
@@ -96,10 +97,11 @@ where
 
 #[cfg(test)]
 mod tests {
+    use common::structs::tree::{
+        object::tree::Tree, vectors::optimized_tree_vec::OptimizedTreeVec,
+    };
+
     use crate::{
-        core::structs::tree::{
-            object::tree::Tree, vectors::optimized_tree_vec::OptimizedTreeVec,
-        },
         data::advisors::{
             empty_link_registry::{
                 factory::{

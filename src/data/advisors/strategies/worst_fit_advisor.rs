@@ -1,7 +1,8 @@
+use common::structs::tree::{
+    object::BinHeap, vectors::normalized_tree_vec::NormalizedTreeVector,
+};
+
 use crate::{
-    core::structs::tree::{
-        object::BinHeap, vectors::normalized_tree_vec::NormalizedTreeVector,
-    },
     data::advisors::{
         empty_link_registry::registry::{EmptyLinkStorage, Registry},
         strategies::place_advisor_strategy::PlaceAdvisorStrategy,
@@ -67,8 +68,9 @@ impl<'a> PlaceAdvisorStrategy for WorstFitAdvisor<'a> {
 
 #[cfg(test)]
 mod tests {
+    use common::structs::tree::object::tree::Tree;
+
     use crate::{
-        core::structs::tree::object::tree::Tree,
         data::advisors::{
             empty_link_registry::{
                 factory::{

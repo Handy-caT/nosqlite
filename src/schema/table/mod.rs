@@ -1,9 +1,8 @@
-use crate::{
-    core::structs::hash_table::{
-        scalable_hash_table::ScalableHashTable, HashTable,
-    },
-    schema::column::{primary_key::PrimaryKey, Column},
+use common::structs::hash_table::{
+    scalable_hash_table::ScalableHashTable, HashTable,
 };
+
+use crate::schema::column::{primary_key::PrimaryKey, Column};
 
 /// Represents a database table.
 #[derive(Debug, Default, Clone)]
@@ -106,13 +105,12 @@ impl PartialEq for Table {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        core::structs::hash_table::HashTable,
-        schema::{
-            column::{primary_key::PrimaryKey, Column},
-            r#type::r#enum::StorageDataType,
-            table::Table,
-        },
+    use common::structs::hash_table::HashTable;
+
+    use crate::schema::{
+        column::{primary_key::PrimaryKey, Column},
+        r#type::r#enum::StorageDataType,
+        table::Table,
     };
 
     #[test]

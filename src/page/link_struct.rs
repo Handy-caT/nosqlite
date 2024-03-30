@@ -1,10 +1,11 @@
-use crate::{
-    core::base::cast::usize::USIZE_SIZE, page::page_struct::PAGE_SIZE,
-};
 use std::{
     cmp::Ordering,
     fmt::{Debug, Display, Formatter},
 };
+
+use common::base::cast::usize::USIZE_SIZE;
+
+use crate::page::page_struct::PAGE_SIZE;
 
 /// A struct that represents a link to a page.
 #[derive(Debug, Default, Copy, Clone, Eq)]
@@ -160,7 +161,7 @@ impl Display for PageLink {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::base::cast::usize::USIZE_SIZE;
+    use common::base::cast::usize::USIZE_SIZE;
 
     #[test]
     fn test_page_link_new() {

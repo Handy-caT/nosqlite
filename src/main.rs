@@ -1,9 +1,8 @@
 #![feature(core_intrinsics)]
 
+mod api;
 mod controller;
-mod core;
 mod data;
-mod facade;
 mod page;
 mod schema;
 

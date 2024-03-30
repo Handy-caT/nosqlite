@@ -2,7 +2,7 @@ pub mod column;
 pub mod table;
 pub mod r#type;
 
-use crate::core::structs::hash_table::{
+use common::structs::hash_table::{
     scalable_hash_table::ScalableHashTable, HashTable as _,
 };
 
@@ -67,10 +67,9 @@ impl Schema {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        core::structs::hash_table::HashTable,
-        schema::{table::Table, Schema},
-    };
+    use common::structs::hash_table::HashTable;
+
+    use crate::schema::{table::Table, Schema};
 
     #[test]
     fn test_schema_new() {

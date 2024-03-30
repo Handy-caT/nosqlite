@@ -1,7 +1,6 @@
-use crate::{
-    core::structs::hash_table::hash::custom_hashable::CustomHash,
-    data::id::IdGenerator, page::link_struct::PageLink,
-};
+use common::structs::hash_table::hash::custom_hashable::CustomHash;
+
+use crate::{data::id::IdGenerator, page::link_struct::PageLink};
 
 /// Struct that generates [`Id`]s
 #[derive(Debug)]

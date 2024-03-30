@@ -1,13 +1,12 @@
-use crate::{
-    core::structs::tree::{
-        object::{
-            balanced_tree::Decoratable,
-            tree::{Tree, VecFunctions},
-        },
-        vectors::tree_vec::{Levels, TreeVec},
+use common::structs::tree::{
+    object::{
+        balanced_tree::Decoratable,
+        tree::{Tree, VecFunctions},
     },
-    page::link_struct::PageLink,
+    vectors::tree_vec::{Levels, TreeVec},
 };
+
+use crate::page::link_struct::PageLink;
 
 /// Trait for empty link registry.
 pub trait EmptyLinkStorage {
@@ -82,11 +81,12 @@ where
 
 #[cfg(test)]
 mod tests {
+    use common::structs::tree::{
+        object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
+        vectors::default_tree_vec::DefaultTreeVec,
+    };
+
     use crate::{
-        core::structs::tree::{
-            object::{balanced_tree::Decoratable, tree::Tree, BalancedTree},
-            vectors::default_tree_vec::DefaultTreeVec,
-        },
         data::advisors::empty_link_registry::registry::{
             EmptyLinkStorage, Registry,
         },

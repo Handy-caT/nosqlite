@@ -1,13 +1,14 @@
-use crate::{
-    core::structs::tree::{
-        object::{
-            balanced_tree::Decoratable, tree::Tree as _, BalancedTree, BinHeap,
-        },
-        vectors::{
-            normalized_tree_vec::NormalizedTreeVector,
-            optimized_tree_vec::OptimizedTreeVec,
-        },
+use common::structs::tree::{
+    object::{
+        balanced_tree::Decoratable, tree::Tree as _, BalancedTree, BinHeap,
     },
+    vectors::{
+        normalized_tree_vec::NormalizedTreeVector,
+        optimized_tree_vec::OptimizedTreeVec,
+    },
+};
+
+use crate::{
     data::advisors::empty_link_registry::{
         registry::Registry, BestFitEmptyLinkRegistry, EmptyLinkRegistry,
     },

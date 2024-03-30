@@ -1,9 +1,9 @@
+use common::structs::hash_table::{
+    backwards_hash_table::BackwardsHashTable, HashTable,
+};
+
 use crate::{
-    core::structs::hash_table::{
-        backwards_hash_table::BackwardsHashTable, HashTable,
-    },
-    data::id::numeric_id_generator::NumericId,
-    page::link_struct::PageLink,
+    data::id::numeric_id_generator::NumericId, page::link_struct::PageLink,
 };
 
 /// A registry for getting [`NumericId`]s from [`PageLink`]s
@@ -88,8 +88,9 @@ impl LinkStorage {
 
 #[cfg(test)]
 mod tests {
+    use common::structs::hash_table::HashTable;
+
     use crate::{
-        core::structs::hash_table::HashTable,
         data::id::{
             link_storage::LinkStorage, numeric_id_generator::NumericId,
         },

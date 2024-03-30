@@ -1,14 +1,15 @@
 pub mod factory;
 pub mod registry;
 
-use crate::{
-    core::structs::tree::{
-        object::{BalancedTree, BinHeap},
-        vectors::{
-            normalized_tree_vec::NormalizedTreeVector,
-            optimized_tree_vec::OptimizedTreeVec,
-        },
+use common::structs::tree::{
+    object::{BalancedTree, BinHeap},
+    vectors::{
+        normalized_tree_vec::NormalizedTreeVector,
+        optimized_tree_vec::OptimizedTreeVec,
     },
+};
+
+use crate::{
     data::advisors::empty_link_registry::registry::Registry,
     page::link_struct::PageLink,
 };

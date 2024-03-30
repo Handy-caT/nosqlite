@@ -4,12 +4,11 @@ pub mod data_storage;
 pub mod id;
 pub mod row_type;
 
-use crate::{
-    core::structs::hash_table::{
-        static_hash_table::StaticHashTable, HashTable, VecFunctions,
-    },
-    schema::r#type::r#enum::StorageData,
+use common::structs::hash_table::{
+    static_hash_table::StaticHashTable, HashTable, VecFunctions,
 };
+
+use crate::schema::r#type::r#enum::StorageData;
 
 /// Type of data unit. It represents a column row data using a hash table.
 /// Key is the name of the column and value is the data.

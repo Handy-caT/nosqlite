@@ -1,13 +1,13 @@
+use common::structs::tree::object::{tree::Tree as _, BTree};
+
 use crate::{
-    core::structs::tree::object::{tree::Tree as _, BTree},
     data::{data_storage::DataStorage, id::NumericId, DataUnit},
     schema,
     schema::{
         column::{primary_key, primary_key::PrimaryKey},
-        r#type::r#enum::StorageData,
+        r#type::{r#enum::StorageData, DataRow},
     },
 };
-use crate::schema::r#type::DataRow;
 
 /// Represents a mapper from a primary key to a unique identifier.
 #[derive(Debug, Clone)]
@@ -173,9 +173,10 @@ pub enum TableControllerError {
 
 #[cfg(test)]
 mod tests {
+    use common::structs::tree::object::tree::Tree as _;
+
     use crate::{
         controller::table::{KeyId, Table, TableControllerError},
-        core::structs::tree::object::tree::Tree as _,
         data::{data_storage::DataStorage, id, id::NumericId, DataUnit},
         page::page_controller::PageController,
         schema,

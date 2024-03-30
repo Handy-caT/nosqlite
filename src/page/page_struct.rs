@@ -1,7 +1,6 @@
-use crate::{
-    core::base::cast::{usize, usize::USIZE_SIZE},
-    page::link_struct::PageLink,
-};
+use common::base::cast::{usize, usize::USIZE_SIZE};
+
+use crate::page::link_struct::PageLink;
 
 /// The size of a page.
 pub const PAGE_SIZE: u16 = 4096;
@@ -190,9 +189,9 @@ impl Page {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        core::base::cast::usize::USIZE_SIZE, page::page_struct::PAGE_SIZE,
-    };
+    use common::base::cast::usize::USIZE_SIZE;
+
+    use crate::page::page_struct::PAGE_SIZE;
 
     #[test]
     fn test_page_info_new() {
