@@ -1,7 +1,7 @@
-pub mod backwards_hash_table;
+pub mod backwards;
 pub mod hash;
-pub mod scalable_hash_table;
-pub mod static_hash_table;
+pub mod scalable;
+pub mod r#static;
 pub mod vectors;
 
 use crate::structs::hash_table::vectors::key_value::KeyValue;

@@ -46,6 +46,7 @@ fn transformation(a: &[u8], b: &[u8]) -> [u8; 4] {
 /// * data - Data to hash
 /// # Returns
 /// * u64 - Result of the hash
+#[must_use]
 pub fn hash(data: &[u8]) -> u64 {
     let len = data.len();
     let appendix = len.to_be_bytes();

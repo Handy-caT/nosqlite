@@ -1,6 +1,7 @@
 use crate::structs::hash_table::vectors::{
     key_value::KeyValue, statistics::hash_vec,
 };
+use crate::structs::tree::vectors::tree_vec::TreeVec;
 
 /// Common trait for [`HashTable`] data
 pub trait HashVec<K, V> {
@@ -74,6 +75,13 @@ pub trait HashVec<K, V> {
     /// # Returns
     /// * `usize` - Length of the [`HashVec`].
     fn len(&self) -> usize;
+
+    /// Returns true if [`HashVec`] is empty.
+    /// # Returns
+    /// * `bool` - State of emptiness.
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 /// Common trait for [`HashTable`] to get values by underlying vector index.

@@ -1,5 +1,5 @@
 use common::structs::hash_table::{
-    scalable_hash_table::ScalableHashTable, HashTable,
+    scalable::ScalableHashTable, HashTable,
 };
 
 use crate::schema::column::{primary_key::PrimaryKey, Column};

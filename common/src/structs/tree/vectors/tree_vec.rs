@@ -49,6 +49,13 @@ pub trait TreeVec<T>: Index<usize, Output = T> + IndexMut<usize> {
     /// # Returns
     /// * `usize` - Length of the vector
     fn len(&self) -> usize;
+
+    /// Returns true if [`TreeVec`] is empty.
+    /// # Returns
+    /// * `bool` - State of emptiness.
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 /// The [`Indexes`] trait is used to define the basic functions of a

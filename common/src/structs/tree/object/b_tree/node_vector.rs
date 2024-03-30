@@ -30,7 +30,7 @@ where
     /// # Arguments
     /// * `node_loader` - Node loader.
     /// # Returns
-    /// * BTreeVec<T, L, M, NODE_SIZE> - New B-Tree vector.
+    /// * `BTreeVec`<T, L, M, `NODE_SIZE`> - New B-Tree vector.
     pub fn new(node_loader: L) -> BTreeVec<T, L, M, NODE_SIZE> {
         BTreeVec {
             preloaded_data: M::new(8),
@@ -82,7 +82,7 @@ where
     /// # Arguments
     /// * `index` - Index of the node.
     /// # Returns
-    /// * Option<Node<T, NODE_SIZE>> - Node by index.
+    /// * Option<Node<T, `NODE_SIZE`>> - Node by index.
     pub fn get_node(&mut self, index: usize) -> Option<Node<T, NODE_SIZE>> {
         self.preloaded_data.get(&index)
     }
@@ -100,7 +100,7 @@ where
 mod tests {
     use super::*;
     use crate::structs::{
-        hash_table::scalable_hash_table::ScalableHashTable,
+        hash_table::scalable::ScalableHashTable,
         tree::object::b_tree::node_loader::NodeLoader,
     };
 

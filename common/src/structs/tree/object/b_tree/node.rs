@@ -22,6 +22,7 @@ impl Index {
     /// * `index` - Index of the node.
     /// # Returns
     /// * Index - New node index.
+    #[must_use]
     pub fn new(index: usize) -> Index {
         Index {
             index,
@@ -53,6 +54,7 @@ where
     /// * `max_size` - Maximum size of the node.
     /// # Returns
     /// * Node<T> - New node.
+    #[must_use]
     pub fn new(index: usize) -> Node<T, NODE_SIZE> {
         Node {
             keys: Vec::new(),
@@ -147,7 +149,7 @@ where
             find_index.unwrap_err()
         };
 
-        self.link_indexes.get(index).map(|x| *x)
+        self.link_indexes.get(index).copied()
     }
 
     /// Returns position of the value in the node.
@@ -177,6 +179,7 @@ where
     /// Checks if the node is full.
     /// # Returns
     /// * bool - True if the node is full, false otherwise.
+    #[must_use]
     pub fn is_full(&self) -> bool {
         self.keys.len() == NODE_SIZE as usize
     }
@@ -184,6 +187,7 @@ where
     /// Checks if the node is a leaf.
     /// # Returns
     /// * bool - True if the node is a leaf, false otherwise.
+    #[must_use]
     pub fn is_leaf(&self) -> bool {
         self.link_indexes.is_empty()
     }

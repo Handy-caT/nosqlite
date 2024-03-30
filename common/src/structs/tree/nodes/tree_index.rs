@@ -27,6 +27,7 @@ impl TreeIndex {
     /// * `index` - Index of the node
     /// # Returns
     /// * `TreeIndex` - New node
+    #[must_use]
     pub fn new_with_index(index: usize) -> TreeIndex {
         TreeIndex {
             index: Some(index),

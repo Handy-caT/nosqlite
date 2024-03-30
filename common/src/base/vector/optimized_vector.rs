@@ -22,11 +22,11 @@ pub struct OptimizedVector<T> {
     max_length: usize,
 }
 
-impl<T: Clone> OptimizedVector<T> {
+impl<T> Default for OptimizedVector<T> {
     /// Creates a new [`OptimizedVector`].
     /// # Returns
     /// * `OptimizedVector<T>`: New [`OptimizedVector`].
-    pub fn new() -> OptimizedVector<T> {
+    fn default() -> OptimizedVector<T> {
         let mut vec = OptimizedVector {
             data: Vec::new(),
             empty: Vec::new(),
@@ -42,7 +42,9 @@ impl<T: Clone> OptimizedVector<T> {
 
         vec
     }
+}
 
+impl<T: Clone> OptimizedVector<T> {
     /// Pushes a value to the vector.
     /// # Arguments
     /// * `value` - Value to push
@@ -133,8 +135,17 @@ impl<T: Clone> OptimizedVector<T> {
     /// Gets the length of the vector.
     /// # Returns
     /// * `usize` - Length of the vector.
+    #[must_use]
     pub fn len(&self) -> usize {
         self.length
+    }
+
+    /// Returns true of [`OptimizedVector`] is empty.
+    /// # Returns
+    /// * `bool` - State of emptiness.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 
@@ -146,7 +157,7 @@ mod tests {
 
     #[test]
     fn test_optimized_vec_new() {
-        let vec = OptimizedVector::<i32>::new();
+        let vec = OptimizedVector::<i32>::default();
 
         assert_eq!(vec.data.len(), 0);
         assert_eq!(vec.empty.len(), 0);
@@ -158,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_optimized_vec_push() {
-        let mut vec = OptimizedVector::<i32>::new();
+        let mut vec = OptimizedVector::<i32>::default();
         let index = vec.push(1);
 
         assert_eq!(index, 0);
@@ -170,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_optimized_vec_get() {
-        let mut vec = OptimizedVector::<i32>::new();
+        let mut vec = OptimizedVector::<i32>::default();
         let index = vec.push(1);
 
         assert_eq!(vec.get(index), Some(1));
@@ -179,7 +190,7 @@ mod tests {
 
     #[test]
     fn test_optimized_vec_get_mut() {
-        let mut vec = OptimizedVector::<i32>::new();
+        let mut vec = OptimizedVector::<i32>::default();
         let index = vec.push(1);
 
         assert_eq!(vec.get_mut(index), Some(&mut 1));
@@ -188,7 +199,7 @@ mod tests {
 
     #[test]
     fn test_optimized_vec_remove() {
-        let mut vec = OptimizedVector::<i32>::new();
+        let mut vec = OptimizedVector::<i32>::default();
         let index = vec.push(1);
 
         assert_eq!(vec.remove(index), Some(1));
@@ -202,7 +213,7 @@ mod tests {
 
     #[test]
     fn test_optimized_vec_push_remove() {
-        let mut vec = OptimizedVector::<i32>::new();
+        let mut vec = OptimizedVector::<i32>::default();
         let index = vec.push(1);
 
         assert_eq!(index, 0);

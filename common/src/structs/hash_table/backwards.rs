@@ -2,7 +2,7 @@ use crate::{
     base::vector::optimized_vector::OptimizedVector,
     structs::hash_table::{
         hash::custom_hashable::CustomHash,
-        scalable_hash_table::ScalableHashTable, vectors::key_value::KeyValue,
+        scalable::ScalableHashTable, vectors::key_value::KeyValue,
         ExtendedFunctions, HashTable, VecFunctions,
     },
 };
@@ -40,7 +40,7 @@ where
     /// # Returns
     /// * `Option<K>` - Key of the key-value pair that was removed.
     pub fn remove_by_value(&mut self, value: &V) -> Option<K> {
-        let value_index = self.value_hash_table.remove(&value)?;
+        let value_index = self.value_hash_table.remove(value)?;
         let key_value = self.key_values.remove(value_index)?;
 
         self.key_hash_table.remove(&key_value.key)?;
@@ -56,7 +56,7 @@ where
     /// # Returns
     /// * `Option<K>` - Key of the key-value pair that was removed.
     pub fn get_by_value(&mut self, value: &V) -> Option<K> {
-        let value_index = self.value_hash_table.get(&value)?;
+        let value_index = self.value_hash_table.get(value)?;
         let key_value = self.key_values.get(value_index)?;
 
         Some(key_value.key)
@@ -73,7 +73,7 @@ where
     fn new(size: usize) -> Self {
         let key_hash_table = HK::new(size);
         let value_hash_table = HV::new(size);
-        let key_values = OptimizedVector::<KeyValue<K, V>>::new();
+        let key_values = OptimizedVector::<KeyValue<K, V>>::default();
 
         BackwardsHashTable {
             key_values,
@@ -94,10 +94,10 @@ where
         let value_index = self.value_hash_table.insert(value, index)?.value;
 
         if key_index == value_index {
-            if key_index != index {
-                self.key_values.remove(key_index);
-            } else {
+            if key_index == index {
                 self.len += 1;
+            } else {
+                self.key_values.remove(key_index);
             }
             Some(result)
         } else if key_index != index {
@@ -154,7 +154,7 @@ where
     fn new_with_hash(size: usize, hash: fn(&[u8]) -> u64) -> Self {
         let key_hash_table = HK::new_with_hash(size, hash);
         let value_hash_table = HV::new_with_hash(size, hash);
-        let key_values = OptimizedVector::<KeyValue<K, V>>::new();
+        let key_values = OptimizedVector::<KeyValue<K, V>>::default();
 
         BackwardsHashTable {
             key_values,
@@ -199,7 +199,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::structs::hash_table::{
-        backwards_hash_table::BackwardsHashTable, vectors::key_value::KeyValue,
+        backwards::BackwardsHashTable, vectors::key_value::KeyValue,
         ExtendedFunctions, HashTable, VecFunctions,
     };
 

@@ -214,7 +214,7 @@ impl<
     > Tree<T> for Decoratable<T, V, M>
 {
     fn new_with_compare(compare: fn(&T, &T) -> Ordering) -> Self {
-        let additional_index_vec = AdditionalIndexVec::new();
+        let additional_index_vec = AdditionalIndexVec::default();
 
         let mut dec_tree = Decoratable {
             base: M::default(),
@@ -358,13 +358,13 @@ where
     M: Tree<T> + Sized + VecFunctions<T, V> + Default,
 {
     fn default() -> Self {
-        let additional_index_vec = AdditionalIndexVec::new();
+        let additional_index_vec = AdditionalIndexVec::default();
 
         let mut dec_tree = Decoratable {
             base: M::default(),
             root: None,
             indexes: additional_index_vec,
-            compare: |a: &T, b: &T| a.cmp(&b),
+            compare: |a: &T, b: &T| a.cmp(b),
             v: std::marker::PhantomData,
         };
 

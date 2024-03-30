@@ -1,5 +1,5 @@
 use common::structs::hash_table::{
-    backwards_hash_table::BackwardsHashTable, HashTable,
+    backwards::BackwardsHashTable, HashTable,
 };
 
 use crate::{

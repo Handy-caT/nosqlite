@@ -21,6 +21,7 @@ impl NormalizedTreeIndex {
     /// * `index` - Index of the node
     /// # Returns
     /// * `NormalizedTreeIndex` - New node
+    #[must_use]
     pub fn new(index: usize) -> NormalizedTreeIndex {
         NormalizedTreeIndex {
             index: Some(index),
@@ -31,6 +32,7 @@ impl NormalizedTreeIndex {
     /// Returns the index of the right child
     /// # Returns
     /// * `Option<usize>` - Index of the right child
+    #[must_use]
     pub fn get_right_index(&self) -> Option<usize> {
         self.index.map(|index| index * 2 + 2)
     }
@@ -38,6 +40,7 @@ impl NormalizedTreeIndex {
     /// Returns the index of the left child
     /// # Returns
     /// * `i32` - Index of the left child
+    #[must_use]
     pub fn get_left_index(&self) -> Option<usize> {
         self.index.map(|index| index * 2 + 1)
     }
@@ -50,6 +53,7 @@ impl NormalizedTreeIndex {
     #[allow(clippy::cast_possible_truncation)]
     #[allow(clippy::cast_sign_loss)]
     #[allow(clippy::cast_precision_loss)]
+    #[must_use]
     pub fn find_height(index: usize) -> u8 {
         (index as f64 + 1.).log2().floor() as u8 + 1
     }

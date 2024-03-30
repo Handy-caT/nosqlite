@@ -5,7 +5,7 @@ pub mod id;
 pub mod row_type;
 
 use common::structs::hash_table::{
-    static_hash_table::StaticHashTable, HashTable, VecFunctions,
+    r#static::StaticHashTable, HashTable, VecFunctions,
 };
 
 use crate::schema::r#type::r#enum::StorageData;

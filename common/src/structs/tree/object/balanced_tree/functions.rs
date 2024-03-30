@@ -113,7 +113,7 @@ pub fn find_greater_equal<T: Default + PartialOrd + Clone>(
     indexes: &mut [TreeIndex],
     compare: fn(&T, &T) -> Ordering,
     root: usize,
-    value: T,
+    value: &T,
 ) -> Option<(usize, T)> {
     let mut queue: Queue<(Option<usize>, String)> = queue![];
     let mut current_index = Some(root);
@@ -122,7 +122,7 @@ pub fn find_greater_equal<T: Default + PartialOrd + Clone>(
     let mut turn_count = 0;
 
     while !ind && current_index.is_some() {
-        if (compare)(&value, &nodes[current_index.unwrap()]) == Ordering::Less {
+        if compare(value, &nodes[current_index.unwrap()]) == Ordering::Less {
             if last.1 == "right" {
                 turn_count += 1;
             }
@@ -137,7 +137,7 @@ pub fn find_greater_equal<T: Default + PartialOrd + Clone>(
 
             let _ = queue.add(last.clone());
             current_index = indexes[current_index.unwrap()].left_index;
-        } else if (compare)(&value, &nodes[current_index.unwrap()])
+        } else if compare(value, &nodes[current_index.unwrap()])
             == Ordering::Greater
         {
             if last.1 == "left" {

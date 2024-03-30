@@ -258,7 +258,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::structs::hash_table::{
-        scalable_hash_table::ScalableHashTable,
+        scalable::ScalableHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
         ExtendedFunctions, HashTable, VecFunctions,
     };

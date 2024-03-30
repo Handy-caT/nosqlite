@@ -190,7 +190,7 @@ impl<T: Default + Clone> Backward for BackwardsTreeVec<T> {
 
 impl<T: Clone> Clone for BackwardsTreeVec<T> {
     fn clone(&self) -> Self {
-        let mut vec = BackwardsTreeVec {
+        BackwardsTreeVec {
             allocated_levels: self.allocated_levels,
             max_length: self.max_length,
             length: self.length,
@@ -198,9 +198,7 @@ impl<T: Clone> Clone for BackwardsTreeVec<T> {
             indexes: self.indexes.clone(),
             empty: self.empty.clone(),
             parents: self.parents.clone(),
-        };
-
-        vec
+        }
     }
 }
 

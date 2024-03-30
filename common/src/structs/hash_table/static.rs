@@ -178,7 +178,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::structs::hash_table::{
-        static_hash_table::StaticHashTable,
+        r#static::StaticHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
         ExtendedFunctions, HashTable, VecFunctions,
     };

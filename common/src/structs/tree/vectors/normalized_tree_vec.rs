@@ -59,6 +59,7 @@ impl<T: Default + Clone> NormalizedTreeVector<T> {
     /// * `index` - Index to get parent index.
     /// # Returns
     /// Parent index of given index.
+    #[must_use]
     pub fn get_parent_index(index: usize) -> Option<usize> {
         if index == 0 {
             None
@@ -259,16 +260,14 @@ impl<T: Default + Clone> IndexMut<usize> for NormalizedTreeVector<T> {
 
 impl<T: Clone> Clone for NormalizedTreeVector<T> {
     fn clone(&self) -> Self {
-        let mut vec = NormalizedTreeVector {
+        NormalizedTreeVector {
             allocated_levels: self.allocated_levels,
             max_length: self.max_length,
             length: self.length,
             data: self.data.clone(),
             indexes: self.indexes.clone(),
             empty: self.empty.clone(),
-        };
-
-        vec
+        }
     }
 }
 

@@ -7,6 +7,7 @@ pub struct BoolArray {
 
 impl BoolArray {
     /// Create a new [`BoolArray`].
+    #[must_use]
     pub fn new(size: usize) -> Self {
         let mut vec = vec![0; size];
 
@@ -20,15 +21,17 @@ impl BoolArray {
 
         let byte = self.bytes[byte_index];
 
-        let new_byte = match value {
-            true => byte | (1 << bit_index),
-            false => byte & !(1 << bit_index),
+        let new_byte = if value {
+            byte | (1 << bit_index)
+        } else {
+            byte & !(1 << bit_index)
         };
 
         self.bytes[byte_index] = new_byte;
     }
 
     /// Get a value from the [`BoolArray`].
+    #[must_use]
     pub fn get(&self, index: usize) -> bool {
         let byte_index = index / 8;
         let bit_index = index % 8;
@@ -40,7 +43,7 @@ impl BoolArray {
         match bit {
             1 => true,
             0 => false,
-            _ => panic!("Bit is not 1 or 0: {}", bit),
+            _ => panic!("Bit is not 1 or 0: {bit}"),
         }
     }
 }

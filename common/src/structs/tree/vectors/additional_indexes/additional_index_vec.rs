@@ -11,8 +11,8 @@ pub struct AdditionalIndexVec {
     max_length: usize,
 }
 
-impl AdditionalIndexVec {
-    pub fn new() -> AdditionalIndexVec {
+impl Default for AdditionalIndexVec {
+    fn default() -> AdditionalIndexVec {
         let mut vec = AdditionalIndexVec {
             indexes: Vec::new(),
             allocated_levels: 0,
@@ -23,7 +23,9 @@ impl AdditionalIndexVec {
 
         vec
     }
+}
 
+impl AdditionalIndexVec {
     pub fn new_with_existing<
         T: Default + Clone,
         M: TreeVec<T> + Levels + Sized,
@@ -59,6 +61,7 @@ impl AdditionalIndexVec {
         self.indexes.push(index);
     }
 
+    #[must_use]
     pub fn get_indexes(&self) -> &Vec<TreeIndex> {
         &self.indexes
     }
@@ -71,8 +74,14 @@ impl AdditionalIndexVec {
         self.indexes.remove(index)
     }
 
+    #[must_use]
     pub fn len(&self) -> usize {
         self.indexes.len()
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 
@@ -92,13 +101,11 @@ impl IndexMut<usize> for AdditionalIndexVec {
 
 impl Clone for AdditionalIndexVec {
     fn clone(&self) -> Self {
-        let mut vec = AdditionalIndexVec {
+        AdditionalIndexVec {
             indexes: self.indexes.clone(),
             allocated_levels: self.allocated_levels,
             max_length: self.max_length,
-        };
-
-        vec
+        }
     }
 }
 

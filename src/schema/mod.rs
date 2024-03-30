@@ -3,7 +3,7 @@ pub mod table;
 pub mod r#type;
 
 use common::structs::hash_table::{
-    scalable_hash_table::ScalableHashTable, HashTable as _,
+    scalable::ScalableHashTable, HashTable as _,
 };
 
 pub use column::Column;

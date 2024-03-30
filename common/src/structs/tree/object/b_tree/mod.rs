@@ -1,5 +1,5 @@
 use crate::structs::{
-    hash_table::{scalable_hash_table::ScalableHashTable, HashTable},
+    hash_table::{scalable::ScalableHashTable, HashTable},
     tree::object::{
         b_tree::{
             node::Node,
@@ -39,7 +39,7 @@ where
         BTree {
             data: BTreeVec::new(node_loader),
             root: None,
-            compare: |a, b| a.cmp(b),
+            compare: Ord::cmp,
         }
     }
 
