@@ -1,6 +1,4 @@
-use common::structs::hash_table::{
-    scalable::ScalableHashTable, HashTable,
-};
+use common::structs::hash_table::{scalable::ScalableHashTable, HashTable};
 
 use crate::schema::column::{primary_key::PrimaryKey, Column};
 

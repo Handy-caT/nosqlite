@@ -3,7 +3,7 @@ use crate::structs::{
     tree::object::b_tree::{node::Node, node_loader::NodeLoader},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BTreeVec<T, L, M, const NODE_SIZE: u8> {
     /// Preloaded data.
     preloaded_data: M,

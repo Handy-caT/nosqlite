@@ -41,7 +41,7 @@ impl Ord for KeyId {
 
 /// Controller for a single table.
 /// Is used to change the table's schema and data.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Table<const NODE_SIZE: u8> {
     /// Information about the table.
     info: schema::Table,
@@ -51,6 +51,12 @@ pub struct Table<const NODE_SIZE: u8> {
     table_pages: Vec<usize>,
     /// The data storage to use.
     data_storage: DataStorage,
+}
+
+impl<const NODE_SIZE: u8> PartialEq for Table<NODE_SIZE> {
+    fn eq(&self, other: &Self) -> bool {
+        self.info == other.info
+    }
 }
 
 impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
@@ -159,6 +165,13 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// * `index` - The index of the page to add.
     pub fn add_page(&mut self, index: usize) {
         self.table_pages.push(index);
+    }
+    
+    /// Returns the pages of the table.
+    /// # Returns
+    /// * `&Vec<usize>` - The pages of the table.
+    pub fn get_pages(&self) -> &Vec<usize> {
+        &self.table_pages
     }
 }
 

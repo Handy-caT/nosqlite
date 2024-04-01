@@ -15,7 +15,7 @@ pub mod node;
 mod node_loader;
 mod node_vector;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BTree<
     T,
     const NODE_SIZE: u8,

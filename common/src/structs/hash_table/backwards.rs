@@ -1,9 +1,9 @@
 use crate::{
     base::vector::optimized_vector::OptimizedVector,
     structs::hash_table::{
-        hash::custom_hashable::CustomHash,
-        scalable::ScalableHashTable, vectors::key_value::KeyValue,
-        ExtendedFunctions, HashTable, VecFunctions,
+        hash::custom_hashable::CustomHash, scalable::ScalableHashTable,
+        vectors::key_value::KeyValue, ExtendedFunctions, HashTable,
+        VecFunctions,
     },
 };
 

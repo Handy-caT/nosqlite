@@ -24,7 +24,7 @@ pub type WorstFitEmptyLinkRegistry =
 
 /// A registry for empty links.
 /// Is used with [`PlaceAdvisorStrategy`].
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum EmptyLinkRegistry {
     /// A registry for empty links that uses the best fit strategy.
     /// Is used with [`BestFitAdvisor`].

@@ -1,3 +1,4 @@
+mod schema;
 pub mod table;
 
 pub use table::Table;

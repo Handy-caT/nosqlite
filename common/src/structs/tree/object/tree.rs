@@ -61,18 +61,22 @@ pub trait VecFunctions<T, M: TreeVec<T> + Sized> {
     /// # Returns
     /// * `Option<T>` - The value.
     fn get(&mut self, index: usize) -> Option<T>;
+    
     /// Returns the mutable reference to the underlying vector.
     /// # Returns
     /// * `&mut M` - The mutable reference to the underlying vector.
     fn get_nodes_mut(&mut self) -> &mut M;
+    
     /// Returns the reference to the underlying vector.
     /// # Returns
     /// * `&M` - The reference to the underlying vector.
     fn get_nodes(&self) -> &M;
+    
     /// Returns thr root index of the tree.
     /// # Returns
     /// * `Option<usize>` - The root index of the tree.
     fn get_root_index(&self) -> Option<usize>;
+    
     /// Removes item from the tree by index. Returns the value.
     /// If the index is wrong, returns None.
     /// # Arguments

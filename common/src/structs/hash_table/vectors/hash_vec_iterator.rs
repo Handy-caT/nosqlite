@@ -46,6 +46,8 @@ where
 impl<'a, K, V, H> Iterator for HashVecIterator<'a, K, V, H>
 where
     H: HashVec<K, V> + Indexes<K, V>,
+    K: Clone,
+    V: Clone,
 {
     type Item = KeyValue<K, V>;
 

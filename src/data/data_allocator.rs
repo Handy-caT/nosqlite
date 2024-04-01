@@ -18,7 +18,7 @@ use crate::{
 
 /// [`DataAllocator`] is a struct that is responsible for allocating and
 /// deallocating memory.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataAllocator {
     /// [`EmptyLinkRegistry`] that is used to find empty places.
     empty_link_registry: EmptyLinkRegistry,

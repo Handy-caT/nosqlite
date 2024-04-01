@@ -5,7 +5,7 @@ pub trait NodeLoader<T, const NODE_SIZE: u8> {
     fn preload_nodes(&self) -> Vec<Node<T, NODE_SIZE>>;
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct BaseLoader;
 
 impl<T, const NODE_SIZE: u8> NodeLoader<T, NODE_SIZE> for BaseLoader {

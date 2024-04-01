@@ -1,7 +1,7 @@
-use crate::structs::hash_table::vectors::{
-    key_value::KeyValue, statistics::hash_vec,
+use crate::structs::{
+    hash_table::vectors::{key_value::KeyValue, statistics::hash_vec},
+    tree::vectors::tree_vec::TreeVec,
 };
-use crate::structs::tree::vectors::tree_vec::TreeVec;
 
 /// Common trait for [`HashTable`] data
 pub trait HashVec<K, V> {

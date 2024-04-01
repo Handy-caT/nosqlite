@@ -1,6 +1,4 @@
-use common::structs::hash_table::{
-    backwards::BackwardsHashTable, HashTable,
-};
+use common::structs::hash_table::{backwards::BackwardsHashTable, HashTable};
 
 use crate::{
     data::id::numeric_id_generator::NumericId, page::link_struct::PageLink,

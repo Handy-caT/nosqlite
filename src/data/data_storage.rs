@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 /// [`DataStorage`] is a struct that is used to store data of provided format.
 /// This object is supposed to be used with [`TableController`] to store
 /// table's data.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataStorage {
     /// [`PageController`] is used to control pages.
     /// It is used to add new pages and get pages.

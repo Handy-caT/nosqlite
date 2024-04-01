@@ -43,7 +43,8 @@ pub struct ScalableHashTable<K, V, H = StaticHashVec<K, V>> {
 impl<K, V, H> ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-    K: CustomHash,
+    K: CustomHash + Clone,
+    V: Clone
 {
     /// Get max bucket length.
     /// # Returns
@@ -156,8 +157,8 @@ where
 impl<K, V, H> VecFunctions<K, V> for ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
-    K: Copy + CustomHash,
-    V: Copy,
+    K: Clone + CustomHash,
+    V: Clone,
 {
     fn get_keys(&mut self) -> Vec<K> {
         let mut keys = Vec::new();

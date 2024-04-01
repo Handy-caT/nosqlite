@@ -320,13 +320,13 @@ impl<
         if self.len() == 0 {
             return None;
         } else if self.len() == 1 {
-            let value = self.base.get(index).unwrap();
+            let value = self.base.get(index).unwrap().clone();
             self.base.remove_by_index(index);
             self.indexes[0] = TreeIndex::default();
             self.root = None;
             return Some(value);
         }
-        let value = self.base.get(index).unwrap();
+        let value = self.base.get(index).unwrap().clone();
         self.root = self.remove_from_root(&value, self.root.unwrap());
         self.base.remove_by_index(index);
 
