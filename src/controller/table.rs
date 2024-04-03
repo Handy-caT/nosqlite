@@ -166,7 +166,7 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     pub fn add_page(&mut self, index: usize) {
         self.table_pages.push(index);
     }
-    
+
     /// Returns the pages of the table.
     /// # Returns
     /// * `&Vec<usize>` - The pages of the table.

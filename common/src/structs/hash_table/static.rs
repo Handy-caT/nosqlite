@@ -358,4 +358,16 @@ mod tests {
         let tuple = hash_table.insert_tuple((1, 1));
         assert_eq!(tuple, Some(KeyValue::new(1, 1)));
     }
+
+    // #[test]
+    // fn test_hash() {
+    //  let mut hash_table: StaticHashTable<u32, u32, StaticHashVec<u32, u32>> =
+    //      StaticHashTable::new(256);
+    //
+    //  for i in 0..2_u32.pow(16) {
+    //      hash_table.insert(i, i);
+    //  }
+    //
+    //     println!("{:?}", hash_table.get_keys());
+    // }
 }

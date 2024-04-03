@@ -1,5 +1,7 @@
 use crate::structs::hash_table::vectors::{
-    hash_vec::{HashVec, Indexes, InternalFunctions, InternalStatistics},
+    hash_vec::{
+        HashVec, Indexes, InternalFunctions, InternalStatistics, MutableHashVec,
+    },
     key_value::KeyValue,
     statistics::{
         functions::{statistics_add_actions, statistics_remove_actions},
@@ -202,6 +204,19 @@ impl<K, V> InternalStatistics<K, V> for StaticHashVec<K, V> {
     }
 }
 
+/// Implementation of [`MutableHashVec`] trait for [`StaticHashVec`].
+impl<K: PartialEq + Clone, V: PartialEq + Clone> MutableHashVec<K, V>
+    for StaticHashVec<K, V>
+{
+    fn get_mut_value(&mut self, index: usize, key: &K) -> Option<&mut V> {
+        let item_index = self.find_key(index, key);
+        match item_index {
+            Some(i) => Some(&mut self.data[index][i].value),
+            None => None,
+        }
+    }
+}
+
 impl<K, V> Clone for StaticHashVec<K, V>
 where
     K: Clone,
@@ -219,7 +234,10 @@ where
 #[cfg(test)]
 mod tests {
     use crate::structs::hash_table::vectors::{
-        hash_vec::{HashVec, Indexes, InternalFunctions, InternalStatistics},
+        hash_vec::{
+            HashVec, Indexes, InternalFunctions, InternalStatistics,
+            MutableHashVec,
+        },
         key_value::KeyValue,
         static_hash_vec::StaticHashVec,
     };
@@ -425,5 +443,24 @@ mod tests {
         assert_eq!(statistics.get_count(), 1);
         assert_eq!(statistics.max_length, 2);
         assert_eq!(hash_vec.get_max_len(), 2);
+    }
+
+    #[test]
+    fn test_static_hash_vec_get_mut() {
+        let mut hash_vec: StaticHashVec<u64, u64> = StaticHashVec::new(8);
+
+        hash_vec.push(0, 1, 1);
+        hash_vec.push(0, 2, 2);
+
+        let value = hash_vec.get_mut_value(0, &1);
+        assert!(value.is_some());
+        assert_eq!(*value.unwrap(), 1);
+
+        let value = hash_vec.get_mut_value(0, &2);
+        assert!(value.is_some());
+        assert_eq!(*value.unwrap(), 2);
+
+        let value = hash_vec.get_mut_value(0, &3);
+        assert!(value.is_none());
     }
 }

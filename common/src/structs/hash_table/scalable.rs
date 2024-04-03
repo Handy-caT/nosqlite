@@ -44,7 +44,7 @@ impl<K, V, H> ScalableHashTable<K, V, H>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
     K: CustomHash + Clone,
-    V: Clone
+    V: Clone,
 {
     /// Get max bucket length.
     /// # Returns

@@ -322,7 +322,7 @@ mod tests {
 
         vec.push(0, 1, 1);
         vec.push(0, 2, 2);
-        
+
         assert_eq!(vec.get_by_index(0, 0), Some(KeyValue::new(1, 1)));
         assert_eq!(vec.get_by_index(0, 1), Some(KeyValue::new(2, 2)));
         assert_eq!(vec.get_by_index(0, 2), None);
