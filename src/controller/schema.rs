@@ -1,6 +1,7 @@
 use crate::{controller, schema as info};
 use common::structs::hash_table::{
-    scalable::ScalableHashTable, HashTable as _, VecFunctions as _,
+    scalable::ScalableHashTable, HashTable as _, MutHashTable,
+    VecFunctions as _,
 };
 
 /// Controller for a single table.
@@ -49,16 +50,18 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
             .insert(controller.get_name().clone(), controller);
     }
 
-    // /// Gets a table from the schema.
-    // /// # Arguments
-    // /// * `name` - The name of the table to get.
-    // /// # Returns
-    // /// * `Option<controller::Table<NODE_SIZE>>` - The table with the given
-    // name.
-    // pub fn get_table(&mut self, name: &String) ->
-    // Option<controller::Table<NODE_SIZE>> {
-    //     self.tables.get_mut(name)
-    // }
+    /// Gets a table from the schema.
+    /// # Arguments
+    /// * `name` - The name of the table to get.
+    /// # Returns
+    /// * `Option<controller::Table<NODE_SIZE>>` - The table with the given
+    ///   name.
+    pub fn get_table(
+        &mut self,
+        name: &String,
+    ) -> Option<&mut controller::Table<NODE_SIZE>> {
+        self.tables.get_mut_value(name)
+    }
 }
 
 #[cfg(test)]
@@ -122,27 +125,27 @@ mod tests {
         assert_eq!(table_names[0], "table");
     }
 
-    // #[test]
-    // fn test_schema_get_table() {
-    //     let mut schema = Schema::<4>::new("test".to_string());
-    //
-    //     let data_storage = data_storage_factory();
-    //     let table =
-    //         controller::Table::<4>::new("table".to_string(), data_storage);
-    //     schema.add_table(table);
-    //
-    //     let table = schema.get_table(&"table".to_string());
-    //     assert!(table.is_some());
-    //
-    //     let mut table = table.unwrap();
-    //     assert_eq!(table.get_name(), "table");
-    //
-    //     table.add_page(1);
-    //
-    //     let table = schema.get_table(&"table".to_string());
-    //     assert!(table.is_some());
-    //
-    //     let table = table.unwrap();
-    //     assert_eq!(table.get_pages().len(), 1);
-    // }
+    #[test]
+    fn test_schema_get_table() {
+        let mut schema = Schema::<4>::new("test".to_string());
+
+        let data_storage = data_storage_factory();
+        let table =
+            controller::Table::<4>::new("table".to_string(), data_storage);
+        schema.add_table(table);
+
+        let table = schema.get_table(&"table".to_string());
+        assert!(table.is_some());
+
+        let table = table.unwrap();
+        assert_eq!(table.get_name(), "table");
+
+        table.add_page(1);
+
+        let table = schema.get_table(&"table".to_string());
+        assert!(table.is_some());
+
+        let table = table.unwrap();
+        assert_eq!(table.get_pages().len(), 1);
+    }
 }

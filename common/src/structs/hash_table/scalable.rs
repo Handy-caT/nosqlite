@@ -1,19 +1,20 @@
 //! Scalable hash table implementation.
 
+use std::marker::PhantomData;
+
 use crate::{
     base::cast::usize::Usize,
     structs::hash_table::{
         hash::{custom_hashable::CustomHash, hash},
         vectors::{
-            hash_vec::{HashVec, Indexes, InternalStatistics},
+            hash_vec::{HashVec, Indexes, InternalStatistics, MutableHashVec},
             hash_vec_iterator::HashVecIterator,
             key_value::KeyValue,
             static_hash_vec::StaticHashVec,
         },
-        ExtendedFunctions, HashTable, VecFunctions,
+        ExtendedFunctions, HashTable, MutHashTable, VecFunctions,
     },
 };
-use std::marker::PhantomData;
 
 const MAX_BUCKET_LEN: usize = 10;
 
@@ -256,12 +257,26 @@ where
     }
 }
 
+impl<K, V, H> MutHashTable<K, V> for ScalableHashTable<K, V, H>
+where
+    H: HashVec<K, V> + MutableHashVec<K, V>,
+    K: Clone + CustomHash,
+    V: Clone,
+{
+    fn get_mut_value(&mut self, key: &K) -> Option<&mut V> {
+        let hash = key.hash(self.hash);
+        let index = hash.to_usize() & (self.table.size() - 1);
+
+        self.table.get_mut_value(index, key)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::structs::hash_table::{
         scalable::ScalableHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
-        ExtendedFunctions, HashTable, VecFunctions,
+        ExtendedFunctions, HashTable, MutHashTable, VecFunctions,
     };
 
     #[test]
@@ -461,5 +476,20 @@ mod tests {
 
         assert_eq!(hash_table.len, 1);
         assert_eq!(hash_table.table.size, 8);
+    }
+
+    #[test]
+    fn test_scalable_hash_table_get_mut_value() {
+        let mut hash_table: ScalableHashTable<
+            u64,
+            u64,
+            StaticHashVec<u64, u64>,
+        > = ScalableHashTable::new(8);
+
+        hash_table.insert(0, 0);
+
+        let value = hash_table.get_mut_value(&0);
+        assert!(value.is_some());
+        assert_eq!(value.unwrap(), &0);
     }
 }

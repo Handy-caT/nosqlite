@@ -99,3 +99,14 @@ pub trait VecFunctions<K, V> {
     /// * `Vec<KeyValue<K, V>>` - Vector of key-value pairs in the [`HashTable`]
     fn get_key_values(&mut self) -> Vec<KeyValue<K, V>>;
 }
+
+/// Trait for [`HashTable`] to get mutable values by key.
+pub trait MutHashTable<K, V> {
+    /// Gets a mutable value from the hash table
+    /// # Arguments
+    /// * `key` - key of the value
+    /// # Returns
+    /// * `Option<&mut V>` - The mutable value. None if the key is not in the
+    ///   hash table.
+    fn get_mut_value(&mut self, key: &K) -> Option<&mut V>;
+}

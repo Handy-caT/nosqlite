@@ -91,7 +91,7 @@ mod tests {
         let data = [1u8];
         let hash_1 = hash(&data);
         let hash_2 = hash(&data);
-    
+
         assert_eq!(hash_1, hash_2);
     }
 }

@@ -5,12 +5,12 @@ use crate::{
     structs::hash_table::{
         hash::{custom_hashable::CustomHash, hash},
         vectors::{
-            hash_vec::{HashVec, Indexes, InternalStatistics},
+            hash_vec::{HashVec, Indexes, InternalStatistics, MutableHashVec},
             hash_vec_iterator::HashVecIterator,
             key_value::KeyValue,
             static_hash_vec::StaticHashVec,
         },
-        ExtendedFunctions, HashTable, VecFunctions,
+        ExtendedFunctions, HashTable, MutHashTable, VecFunctions,
     },
 };
 use std::marker::PhantomData;
@@ -175,12 +175,26 @@ where
     }
 }
 
+impl<K, V, H> MutHashTable<K, V> for StaticHashTable<K, V, H>
+where
+    H: HashVec<K, V> + MutableHashVec<K, V>,
+    K: Clone + CustomHash,
+    V: Clone,
+{
+    fn get_mut_value(&mut self, key: &K) -> Option<&mut V> {
+        let hash = key.hash(self.hash);
+        let index = hash.to_usize() & (self.table.size() - 1);
+
+        self.table.get_mut_value(index, key)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::structs::hash_table::{
         r#static::StaticHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
-        ExtendedFunctions, HashTable, VecFunctions,
+        ExtendedFunctions, HashTable, MutHashTable, VecFunctions,
     };
 
     #[test]
@@ -357,6 +371,26 @@ mod tests {
 
         let tuple = hash_table.insert_tuple((1, 1));
         assert_eq!(tuple, Some(KeyValue::new(1, 1)));
+    }
+
+    #[test]
+    fn test_static_hash_table_get_mut_value() {
+        let mut hash_table: StaticHashTable<
+            usize,
+            usize,
+            StaticHashVec<usize, usize>,
+        > = StaticHashTable::new(8);
+        hash_table.insert(0, 0);
+        hash_table.insert(1, 1);
+
+        let value = hash_table.get_mut_value(&0);
+        assert_eq!(value, Some(&mut 0));
+
+        let value = hash_table.get_mut_value(&1);
+        assert_eq!(value, Some(&mut 1));
+
+        let value = hash_table.get_mut_value(&2);
+        assert_eq!(value, None);
     }
 
     // #[test]
