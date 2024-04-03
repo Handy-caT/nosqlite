@@ -3,9 +3,7 @@ pub mod name;
 pub mod table;
 pub mod r#type;
 
-use common::structs::hash_table::{
-    scalable::ScalableHashTable, HashTable as _,
-};
+use crate::gen_name;
 
 pub use column::Column;
 pub use table::Table;
@@ -14,8 +12,10 @@ pub use table::Table;
 #[derive(Debug)]
 pub struct Schema {
     /// The name of the schema.
-    name: String,
+    name: Name,
 }
+
+gen_name!();
 
 impl Schema {
     /// Creates a new [`Schema`] with the given parameters.
@@ -23,14 +23,14 @@ impl Schema {
     /// * `name` - The name of the schema.
     /// # Returns
     /// A new [`Schema`] with the given parameters.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: Name) -> Self {
         Schema { name }
     }
 
     /// Returns the name of the schema.
     /// # Returns
-    /// * `&String` - The name of the schema.
-    pub fn get_name(&self) -> &String {
+    /// * `&Name` - The name of the schema.
+    pub fn get_name(&self) -> &Name {
         &self.name
     }
 }
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn test_schema_new() {
-        let schema = Schema::new("test".to_string());
-        assert_eq!(schema.name, "test");
+        let schema = Schema::new("test".into());
+        assert_eq!(schema.name, "test".into());
     }
 }

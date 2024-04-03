@@ -1,4 +1,4 @@
-use crate::{controller, schema as info, schema::table};
+use crate::{controller, schema as info, schema, schema::table};
 use common::structs::hash_table::{
     scalable::ScalableHashTable, HashTable as _, MutHashTable,
     VecFunctions as _,
@@ -21,7 +21,7 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     /// * `name` - The name of the schema.
     /// # Returns
     /// A new [`Schema`] with the given parameters.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: schema::Name) -> Self {
         Schema {
             info: info::Schema::new(name),
             tables: ScalableHashTable::default(),
@@ -30,8 +30,8 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
 
     /// Returns the name of the schema.
     /// # Returns
-    /// * `&String` - The name of the schema.
-    pub fn get_name(&self) -> &String {
+    /// * `&schema::Name` - The name of the schema.
+    pub fn get_name(&self) -> &schema::Name {
         self.info.get_name()
     }
 
@@ -89,20 +89,20 @@ mod tests {
 
     #[test]
     fn test_schema_new() {
-        let schema = Schema::<4>::new("test".to_string());
-        assert_eq!(schema.info.get_name(), "test");
+        let schema = Schema::<4>::new("test".into());
+        assert_eq!(schema.info.get_name(), &"test".into());
         assert_eq!(schema.tables.len(), 0);
     }
 
     #[test]
     fn test_schema_get_name() {
-        let schema = Schema::<4>::new("test".to_string());
-        assert_eq!(schema.get_name(), "test");
+        let schema = Schema::<4>::new("test".into());
+        assert_eq!(schema.get_name(), &"test".into());
     }
 
     #[test]
     fn test_schema_add_table() {
-        let mut schema = Schema::<4>::new("test".to_string());
+        let mut schema = Schema::<4>::new("test".into());
 
         let data_storage = data_storage_factory();
         let table = controller::Table::<4>::new("table".into(), data_storage);
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_schema_get_table_names() {
-        let mut schema = Schema::<4>::new("test".to_string());
+        let mut schema = Schema::<4>::new("test".into());
 
         let data_storage = data_storage_factory();
         let table = controller::Table::<4>::new("table".into(), data_storage);
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn test_schema_get_table() {
-        let mut schema = Schema::<4>::new("test".to_string());
+        let mut schema = Schema::<4>::new("test".into());
 
         let data_storage = data_storage_factory();
         let table = controller::Table::<4>::new("table".into(), data_storage);
