@@ -1,6 +1,9 @@
 pub mod primary_key;
 
-use crate::schema::r#type::r#enum::{StorageData, StorageDataType};
+use crate::{
+    gen_name,
+    schema::r#type::r#enum::{StorageData, StorageDataType},
+};
 
 /// Represents database column.
 #[derive(Debug, Clone, PartialEq)]
@@ -12,6 +15,8 @@ pub struct Column {
     /// The type of the column.
     type_: StorageDataType,
 }
+
+gen_name!();
 
 impl Column {
     /// Creates a new column with the given [`StorageDataType`].

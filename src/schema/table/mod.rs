@@ -1,15 +1,23 @@
 use common::structs::hash_table::{scalable::ScalableHashTable, HashTable};
 
-use crate::schema::column::{primary_key::PrimaryKey, Column};
+use crate::{
+    gen_name,
+    schema::{
+        column,
+        column::{primary_key::PrimaryKey, Column},
+    },
+};
+
+gen_name!();
 
 /// Represents a database table.
 #[derive(Debug, Default, Clone)]
 pub struct Table {
     /// The name of the table.
-    name: String,
+    name: Name,
 
     /// The columns of the table.
-    columns: ScalableHashTable<String, Column>,
+    columns: ScalableHashTable<column::Name, Column>,
 
     /// The primary key of the table.
     primary_key: Option<PrimaryKey>,
@@ -23,7 +31,7 @@ impl Table {
     /// * `primary_key` - The primary key of the table.
     /// # Returns
     /// A new [`Table`] with the given parameters.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: Name) -> Self {
         Table {
             name,
             columns: ScalableHashTable::default(),
@@ -33,8 +41,8 @@ impl Table {
 
     /// Returns the name of the table.
     /// # Returns
-    /// * `&String` - The name of the table.
-    pub fn get_name(&self) -> &String {
+    /// * `&Name` - The name of the table.
+    pub fn get_name(&self) -> &Name {
         &self.name
     }
 
@@ -42,7 +50,7 @@ impl Table {
     /// # Arguments
     /// * `name` - The name of the column.
     /// * `column` - The column to add.
-    pub fn add_column(&mut self, name: String, column: Column) {
+    pub fn add_column(&mut self, name: column::Name, column: Column) {
         self.columns.insert(name, column);
     }
 
@@ -52,7 +60,7 @@ impl Table {
     /// # Returns
     /// * `bool` - True if the table has a column with the given name,
     ///   false otherwise.
-    pub fn has_column(&mut self, name: &String) -> bool {
+    pub fn has_column(&mut self, name: &column::Name) -> bool {
         self.columns.get(name).is_some()
     }
 
@@ -62,7 +70,7 @@ impl Table {
     /// # Returns
     /// * `bool` - True if the table has columns with the given names,
     ///   false otherwise.
-    pub fn has_columns(&mut self, name: &Vec<String>) -> bool {
+    pub fn has_columns(&mut self, name: &Vec<column::Name>) -> bool {
         for column in name {
             if !self.columns.get(column).is_some() {
                 return false;
@@ -76,7 +84,7 @@ impl Table {
     /// * `name` - The name of the column.
     /// # Returns
     /// * `Option<&Column>` - The column with the given name.
-    pub fn get_column(&mut self, name: &String) -> Option<Column> {
+    pub fn get_column(&mut self, name: &column::Name) -> Option<Column> {
         self.columns.get(name)
     }
 
@@ -108,54 +116,54 @@ mod tests {
     use crate::schema::{
         column::{primary_key::PrimaryKey, Column},
         r#type::r#enum::StorageDataType,
-        table::Table,
+        table::{Name, Table},
     };
 
     #[test]
     fn test_table_new() {
-        let table = Table::new("table".to_string());
-        assert_eq!(table.get_name(), "table");
+        let table = Table::new("table".into());
+        assert_eq!(table.get_name(), &("table".into()));
         assert_eq!(table.columns.len(), 0);
         assert_eq!(table.get_primary_key(), &None);
     }
 
     #[test]
     fn test_table_add_column() {
-        let mut table = Table::new("table".to_string());
+        let mut table = Table::new(Name("table".to_string()));
         let column = Column::new(StorageDataType::Integer);
-        table.add_column("column".to_string(), column.clone());
+        table.add_column("column".to_string().into(), column.clone());
         assert_eq!(table.columns.len(), 1);
-        assert_eq!(table.get_column(&"column".to_string()), Some(column));
+        assert_eq!(table.get_column(&("column".into())), Some(column));
     }
 
     #[test]
     fn test_table_get_column() {
-        let mut table = Table::new("table".to_string());
+        let mut table = Table::new("table".into());
         let column = Column::new(StorageDataType::Integer);
-        table.add_column("column".to_string(), column.clone());
-        assert_eq!(table.get_column(&"column".to_string()), Some(column));
+        table.add_column("column".into(), column.clone());
+        assert_eq!(table.get_column(&("column".into())), Some(column));
     }
 
     #[test]
     fn test_table_has_column() {
-        let mut table = Table::new("table".to_string());
+        let mut table = Table::new("table".into());
         let column = Column::new(StorageDataType::Integer);
-        table.add_column("column".to_string(), column.clone());
-        assert!(table.has_column(&"column".to_string()));
-        assert!(!table.has_column(&"column2".to_string()));
+        table.add_column("column".into(), column.clone());
+        assert!(table.has_column(&("column".into())));
+        assert!(!table.has_column(&("column2".into())));
     }
 
     #[test]
     fn test_table_get_primary_key() {
-        let table = Table::new("table".to_string());
+        let table = Table::new("table".into());
         assert_eq!(table.get_primary_key(), &None);
     }
 
     #[test]
     fn test_table_set_primary_key() {
-        let mut table = Table::new("table".to_string());
+        let mut table = Table::new("table".into());
         let primary_key =
-            PrimaryKey::new("primary_key".to_string(), "column".to_string());
+            PrimaryKey::new("primary_key".into(), "column".into());
         table.set_primary_key(primary_key.clone());
         assert_eq!(table.get_primary_key(), &Some(primary_key));
     }

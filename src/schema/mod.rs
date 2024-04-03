@@ -1,4 +1,5 @@
 pub mod column;
+pub mod name;
 pub mod table;
 pub mod r#type;
 

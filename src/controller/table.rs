@@ -4,8 +4,10 @@ use crate::{
     data::{data_storage::DataStorage, id::NumericId, DataUnit},
     schema,
     schema::{
+        column,
         column::{primary_key, primary_key::PrimaryKey},
         r#type::{r#enum::StorageData, DataRow},
+        table::Name,
     },
 };
 
@@ -66,7 +68,7 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// * `data_storage` - The data storage to use.
     /// # Returns
     /// A new table controller.
-    pub fn new(name: String, data_storage: DataStorage) -> Self {
+    pub fn new(name: Name, data_storage: DataStorage) -> Self {
         Table {
             info: schema::Table::new(name),
             index: BTree::default(),
@@ -77,8 +79,8 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
 
     /// Returns the name of the table.
     /// # Returns
-    /// * `&String` - The name of the table.
-    pub fn get_name(&self) -> &String {
+    /// * `&Name` - The name of the table.
+    pub fn get_name(&self) -> &Name {
         self.info.get_name()
     }
 
@@ -86,7 +88,7 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// # Arguments
     /// * `name` - The name of the column.
     /// * `column` - The column to add.
-    pub fn add_column(&mut self, name: String, column: schema::Column) {
+    pub fn add_column(&mut self, name: column::Name, column: schema::Column) {
         self.data_storage.append_data_type(column.get_type());
         self.info.add_column(name, column);
 
@@ -123,7 +125,10 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// * `name` - The name of the column.
     /// # Returns
     /// * `Option<&Column>` - The column with the given name.
-    pub fn get_column(&mut self, name: &String) -> Option<schema::Column> {
+    pub fn get_column(
+        &mut self,
+        name: &column::Name,
+    ) -> Option<schema::Column> {
         self.info.get_column(name)
     }
 
@@ -189,7 +194,10 @@ mod tests {
     use common::structs::tree::object::tree::Tree as _;
 
     use crate::{
-        controller::table::{KeyId, Table, TableControllerError},
+        controller::{
+            table,
+            table::{KeyId, Table, TableControllerError},
+        },
         data::{data_storage::DataStorage, id, id::NumericId, DataUnit},
         page::page_controller::PageController,
         schema,
@@ -212,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let table = Table::<16>::new(name.clone(), data_storage);
 
@@ -221,22 +229,22 @@ mod tests {
 
     #[test]
     fn test_add_data() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
         table.add_column(
-            "id".to_string(),
+            "id".into(),
             schema::Column::new(StorageDataType::Integer),
         );
 
         let primary_key =
-            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
+            primary_key::PrimaryKey::new("pk".into(), "id".into());
         table
             .set_primary_key(primary_key.clone())
             .expect("Failed to set primary key");
 
         let mut data = DataUnit::new(1);
-        data.insert("id".to_string(), StorageData::Integer(0.into()));
+        data.insert("id".into(), StorageData::Integer(0.into()));
 
         let res = table.add_data(data);
 
@@ -245,12 +253,12 @@ mod tests {
 
     #[test]
     fn test_set_primary_key_without_column() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let primary_key =
-            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
+            primary_key::PrimaryKey::new("pk".into(), "id".into());
         let res = table.set_primary_key(primary_key.clone());
 
         assert!(res.is_err());
@@ -259,16 +267,16 @@ mod tests {
 
     #[test]
     fn test_set_primary_key() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
         table.add_column(
-            "id".to_string(),
+            "id".into(),
             schema::Column::new(StorageDataType::Integer),
         );
 
         let primary_key =
-            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
+            primary_key::PrimaryKey::new("pk".into(), "id".into());
 
         let res = table.set_primary_key(primary_key.clone());
         assert!(res.is_ok());
@@ -277,16 +285,16 @@ mod tests {
 
     #[test]
     fn test_set_primary_key_wrong_type() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
         table.add_column(
-            "id".to_string(),
+            "id".into(),
             schema::Column::new(StorageDataType::VarChar(40)),
         );
 
         let primary_key =
-            primary_key::PrimaryKey::new("pk".to_string(), "id".to_string());
+            primary_key::PrimaryKey::new("pk".into(), "id".into());
 
         let res = table.set_primary_key(primary_key.clone());
         assert!(res.is_err());
@@ -298,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_get_name() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let table = Table::<16>::new(name.clone(), data_storage);
 
@@ -307,26 +315,26 @@ mod tests {
 
     #[test]
     fn test_get_column() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let column = schema::Column::new(StorageDataType::Integer);
-        table.add_column("column".to_string(), column.clone());
+        table.add_column("column".into(), column.clone());
 
-        assert_eq!(table.get_column(&"column".to_string()), Some(column));
+        assert_eq!(table.get_column(&"column".into()), Some(column));
     }
 
     #[test]
     fn test_add_column() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let column = schema::Column::new(StorageDataType::Integer);
-        table.add_column("column".to_string(), column.clone());
+        table.add_column("column".into(), column.clone());
 
-        assert_eq!(table.get_column(&"column".to_string()), Some(column));
+        assert_eq!(table.get_column(&"column".into()), Some(column));
         assert_eq!(
             table.data_storage.get_data_type(),
             &vec![StorageDataType::Integer]
@@ -335,29 +343,29 @@ mod tests {
 
     #[test]
     fn test_add_column_multiple() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let column = schema::Column::new(StorageDataType::Integer);
-        table.add_column("column".to_string(), column.clone());
+        table.add_column("column".into(), column.clone());
 
         let column = schema::Column::new(StorageDataType::Integer);
-        table.add_column("column2".to_string(), column.clone());
+        table.add_column("column2".into(), column.clone());
 
         assert_eq!(
-            table.get_column(&"column".to_string()),
+            table.get_column(&"column".into()),
             Some(schema::Column::new(StorageDataType::Integer))
         );
         assert_eq!(
-            table.get_column(&"column2".to_string()),
+            table.get_column(&"column2".into()),
             Some(schema::Column::new(StorageDataType::Integer))
         );
     }
 
     #[test]
     fn test_add_page() {
-        let name = "table".to_string();
+        let name: table::Name = "table".into();
         let data_storage = data_storage_factory();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 

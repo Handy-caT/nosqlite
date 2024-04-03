@@ -1,4 +1,4 @@
-use crate::{controller, schema as info};
+use crate::{controller, schema as info, schema::table};
 use common::structs::hash_table::{
     scalable::ScalableHashTable, HashTable as _, MutHashTable,
     VecFunctions as _,
@@ -12,7 +12,7 @@ pub struct Schema<const NODE_SIZE: u8> {
     info: info::Schema,
 
     /// The tables in the schema.
-    tables: ScalableHashTable<String, controller::Table<NODE_SIZE>>,
+    tables: ScalableHashTable<table::Name, controller::Table<NODE_SIZE>>,
 }
 
 impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
@@ -38,7 +38,7 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     /// Returns the names of the tables in the schema.
     /// # Returns
     /// * `Vec<String>` - The names of the tables in the schema.
-    pub fn get_table_names(&mut self) -> Vec<String> {
+    pub fn get_table_names(&mut self) -> Vec<table::Name> {
         self.tables.get_keys()
     }
 
@@ -58,7 +58,7 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     ///   name.
     pub fn get_table(
         &mut self,
-        name: &String,
+        name: &table::Name,
     ) -> Option<&mut controller::Table<NODE_SIZE>> {
         self.tables.get_mut_value(name)
     }
@@ -105,8 +105,7 @@ mod tests {
         let mut schema = Schema::<4>::new("test".to_string());
 
         let data_storage = data_storage_factory();
-        let table =
-            controller::Table::<4>::new("table".to_string(), data_storage);
+        let table = controller::Table::<4>::new("table".into(), data_storage);
         schema.add_table(table);
         assert_eq!(schema.tables.len(), 1);
     }
@@ -116,13 +115,12 @@ mod tests {
         let mut schema = Schema::<4>::new("test".to_string());
 
         let data_storage = data_storage_factory();
-        let table =
-            controller::Table::<4>::new("table".to_string(), data_storage);
+        let table = controller::Table::<4>::new("table".into(), data_storage);
         schema.add_table(table);
 
         let table_names = schema.get_table_names();
         assert_eq!(table_names.len(), 1);
-        assert_eq!(table_names[0], "table");
+        assert_eq!(table_names[0], "table".into());
     }
 
     #[test]
@@ -130,19 +128,18 @@ mod tests {
         let mut schema = Schema::<4>::new("test".to_string());
 
         let data_storage = data_storage_factory();
-        let table =
-            controller::Table::<4>::new("table".to_string(), data_storage);
+        let table = controller::Table::<4>::new("table".into(), data_storage);
         schema.add_table(table);
 
-        let table = schema.get_table(&"table".to_string());
+        let table = schema.get_table(&"table".into());
         assert!(table.is_some());
 
         let table = table.unwrap();
-        assert_eq!(table.get_name(), "table");
+        assert_eq!(table.get_name(), &"table".into());
 
         table.add_page(1);
 
-        let table = schema.get_table(&"table".to_string());
+        let table = schema.get_table(&"table".into());
         assert!(table.is_some());
 
         let table = table.unwrap();

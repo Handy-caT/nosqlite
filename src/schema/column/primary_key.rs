@@ -1,19 +1,25 @@
-use crate::schema::{
-    r#type::{
-        data_types::{Integer, Long, UInteger, ULong, UShort},
-        r#enum::{StorageData, StorageDataType},
+use crate::{
+    gen_name,
+    schema::{
+        column,
+        r#type::{
+            data_types::{Integer, Long, UInteger, ULong, UShort},
+            r#enum::{Byte, StorageData, StorageDataType},
+        },
+        Column,
     },
-    Column,
 };
 
 /// A primary key constraint.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct PrimaryKey {
     /// The name of the primary key.
-    name: String,
+    name: Name,
     /// The column names that make up the primary key.
-    columns: String,
+    columns: column::Name,
 }
+
+gen_name!();
 
 impl PrimaryKey {
     /// Creates a new [`PrimaryKey`] with the given parameters.
@@ -22,21 +28,21 @@ impl PrimaryKey {
     /// * `columns` - The column names that make up the primary key.
     /// # Returns
     /// A new [`PrimaryKey`] with the given parameters.
-    pub fn new(name: String, columns: String) -> Self {
+    pub fn new(name: Name, columns: column::Name) -> Self {
         PrimaryKey { name, columns }
     }
 
     /// Returns the name of the primary key.
     /// # Returns
     /// * `&String` - The name of the primary key.
-    pub fn get_name(&self) -> &String {
+    pub fn get_name(&self) -> &Name {
         &self.name
     }
 
     /// Returns the column names that make up the primary key.
     /// # Returns
     /// * `&Vec<String>` - The column names that make up the primary key.
-    pub fn get_column(&self) -> &String {
+    pub fn get_column(&self) -> &column::Name {
         &self.columns
     }
 
@@ -124,12 +130,15 @@ impl From<Data> for StorageData {
 
 #[cfg(test)]
 mod tests {
-    use crate::schema::column::primary_key::PrimaryKey;
+    use crate::schema::{
+        column,
+        column::primary_key::{Name, PrimaryKey},
+    };
 
     #[test]
     fn test_new() {
-        let name = "pk".to_string();
-        let column = "id".to_string();
+        let name: Name = "pk".into();
+        let column: column::Name = "id".into();
         let pk = PrimaryKey::new(name.clone(), column.clone());
 
         assert_eq!(pk.name, name);
@@ -138,8 +147,8 @@ mod tests {
 
     #[test]
     fn test_get_name() {
-        let name = "pk".to_string();
-        let column = "id".to_string();
+        let name: Name = "pk".into();
+        let column: column::Name = "id".into();
         let pk = PrimaryKey::new(name.clone(), column);
 
         assert_eq!(pk.get_name(), &name);
@@ -147,8 +156,8 @@ mod tests {
 
     #[test]
     fn test_get_columns() {
-        let name = "pk".to_string();
-        let column = "id".to_string();
+        let name: Name = "pk".into();
+        let column: column::Name = "id".into();
         let pk = PrimaryKey::new(name.clone(), column.clone());
 
         assert_eq!(pk.get_column(), &column);

@@ -4,6 +4,7 @@ pub mod data_storage;
 pub mod id;
 pub mod row_type;
 
+use crate::schema::column;
 use common::structs::hash_table::{
     r#static::StaticHashTable, HashTable, VecFunctions,
 };
@@ -12,7 +13,7 @@ use crate::schema::r#type::r#enum::StorageData;
 
 /// Type of data unit. It represents a column row data using a hash table.
 /// Key is the name of the column and value is the data.
-pub struct DataUnit(StaticHashTable<String, StorageData>);
+pub struct DataUnit(StaticHashTable<column::Name, StorageData>);
 
 impl DataUnit {
     /// Creates a new instance of `DataUnit`.
@@ -28,16 +29,18 @@ impl DataUnit {
     /// # Arguments
     /// * `key` - The name of the column.
     /// * `value` - The data to insert.
-    pub fn insert(&mut self, key: String, value: StorageData) {
+    pub fn insert(&mut self, key: column::Name, value: StorageData) {
         self.0.insert(key, value);
     }
 
     /// Returns the data with the given key.
     /// # Arguments
-    /// * `key` - The name of the column.
+    /// * `key` - The name of the [`Column`].
     /// # Returns
     /// * `Option<&StorageData>` - The data with the given key.
-    pub fn get(&mut self, key: &String) -> Option<StorageData> {
+    ///
+    /// [`Column`]: column::Column
+    pub fn get(&mut self, key: &column::Name) -> Option<StorageData> {
         self.0.get(key)
     }
 
@@ -63,7 +66,7 @@ mod tests {
     #[test]
     fn test_insert() {
         let mut data_unit = DataUnit::new(10);
-        data_unit.insert("test".to_string(), StorageData::Integer(25.into()));
+        data_unit.insert("test".into(), StorageData::Integer(25.into()));
 
         assert_eq!(data_unit.len(), 1);
     }
@@ -71,9 +74,9 @@ mod tests {
     #[test]
     fn test_get() {
         let mut data_unit = DataUnit::new(10);
-        data_unit.insert("test".to_string(), StorageData::Integer(25.into()));
+        data_unit.insert("test".into(), StorageData::Integer(25.into()));
 
-        let res = data_unit.get(&"test".to_string());
+        let res = data_unit.get(&"test".into());
         assert!(res.is_some());
         assert_eq!(res.unwrap(), StorageData::Integer(25.into()));
     }
@@ -81,8 +84,8 @@ mod tests {
     #[test]
     fn test_get_values() {
         let mut data_unit = DataUnit::new(10);
-        data_unit.insert("test".to_string(), StorageData::Integer(25.into()));
-        data_unit.insert("test2".to_string(), StorageData::Integer(25.into()));
+        data_unit.insert("test".into(), StorageData::Integer(25.into()));
+        data_unit.insert("test2".into(), StorageData::Integer(25.into()));
 
         let res = data_unit.get_values();
         assert_eq!(res.len(), 2);
@@ -93,7 +96,7 @@ mod tests {
         let mut data_unit = DataUnit::new(10);
         assert_eq!(data_unit.len(), 0);
 
-        data_unit.insert("test".to_string(), StorageData::Integer(25.into()));
+        data_unit.insert("test".into(), StorageData::Integer(25.into()));
         assert_eq!(data_unit.len(), 1);
     }
 }
