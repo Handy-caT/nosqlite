@@ -6,7 +6,7 @@ use common::structs::hash_table::{
 
 /// Controller for a single table.
 /// Is used to change the table's schema and data.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Schema<const NODE_SIZE: u8> {
     /// The schema information.
     info: info::Schema,
@@ -61,6 +61,12 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
         name: &table::Name,
     ) -> Option<&mut controller::Table<NODE_SIZE>> {
         self.tables.get_mut_value(name)
+    }
+}
+
+impl<const NODE_SIZE: u8> PartialEq for Schema<NODE_SIZE> {
+    fn eq(&self, other: &Self) -> bool {
+        self.info == other.info
     }
 }
 

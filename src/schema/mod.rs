@@ -11,7 +11,7 @@ pub use database::Database;
 pub use table::Table;
 
 /// Represents a database schema.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Schema {
     /// The name of the schema.
     name: Name,
