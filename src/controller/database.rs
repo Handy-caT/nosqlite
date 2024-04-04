@@ -57,7 +57,7 @@ impl<const NODE_SIZE: u8> Database<NODE_SIZE> {
     /// # Returns
     /// * `Option<controller::Schema<NODE_SIZE>>` - The schema with the given
     ///   name.
-    pub fn get_schema(
+    pub fn get_mut_schema(
         &mut self,
         name: &schema::Name,
     ) -> Option<&mut controller::Schema<NODE_SIZE>> {
@@ -111,6 +111,9 @@ mod tests {
         let mut schema = Schema::<4>::new("schema".into());
         database.add_schema(schema.clone());
 
-        assert_eq!(database.get_schema(&"schema".into()), Some(&mut schema));
+        assert_eq!(
+            database.get_mut_schema(&"schema".into()),
+            Some(&mut schema)
+        );
     }
 }
