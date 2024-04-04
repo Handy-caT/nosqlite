@@ -1,4 +1,5 @@
 pub mod column;
+pub mod database;
 pub mod name;
 pub mod table;
 pub mod r#type;
@@ -6,6 +7,7 @@ pub mod r#type;
 use crate::gen_name;
 
 pub use column::Column;
+pub use database::Database;
 pub use table::Table;
 
 /// Represents a database schema.

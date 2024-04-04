@@ -16,15 +16,18 @@ use crate::{
     },
 };
 
-const MAX_BUCKET_LEN: usize = 10;
-
 /// [`ScalableHashTable`] is a hash table with a scalable size.
 /// It is using [`HashVec`] as a storage.
 /// * `K` - key type
 /// * `V` - value type
 /// * `H` - [`HashVec`] implementation
 #[derive(Debug)]
-pub struct ScalableHashTable<K, V, H = StaticHashVec<K, V>> {
+pub struct ScalableHashTable<
+    K,
+    V,
+    H = StaticHashVec<K, V>,
+    const MAX_BUCKET_LEN: usize = 10,
+> {
     /// [`HashVec`] implementation for storing key-value pairs.
     table: H,
 
@@ -41,7 +44,8 @@ pub struct ScalableHashTable<K, V, H = StaticHashVec<K, V>> {
     k: PhantomData<K>,
 }
 
-impl<K, V, H> ScalableHashTable<K, V, H>
+impl<K, V, H, const MAX_BUCKET_LEN: usize>
+    ScalableHashTable<K, V, H, MAX_BUCKET_LEN>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
     K: CustomHash + Clone,
@@ -84,7 +88,8 @@ where
     }
 }
 
-impl<K, V, H> HashTable<K, V> for ScalableHashTable<K, V, H>
+impl<K, V, H, const MAX_BUCKET_LEN: usize> HashTable<K, V>
+    for ScalableHashTable<K, V, H, MAX_BUCKET_LEN>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
     K: Clone + CustomHash,
@@ -155,7 +160,8 @@ where
     }
 }
 
-impl<K, V, H> VecFunctions<K, V> for ScalableHashTable<K, V, H>
+impl<K, V, H, const MAX_BUCKET_LEN: usize> VecFunctions<K, V>
+    for ScalableHashTable<K, V, H, MAX_BUCKET_LEN>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
     K: Clone + CustomHash,
@@ -195,7 +201,8 @@ where
     }
 }
 
-impl<K, V, H> ExtendedFunctions<K, V> for ScalableHashTable<K, V, H>
+impl<K, V, H, const MAX_BUCKET_LEN: usize> ExtendedFunctions<K, V>
+    for ScalableHashTable<K, V, H, MAX_BUCKET_LEN>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
     K: Clone + CustomHash,
@@ -223,7 +230,8 @@ where
     }
 }
 
-impl<K, V, H> Default for ScalableHashTable<K, V, H>
+impl<K, V, H, const MAX_BUCKET_LEN: usize> Default
+    for ScalableHashTable<K, V, H, MAX_BUCKET_LEN>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V>,
     K: Clone + CustomHash,
@@ -240,7 +248,8 @@ where
     }
 }
 
-impl<K, V, H> Clone for ScalableHashTable<K, V, H>
+impl<K, V, H, const MAX_BUCKET_LEN: usize> Clone
+    for ScalableHashTable<K, V, H, MAX_BUCKET_LEN>
 where
     H: HashVec<K, V> + InternalStatistics<K, V> + Indexes<K, V> + Clone,
     K: Clone + CustomHash,
@@ -257,7 +266,8 @@ where
     }
 }
 
-impl<K, V, H> MutHashTable<K, V> for ScalableHashTable<K, V, H>
+impl<K, V, H, const MAX_BUCKET_LEN: usize> MutHashTable<K, V>
+    for ScalableHashTable<K, V, H, MAX_BUCKET_LEN>
 where
     H: HashVec<K, V> + MutableHashVec<K, V>,
     K: Clone + CustomHash,

@@ -1,3 +1,2 @@
-mod facade;
 mod command;
-
+mod facade;
