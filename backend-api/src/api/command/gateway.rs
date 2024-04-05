@@ -1,18 +1,13 @@
+use backend::{controller, schema::database};
 use common::structs::hash_table::MutHashTable;
-use backend::{
-    controller,
-    schema::database,
-};
 use std::fmt::Debug;
 
-use crate::{
-    api::{
-        command::{
-            Command, Execute, ExecuteBackend, ExecuteDatabase, Gateway,
-            GatewayError,
-        },
-        facade::BackendFacade,
+use crate::api::{
+    command::{
+        Command, Execute, ExecuteBackend, ExecuteDatabase, Gateway,
+        GatewayError,
     },
+    facade::BackendFacade,
 };
 
 impl<Cmd, const NODE_SIZE: u8> Gateway<Cmd, controller::Database<NODE_SIZE>>
@@ -78,13 +73,14 @@ where
 
 #[cfg(test)]
 pub mod test {
+    use backend::{
+        controller, data::id, page::page_controller::PageController, schema,
+        schema::database,
+    };
     use common::structs::hash_table::{HashTable, MutHashTable};
-    use backend::{controller, data::id, page::page_controller::PageController, schema, schema::database};
     use std::sync::{Arc, Mutex};
 
-    use crate::{
-        api::facade::BackendFacade,
-    };
+    use crate::api::facade::BackendFacade;
 
     /// Creates a new instance of `BackendFacade` for testing.
     pub struct TestBackendFacade<const NODE_SIZE: u8>(BackendFacade<NODE_SIZE>);

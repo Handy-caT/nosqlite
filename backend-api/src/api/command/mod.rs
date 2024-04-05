@@ -10,9 +10,7 @@ use backend::{
     schema::{database as database_info, table},
 };
 
-use crate::{
-    api::facade::BackendFacade,
-};
+use crate::api::facade::BackendFacade;
 
 /// Trait for commands that operate on a full backend instance.
 pub trait ExecuteBackend<Cmd, const NODE_SIZE: u8>:
