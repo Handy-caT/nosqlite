@@ -46,7 +46,10 @@ impl<const NODE_SIZE: u8> Database<NODE_SIZE> {
     /// Adds a schema to the database.
     /// # Arguments
     /// * `controller` - The schema controller to add.
-    pub fn add_schema(&mut self, controller: controller::Schema<NODE_SIZE>) -> bool {
+    pub fn add_schema(
+        &mut self,
+        controller: controller::Schema<NODE_SIZE>,
+    ) -> bool {
         if self.schemas.contains_key(controller.get_name()) {
             false
         } else {

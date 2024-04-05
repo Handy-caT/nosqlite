@@ -38,12 +38,12 @@ impl<const NODE_SIZE: u8> BackendFacade<NODE_SIZE> {
             database_controllers: ScalableHashTable::default(),
         }
     }
-    
+
     /// Returns the [`id::Registry`] used by the [`BackendFacade`].
     pub fn get_id_registry(&self) -> Arc<Mutex<id::Registry>> {
         self.id_registry.clone()
     }
-    
+
     /// Returns the [`PageController`] used by the [`BackendFacade`].
     pub fn get_page_controller(&self) -> Arc<Mutex<PageController>> {
         self.page_controller.clone()

@@ -37,7 +37,7 @@ pub trait HashTable<K, V> {
     /// # Returns
     /// * `Option<V>` - The value. None if the key is not in the hash table.
     fn get(&mut self, key: &K) -> Option<V>;
-    
+
     /// Checks if the hash table contains a key
     /// # Arguments
     /// * `key` - key to check

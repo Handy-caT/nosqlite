@@ -1,13 +1,18 @@
 use derive_more::AsRef;
 
 use crate::{
-    api::{command::Execute, facade::BackendFacade},
+    api::{
+        command::{Command, Execute},
+        facade::BackendFacade,
+    },
     controller, schema,
 };
-use crate::api::command::Command;
 
 #[derive(Debug, AsRef, Clone)]
 pub struct CreateSchema {
+    #[as_ref]
+    pub database_name: schema::database::Name,
+
     pub name: schema::Name,
 }
 
@@ -32,23 +37,65 @@ impl<const NODE_SIZE: u8> Execute<CreateSchema, controller::Database<NODE_SIZE>>
     }
 }
 
+#[derive(Debug)]
 pub enum ExecutionError {
     SchemaAlreadyExists,
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::api::command::database::create_schema::CreateSchema;
-    use crate::api::command::Gateway;
-    use crate::api::command::gateway::test::backend_facade_factory;
+    use common::structs::hash_table::MutHashTable;
+
+    use crate::{
+        api::command::{
+            database::create_schema::{CreateSchema, ExecutionError},
+            gateway::test::TestBackendFacade,
+            Gateway, GatewayError,
+        },
+        schema,
+        schema::database,
+    };
 
     #[test]
     fn creates_schema_when_not_exists() {
-        let mut facade = backend_facade_factory();
+        let database_name = database::Name::from("test");
+        let mut facade = TestBackendFacade::<4>::new()
+            .with_database(database_name.clone())
+            .build();
         let cmd = CreateSchema {
+            database_name: database_name.clone(),
             name: "schema".into(),
         };
         let result = facade.send(cmd);
         assert!(result.is_ok());
+
+        let db = facade
+            .database_controllers
+            .get_mut_value(&database_name)
+            .unwrap();
+        let schema = db.get_mut_schema(&"schema".into());
+        assert!(schema.is_some());
+    }
+
+    #[test]
+    fn returns_error_when_schema_exists() {
+        let database_name = database::Name::from("test");
+        let schema_name = schema::Name::from("schema");
+
+        let mut facade = TestBackendFacade::<4>::new()
+            .with_database(database_name.clone())
+            .with_schema(database_name.clone(), schema_name.clone())
+            .build();
+        let cmd = CreateSchema {
+            database_name: database_name.clone(),
+            name: schema_name.clone(),
+        };
+        let result = facade.send(cmd);
+        
+        assert!(result.is_err());
+        match result {
+            Err(GatewayError::Cmd(ExecutionError::SchemaAlreadyExists)) => {}
+            _ => panic!("Expected `SchemaAlreadyExists` found {:?}", result),
+        }
     }
 }

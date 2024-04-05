@@ -3,41 +3,59 @@ mod gateway;
 mod schema;
 
 use crate::{
+    api::facade::BackendFacade,
     controller, schema as schema_info,
     schema::{database as database_info, table},
 };
+use std::fmt::Debug;
 
-/// Trait for commands that operate on a database.
-pub trait ExecuteDatabase<Cmd, const NODE_SIZE: u8>:
-    AsRef<database_info::Name> + Execute<Cmd, controller::Database<NODE_SIZE>>
+/// Trait for commands that operate on a full backend instance.
+pub trait ExecuteBackend<Cmd, const NODE_SIZE: u8>:
+    Execute<Cmd, BackendFacade<NODE_SIZE>>
 {
 }
 
-impl<Cmd, T, const NODE_SIZE: u8> ExecuteDatabase<Cmd, NODE_SIZE> for T where
-    T: AsRef<database_info::Name>
-        + Execute<Cmd, controller::Database<NODE_SIZE>>
+impl<Cmd, T, const NODE_SIZE: u8> ExecuteBackend<Cmd, NODE_SIZE> for T where
+    T: Execute<Cmd, BackendFacade<NODE_SIZE>>
+{
+}
+
+/// Trait for commands that operate on a database.
+pub trait ExecuteDatabase<Cmd, const NODE_SIZE: u8>:
+    Execute<Cmd, controller::Database<NODE_SIZE>>
+{
+}
+
+impl<Cmd, T, const NODE_SIZE: u8> ExecuteDatabase<Cmd, NODE_SIZE> for T
+where
+    T: Execute<Cmd, controller::Database<NODE_SIZE>>,
+    Cmd: AsRef<database_info::Name>,
 {
 }
 
 /// Trait for commands that operate on a schema.
 pub trait ExecuteSchema<Cmd, const NODE_SIZE: u8>:
-    AsRef<schema_info::Name> + Execute<Cmd, controller::Schema<NODE_SIZE>>
+    Execute<Cmd, controller::Schema<NODE_SIZE>>
 {
 }
 
-impl<Cmd, T, const NODE_SIZE: u8> ExecuteSchema<Cmd, NODE_SIZE> for T where
-    T: AsRef<schema_info::Name> + Execute<Cmd, controller::Schema<NODE_SIZE>>
+impl<Cmd, T, const NODE_SIZE: u8> ExecuteSchema<Cmd, NODE_SIZE> for T
+where
+    T: Execute<Cmd, controller::Schema<NODE_SIZE>>,
+    Cmd: AsRef<schema_info::Name>,
 {
 }
 
 /// Trait for commands that operate on a table.
 pub trait ExecuteTable<Cmd, const NODE_SIZE: u8>:
-    AsRef<table::Name> + Execute<Cmd, controller::Table<NODE_SIZE>>
+    Execute<Cmd, controller::Table<NODE_SIZE>>
 {
 }
 
-impl<Cmd, T, const NODE_SIZE: u8> ExecuteTable<Cmd, NODE_SIZE> for T where
-    T: AsRef<table::Name> + Execute<Cmd, controller::Table<NODE_SIZE>>
+impl<Cmd, T, const NODE_SIZE: u8> ExecuteTable<Cmd, NODE_SIZE> for T
+where
+    T: Execute<Cmd, controller::Table<NODE_SIZE>>,
+    Cmd: AsRef<table::Name>,
 {
 }
 
@@ -72,7 +90,9 @@ where
 }
 
 /// Represents an error that occurred during the execution of a command.
-pub enum GatewayError<CmdErr, GatewayErr> {
+#[derive(Debug)]
+pub enum GatewayError<CmdErr, GatewayErr>
+{
     Cmd(CmdErr),
     Gateway(GatewayErr),
 }

@@ -9,7 +9,5 @@ edition = "2021"
 [dependencies]
 serde-storage = { path = "serde-storage" }
 common = { path = "common" }
-queues = "1.0.2"
 smart-default = "0.7.1"
 derive_more = "0.99.16"
-serde = { version = "1.0.194", features = ["derive"] }
