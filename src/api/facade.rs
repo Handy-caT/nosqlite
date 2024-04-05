@@ -1,7 +1,10 @@
-use crate::controller;
+use common::structs::hash_table::scalable::ScalableHashTable;
 use std::sync::{Arc, Mutex};
 
-use crate::{data::id, page::page_controller::PageController};
+use crate::{
+    controller, data::id, page::page_controller::PageController,
+    schema::database,
+};
 
 #[derive(Debug)]
 pub struct BackendFacade<const NODE_SIZE: u8> {
@@ -14,5 +17,35 @@ pub struct BackendFacade<const NODE_SIZE: u8> {
     id_registry: Arc<Mutex<id::Registry>>,
 
     /// [`Database`] controller.
-    database_controller: controller::Database<NODE_SIZE>,
+    pub database_controllers:
+        ScalableHashTable<database::Name, controller::Database<NODE_SIZE>>,
+}
+
+impl<const NODE_SIZE: u8> BackendFacade<NODE_SIZE> {
+    /// Creates a new [`BackendFacade`] with the given parameters.
+    /// # Arguments
+    /// * `page_controller` - The [`PageController`] to use.
+    /// * `id_registry` - The [`id::Registry`] to use.
+    /// # Returns
+    /// A new [`BackendFacade`] with the given parameters.
+    pub fn new(
+        page_controller: Arc<Mutex<PageController>>,
+        id_registry: Arc<Mutex<id::Registry>>,
+    ) -> Self {
+        BackendFacade {
+            page_controller,
+            id_registry,
+            database_controllers: ScalableHashTable::default(),
+        }
+    }
+    
+    /// Returns the [`id::Registry`] used by the [`BackendFacade`].
+    pub fn get_id_registry(&self) -> Arc<Mutex<id::Registry>> {
+        self.id_registry.clone()
+    }
+    
+    /// Returns the [`PageController`] used by the [`BackendFacade`].
+    pub fn get_page_controller(&self) -> Arc<Mutex<PageController>> {
+        self.page_controller.clone()
+    }
 }

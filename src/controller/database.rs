@@ -7,7 +7,7 @@ use crate::{controller, schema, schema as info, schema::database};
 
 /// Controller for a single table.
 /// Is used to change the table's schema and data.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Database<const NODE_SIZE: u8> {
     /// The database information.
     info: info::Database,
@@ -46,9 +46,14 @@ impl<const NODE_SIZE: u8> Database<NODE_SIZE> {
     /// Adds a schema to the database.
     /// # Arguments
     /// * `controller` - The schema controller to add.
-    pub fn add_schema(&mut self, controller: controller::Schema<NODE_SIZE>) {
-        self.schemas
-            .insert(controller.get_name().clone(), controller);
+    pub fn add_schema(&mut self, controller: controller::Schema<NODE_SIZE>) -> bool {
+        if self.schemas.contains_key(controller.get_name()) {
+            false
+        } else {
+            self.schemas
+                .insert(controller.get_name().clone(), controller);
+            true
+        }
     }
 
     /// Gets a schema from the database.
@@ -62,6 +67,12 @@ impl<const NODE_SIZE: u8> Database<NODE_SIZE> {
         name: &schema::Name,
     ) -> Option<&mut controller::Schema<NODE_SIZE>> {
         self.schemas.get_mut_value(name)
+    }
+}
+
+impl<const NODE_SIZE: u8> PartialEq for Database<NODE_SIZE> {
+    fn eq(&self, other: &Self) -> bool {
+        self.info == other.info
     }
 }
 
@@ -100,7 +111,7 @@ mod tests {
     fn test_database_add_schema() {
         let mut database = Database::<4>::new("test".into());
         let schema = Schema::<4>::new("schema".into());
-        database.add_schema(schema.clone());
+        assert!(database.add_schema(schema.clone()));
 
         assert_eq!(database.schemas.len(), 1);
     }
