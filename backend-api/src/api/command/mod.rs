@@ -1,14 +1,18 @@
-mod backend;
+mod backend_api;
 mod database;
 mod gateway;
 mod schema;
 
-use crate::{
-    api::facade::BackendFacade,
+use std::fmt::Debug;
+
+use backend::{
     controller, schema as schema_info,
     schema::{database as database_info, table},
 };
-use std::fmt::Debug;
+
+use crate::{
+    api::facade::BackendFacade,
+};
 
 /// Trait for commands that operate on a full backend instance.
 pub trait ExecuteBackend<Cmd, const NODE_SIZE: u8>:

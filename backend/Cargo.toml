@@ -1,13 +1,13 @@
-workspace = { members = [ "backend", "backend-api", "common", "ser-storage-derive","serde-storage"] }
 [package]
-name = "nosqlite"
+name = "backend"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde-storage = { path = "serde-storage" }
-common = { path = "common" }
+serde-storage = { path = "../serde-storage" }
+common = { path = "../common" }
 smart-default = "0.7.1"
 derive_more = "0.99.16"
+

@@ -1,13 +1,12 @@
 use common::structs::hash_table::HashTable;
-use derive_more::AsRef;
+use backend::{    controller,
+                  schema::database,};
 
 use crate::{
     api::{
         command::{Command, Execute},
         facade::BackendFacade,
     },
-    controller,
-    schema::database,
 };
 
 #[derive(Debug, Clone)]
@@ -44,14 +43,14 @@ pub enum ExecutionError {
 #[cfg(test)]
 mod tests {
     use common::structs::hash_table::MutHashTable;
-
+    use backend::schema::database;
+    
     use crate::{
         api::command::{
-            backend::create_database::{CreateDatabase, ExecutionError},
+            backend_api::create_database::{CreateDatabase, ExecutionError},
             gateway::test::TestBackendFacade,
             Gateway, GatewayError,
         },
-        schema::database,
     };
 
     #[test]

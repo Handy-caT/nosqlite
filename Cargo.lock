@@ -12,6 +12,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "backend"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "derive_more",
+ "serde-storage",
+ "smart-default",
+]
+
+[[package]]
+name = "backend-api"
+version = "0.1.0"
+dependencies = [
+ "backend",
+ "common",
+ "derive_more",
+ "serde-storage",
+ "smart-default",
+]
+
+[[package]]
 name = "common"
 version = "0.1.0"
 dependencies = [

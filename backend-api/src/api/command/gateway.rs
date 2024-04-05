@@ -1,4 +1,8 @@
 use common::structs::hash_table::MutHashTable;
+use backend::{
+    controller,
+    schema::database,
+};
 use std::fmt::Debug;
 
 use crate::{
@@ -9,8 +13,6 @@ use crate::{
         },
         facade::BackendFacade,
     },
-    controller,
-    schema::database,
 };
 
 impl<Cmd, const NODE_SIZE: u8> Gateway<Cmd, controller::Database<NODE_SIZE>>
@@ -77,11 +79,11 @@ where
 #[cfg(test)]
 pub mod test {
     use common::structs::hash_table::{HashTable, MutHashTable};
+    use backend::{controller, data::id, page::page_controller::PageController, schema, schema::database};
     use std::sync::{Arc, Mutex};
 
     use crate::{
-        api::facade::BackendFacade, controller, data::id,
-        page::page_controller::PageController, schema, schema::database,
+        api::facade::BackendFacade,
     };
 
     /// Creates a new instance of `BackendFacade` for testing.

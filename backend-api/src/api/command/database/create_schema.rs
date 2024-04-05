@@ -1,11 +1,11 @@
 use derive_more::AsRef;
+use backend::{controller, schema};
 
 use crate::{
     api::{
         command::{Command, Execute},
         facade::BackendFacade,
     },
-    controller, schema,
 };
 
 #[derive(Debug, AsRef, Clone)]
@@ -49,6 +49,7 @@ pub enum ExecutionError {
 #[cfg(test)]
 mod tests {
     use common::structs::hash_table::MutHashTable;
+    use backend::{schema, schema::database};
 
     use crate::{
         api::command::{
@@ -56,8 +57,6 @@ mod tests {
             gateway::{test::TestBackendFacade, DatabaseGatewayError},
             Gateway, GatewayError,
         },
-        schema,
-        schema::database,
     };
 
     #[test]

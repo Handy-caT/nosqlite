@@ -1,7 +1,7 @@
 use common::structs::hash_table::scalable::ScalableHashTable;
 use std::sync::{Arc, Mutex};
 
-use crate::{
+use backend::{
     controller, data::id, page::page_controller::PageController,
     schema::database,
 };
