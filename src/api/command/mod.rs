@@ -1,3 +1,4 @@
+mod backend;
 mod database;
 mod gateway;
 mod schema;
@@ -91,8 +92,7 @@ where
 
 /// Represents an error that occurred during the execution of a command.
 #[derive(Debug)]
-pub enum GatewayError<CmdErr, GatewayErr>
-{
+pub enum GatewayError<CmdErr, GatewayErr> {
     Cmd(CmdErr),
     Gateway(GatewayErr),
 }

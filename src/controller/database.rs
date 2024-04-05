@@ -59,6 +59,15 @@ impl<const NODE_SIZE: u8> Database<NODE_SIZE> {
         }
     }
 
+    /// Checks if the database has a schema with the given name.
+    /// # Arguments
+    /// * `name` - The name of the schema to check for.
+    /// # Returns
+    /// * `bool` - Whether the database has a schema with the given name.
+    pub fn has_schema(&mut self, name: &schema::Name) -> bool {
+        self.schemas.contains_key(name)
+    }
+
     /// Gets a schema from the database.
     /// # Arguments
     /// * `name` - The name of the schema to get.
