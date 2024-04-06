@@ -100,7 +100,7 @@ where
         }
     }
 
-    fn find(&mut self, value: &T) -> Option<usize> {
+    fn find(&self, value: &T) -> Option<usize> {
         if let Some(root) = self.root {
             let mut current = root;
             loop {

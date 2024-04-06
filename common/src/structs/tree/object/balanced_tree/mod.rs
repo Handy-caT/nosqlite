@@ -195,28 +195,22 @@ impl<
         }
     }
 
-    fn find(&mut self, value: &T) -> Option<usize> {
+    fn find(&self, value: &T) -> Option<usize> {
         let mut current_index = self.root;
         while current_index.is_some() {
-            if let Some(node_value) =
-                self.nodes.get_value_mut(current_index.unwrap())
-            {
-                if (self.compare)(value, node_value) == Ordering::Less {
-                    current_index = self
-                        .nodes
-                        .get_index_mut(current_index.unwrap())
-                        .left_index;
-                } else if (self.compare)(value, node_value) == Ordering::Greater
+            if let Some(node) = self.nodes.get(current_index.unwrap()) {
+                if (self.compare)(value, &node.value) == Ordering::Less {
+                    current_index =
+                        self.nodes.get_index(current_index.unwrap()).left_index;
+                } else if (self.compare)(value, &node.value)
+                    == Ordering::Greater
                 {
                     current_index = self
                         .nodes
-                        .get_index_mut(current_index.unwrap())
+                        .get_index(current_index.unwrap())
                         .right_index;
                 } else {
-                    return self
-                        .nodes
-                        .get_index_mut(current_index.unwrap())
-                        .index;
+                    return self.nodes.get_index(current_index.unwrap()).index;
                 }
             } else {
                 return None;
@@ -262,7 +256,7 @@ impl<
         M: TreeVec<T> + Indexes<T> + Levels + Sized,
     > VecFunctions<T, M> for BalancedTree<T, M>
 {
-    fn get(&mut self, index: usize) -> Option<T> {
+    fn get(&self, index: usize) -> Option<T> {
         let item = self.nodes.get(index);
         item.map(|node| node.value)
     }

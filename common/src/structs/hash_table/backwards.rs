@@ -124,7 +124,7 @@ where
         Some(key_value.value)
     }
 
-    fn get(&mut self, key: &K) -> Option<V> {
+    fn get(&self, key: &K) -> Option<V> {
         let key_index = self.key_hash_table.get(key)?;
         let key_value = self.key_values.get(key_index)?;
 

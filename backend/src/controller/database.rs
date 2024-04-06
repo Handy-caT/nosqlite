@@ -64,7 +64,10 @@ impl<const NODE_SIZE: u8> Database<NODE_SIZE> {
     /// * `name` - The name of the schema to remove.
     /// # Returns
     /// * `Option<controller::Schema<NODE_SIZE>>` - The schema that was removed.
-    pub fn remove_schema(&mut self, name: &schema::Name) -> Option<controller::Schema<NODE_SIZE>> {
+    pub fn remove_schema(
+        &mut self,
+        name: &schema::Name,
+    ) -> Option<controller::Schema<NODE_SIZE>> {
         self.schemas.remove(name)
     }
 

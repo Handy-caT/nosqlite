@@ -86,7 +86,7 @@ where
         }
     }
 
-    fn get(&mut self, key: &K) -> Option<V> {
+    fn get(&self, key: &K) -> Option<V> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 

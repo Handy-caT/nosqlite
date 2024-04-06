@@ -56,16 +56,19 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
         self.tables
             .insert(controller.get_name().clone(), controller);
     }
-    
+
     /// Removes a table from the schema.
     /// # Arguments
     /// * `name` - The name of the table to remove.
     /// # Returns
     /// * `Option<controller::Table<NODE_SIZE>>` - The table that was removed.
-    pub fn remove_table(&mut self, name: &table::Name) -> Option<controller::Table<NODE_SIZE>> {
+    pub fn remove_table(
+        &mut self,
+        name: &table::Name,
+    ) -> Option<controller::Table<NODE_SIZE>> {
         self.tables.remove(name)
     }
-    
+
     /// Gets a table from the schema.
     /// # Arguments
     /// * `name` - The name of the table to get.

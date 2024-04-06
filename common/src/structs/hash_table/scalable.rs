@@ -139,7 +139,7 @@ where
         }
     }
 
-    fn get(&mut self, key: &K) -> Option<V> {
+    fn get(&self, key: &K) -> Option<V> {
         let hash = key.hash(self.hash);
         let index = hash.to_usize() & (self.table.size() - 1);
 
@@ -286,7 +286,8 @@ mod tests {
     use crate::structs::hash_table::{
         scalable::ScalableHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
-        ExtendedFunctions as _, HashTable as _, MutHashTable as _, VecFunctions as _,
+        ExtendedFunctions as _, HashTable as _, MutHashTable as _,
+        VecFunctions as _,
     };
 
     #[test]

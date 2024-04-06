@@ -83,7 +83,7 @@ where
     /// * `index` - Index of the node.
     /// # Returns
     /// * Option<Node<T, `NODE_SIZE`>> - Node by index.
-    pub fn get_node(&mut self, index: usize) -> Option<Node<T, NODE_SIZE>> {
+    pub fn get_node(&self, index: usize) -> Option<Node<T, NODE_SIZE>> {
         self.preloaded_data.get(&index)
     }
 

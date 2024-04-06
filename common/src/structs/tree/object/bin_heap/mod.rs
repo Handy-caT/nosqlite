@@ -124,7 +124,7 @@ impl<T: Default + PartialOrd + Clone> Tree<T> for BinHeap<T> {
         result_index
     }
 
-    fn find(&mut self, value: &T) -> Option<usize> {
+    fn find(&self, value: &T) -> Option<usize> {
         if self.data.len() == 0 {
             None
         } else {
@@ -177,7 +177,7 @@ impl<T: Default + PartialOrd + Clone> Tree<T> for BinHeap<T> {
 impl<T: Default + PartialOrd + Clone> VecFunctions<T, NormalizedTreeVector<T>>
     for BinHeap<T>
 {
-    fn get(&mut self, index: usize) -> Option<T> {
+    fn get(&self, index: usize) -> Option<T> {
         if index < self.data.len() {
             Some(self.data.get(index).unwrap().value)
         } else {

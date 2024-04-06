@@ -241,18 +241,17 @@ impl<
         index
     }
 
-    fn find(&mut self, value: &T) -> Option<usize> {
+    fn find(&self, value: &T) -> Option<usize> {
         let mut current_index = self.root;
         while current_index.is_some() {
-            if let Some(node_value) = self
-                .base
-                .get_nodes_mut()
-                .get_value_mut(current_index.unwrap())
+            if let Some(node) =
+                self.base.get_nodes().get(current_index.unwrap())
             {
-                if (self.compare)(value, node_value) == Ordering::Less {
+                if (self.compare)(value, &node.value) == Ordering::Less {
                     current_index =
                         self.indexes[current_index.unwrap()].left_index;
-                } else if (self.compare)(value, node_value) == Ordering::Greater
+                } else if (self.compare)(value, &node.value)
+                    == Ordering::Greater
                 {
                     current_index =
                         self.indexes[current_index.unwrap()].right_index;
@@ -300,7 +299,7 @@ impl<
         M: Tree<T> + Sized + VecFunctions<T, V> + Default,
     > VecFunctions<T, V> for Decoratable<T, V, M>
 {
-    fn get(&mut self, index: usize) -> Option<T> {
+    fn get(&self, index: usize) -> Option<T> {
         self.base.get(index)
     }
 

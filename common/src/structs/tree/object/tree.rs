@@ -25,7 +25,7 @@ pub trait Tree<T> {
     /// * `value` - The value to be found.
     /// # Returns
     /// * `Option<usize>` - The index of the value.
-    fn find(&mut self, value: &T) -> Option<usize>;
+    fn find(&self, value: &T) -> Option<usize>;
 
     /// Removes a value from the tree. Returns the value.
     /// If the value is not found, returns None.
@@ -60,7 +60,7 @@ pub trait VecFunctions<T, M: TreeVec<T> + Sized> {
     /// * `index` - The index of the value.
     /// # Returns
     /// * `Option<T>` - The value.
-    fn get(&mut self, index: usize) -> Option<T>;
+    fn get(&self, index: usize) -> Option<T>;
 
     /// Returns the mutable reference to the underlying vector.
     /// # Returns

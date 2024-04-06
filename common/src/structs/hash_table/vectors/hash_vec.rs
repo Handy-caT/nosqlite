@@ -29,7 +29,7 @@ pub trait HashVec<K, V> {
     /// # Returns
     /// * `Option<KeyValue<K, V>>` - Value that was found,
     /// None if value was not found.
-    fn get(&mut self, index: usize, key: &K) -> Option<KeyValue<K, V>>;
+    fn get(&self, index: usize, key: &K) -> Option<KeyValue<K, V>>;
 
     /// Updates value in the [`HashVec`] by underlying vector index and key.
     /// # Arguments

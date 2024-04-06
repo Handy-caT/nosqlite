@@ -66,7 +66,7 @@ impl<K: PartialEq + Clone, V: PartialEq + Clone> HashVec<K, V>
         (index, data_index)
     }
 
-    fn get(&mut self, index: usize, key: &K) -> Option<KeyValue<K, V>> {
+    fn get(&self, index: usize, key: &K) -> Option<KeyValue<K, V>> {
         let mut i = 0;
         while i < self.data[index].len() {
             if self.data[index][i].key == *key {

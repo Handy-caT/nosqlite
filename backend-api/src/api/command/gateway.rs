@@ -104,6 +104,7 @@ pub mod test {
             self
         }
 
+        /// Adds a schema to the `BackendFacade`.
         pub fn with_schema(
             mut self,
             database_name: database::Name,
