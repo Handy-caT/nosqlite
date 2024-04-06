@@ -14,7 +14,7 @@ pub use table::Table;
 #[derive(Debug, PartialEq, Clone)]
 pub struct Schema {
     /// The name of the schema.
-    name: Name,
+    pub name: Name,
 }
 
 gen_name!();
@@ -27,13 +27,6 @@ impl Schema {
     /// A new [`Schema`] with the given parameters.
     pub fn new(name: Name) -> Self {
         Schema { name }
-    }
-
-    /// Returns the name of the schema.
-    /// # Returns
-    /// * `&Name` - The name of the schema.
-    pub fn get_name(&self) -> &Name {
-        &self.name
     }
 }
 

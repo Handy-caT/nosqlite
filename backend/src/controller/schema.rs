@@ -41,6 +41,13 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     pub fn get_table_names(&mut self) -> Vec<table::Name> {
         self.tables.get_keys()
     }
+    
+    /// Returns the mutable schema information.
+    /// # Returns
+    /// * `&mut info::Schema` - The schema information.
+    pub fn get_mut_info(&mut self) -> &mut info::Schema {
+        &mut self.info
+    }
 
     /// Adds a table to the schema.
     /// # Arguments
@@ -54,9 +61,9 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     /// # Arguments
     /// * `name` - The name of the table to get.
     /// # Returns
-    /// * `Option<controller::Table<NODE_SIZE>>` - The table with the given
+    /// * `Option<&mut controller::Table<NODE_SIZE>>` - The table with the given
     ///   name.
-    pub fn get_table(
+    pub fn get_mut_table(
         &mut self,
         name: &table::Name,
     ) -> Option<&mut controller::Table<NODE_SIZE>> {
@@ -130,14 +137,14 @@ mod tests {
     }
 
     #[test]
-    fn test_schema_get_table() {
+    fn test_schema_get_mut_table() {
         let mut schema = Schema::<4>::new("test".into());
 
         let data_storage = data_storage_factory();
         let table = controller::Table::<4>::new("table".into(), data_storage);
         schema.add_table(table);
 
-        let table = schema.get_table(&"table".into());
+        let table = schema.get_mut_table(&"table".into());
         assert!(table.is_some());
 
         let table = table.unwrap();
@@ -145,7 +152,7 @@ mod tests {
 
         table.add_page(1);
 
-        let table = schema.get_table(&"table".into());
+        let table = schema.get_mut_table(&"table".into());
         assert!(table.is_some());
 
         let table = table.unwrap();
