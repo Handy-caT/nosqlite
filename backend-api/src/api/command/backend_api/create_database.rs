@@ -6,8 +6,10 @@ use crate::api::{
     facade::BackendFacade,
 };
 
+/// Command to create a new database.
 #[derive(Debug, Clone)]
 pub struct CreateDatabase {
+    /// The name of the database to create.
     pub name: database::Name,
 }
 
@@ -24,7 +26,7 @@ impl<const NODE_SIZE: u8> Execute<CreateDatabase, Self>
         backend: &mut Self,
     ) -> Result<Self::Ok, Self::Err> {
         if backend.database_controllers.contains_key(&cmd.name) {
-            return Err(ExecutionError::DatabaseAlreadyExists);
+            return Err(ExecutionError::DatabaseAlreadyExists(cmd.name));
         }
         let db = controller::Database::new(cmd.name.clone());
         backend.database_controllers.insert(cmd.name, db);
@@ -32,9 +34,11 @@ impl<const NODE_SIZE: u8> Execute<CreateDatabase, Self>
     }
 }
 
+/// Errors that can occur when executing the [`CreateDatabase`] command.
 #[derive(Debug)]
 pub enum ExecutionError {
-    DatabaseAlreadyExists,
+    /// The database already exists.
+    DatabaseAlreadyExists(database::Name),
 }
 
 #[cfg(test)]
@@ -62,16 +66,22 @@ mod tests {
 
     #[test]
     fn returns_error_when_db_exists() {
-        let name = database::Name::from("test");
+        let db_name = database::Name::from("test");
         let mut facade = TestBackendFacade::<4>::new()
-            .with_database(name.clone())
+            .with_database(db_name.clone())
             .build();
-        let cmd = CreateDatabase { name: name.clone() };
+        let cmd = CreateDatabase {
+            name: db_name.clone(),
+        };
         let result = facade.send(cmd);
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::DatabaseAlreadyExists)) => (),
+            Err(GatewayError::Cmd(ExecutionError::DatabaseAlreadyExists(
+                name,
+            ))) => {
+                assert_eq!(name, db_name)
+            }
             _ => panic!(
                 "Expected `DatabaseAlreadyExists` error, found {:?}",
                 result

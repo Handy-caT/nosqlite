@@ -6,11 +6,14 @@ use crate::api::{
     facade::BackendFacade,
 };
 
+/// [`Command`] to create a new schema in a database.
 #[derive(Debug, AsRef, Clone)]
 pub struct CreateSchema {
+    /// The name of the database where the schema will be created.
     #[as_ref]
     pub database_name: schema::database::Name,
 
+    /// The name of the schema to create.
     pub name: schema::Name,
 }
 
@@ -27,21 +30,23 @@ impl<const NODE_SIZE: u8> Execute<CreateSchema, controller::Database<NODE_SIZE>>
         db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
         if db_controller.has_schema(&cmd.name) {
-            return Err(ExecutionError::SchemaAlreadyExists);
+            return Err(ExecutionError::SchemaAlreadyExists(cmd.name));
         }
 
-        let schema = controller::Schema::new(cmd.name);
+        let schema = controller::Schema::new(cmd.name.clone());
         if db_controller.add_schema(schema) {
             Ok(())
         } else {
-            Err(ExecutionError::SchemaAlreadyExists)
+            Err(ExecutionError::SchemaAlreadyExists(cmd.name))
         }
     }
 }
 
+/// Errors that can occur during the execution of [`CreateSchema`].
 #[derive(Debug)]
 pub enum ExecutionError {
-    SchemaAlreadyExists,
+    /// The schema already exists in the database.
+    SchemaAlreadyExists(schema::Name),
 }
 
 #[cfg(test)]
@@ -93,7 +98,11 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::SchemaAlreadyExists)) => {}
+            Err(GatewayError::Cmd(ExecutionError::SchemaAlreadyExists(
+                name,
+            ))) => {
+                assert_eq!(name, schema_name);
+            }
             _ => panic!("Expected `SchemaAlreadyExists` found {:?}", result),
         }
     }
@@ -113,8 +122,10 @@ mod tests {
 
         match result {
             Err(GatewayError::Gateway(
-                DatabaseGatewayError::DatabaseNotFound,
-            )) => {}
+                DatabaseGatewayError::DatabaseNotFound(name),
+            )) => {
+                assert_eq!(name, database_name);
+            }
             _ => panic!("Expected `DatabaseNotFound` found {:?}", result),
         }
     }

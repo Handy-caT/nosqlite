@@ -39,15 +39,17 @@ where
             .map_err(GatewayError::Cmd)
         } else {
             Err(GatewayError::Gateway(
-                DatabaseGatewayError::DatabaseNotFound,
+                DatabaseGatewayError::DatabaseNotFound(database_name.clone()),
             ))
         }
     }
 }
 
+/// Errors that can occur during the execution of the [`DatabaseGateway`].
 #[derive(Debug)]
 pub enum DatabaseGatewayError {
-    DatabaseNotFound,
+    /// The database was not found.
+    DatabaseNotFound(database::Name),
 }
 
 impl<Cmd, const NODE_SIZE: u8> Gateway<Cmd, Self> for BackendFacade<NODE_SIZE>
@@ -73,12 +75,13 @@ where
 
 #[cfg(test)]
 pub mod test {
+    use std::sync::{Arc, Mutex};
+
     use backend::{
         controller, data::id, page::page_controller::PageController, schema,
         schema::database,
     };
     use common::structs::hash_table::{HashTable, MutHashTable};
-    use std::sync::{Arc, Mutex};
 
     use crate::api::facade::BackendFacade;
 

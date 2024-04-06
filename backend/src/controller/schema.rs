@@ -32,7 +32,7 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     /// # Returns
     /// * `&schema::Name` - The name of the schema.
     pub fn get_name(&self) -> &schema::Name {
-        self.info.get_name()
+        &self.info.name
     }
 
     /// Returns the names of the tables in the schema.
@@ -41,7 +41,7 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     pub fn get_table_names(&mut self) -> Vec<table::Name> {
         self.tables.get_keys()
     }
-    
+
     /// Returns the mutable schema information.
     /// # Returns
     /// * `&mut info::Schema` - The schema information.
@@ -56,7 +56,16 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
         self.tables
             .insert(controller.get_name().clone(), controller);
     }
-
+    
+    /// Removes a table from the schema.
+    /// # Arguments
+    /// * `name` - The name of the table to remove.
+    /// # Returns
+    /// * `Option<controller::Table<NODE_SIZE>>` - The table that was removed.
+    pub fn remove_table(&mut self, name: &table::Name) -> Option<controller::Table<NODE_SIZE>> {
+        self.tables.remove(name)
+    }
+    
     /// Gets a table from the schema.
     /// # Arguments
     /// * `name` - The name of the table to get.
@@ -103,7 +112,7 @@ mod tests {
     #[test]
     fn test_schema_new() {
         let schema = Schema::<4>::new("test".into());
-        assert_eq!(schema.info.get_name(), &"test".into());
+        assert_eq!(schema.info.name, "test".into());
         assert_eq!(schema.tables.len(), 0);
     }
 

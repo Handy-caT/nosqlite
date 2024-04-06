@@ -8,18 +8,21 @@ use crate::api::{
     facade::BackendFacade,
 };
 
+/// [`Command`] to drop a schema from a database.
 #[derive(Debug, AsRef, Clone)]
 pub struct DropSchema {
+    /// The name of the database to drop the schema from.
     #[as_ref]
     pub database_name: schema::database::Name,
 
+    /// The name of the schema to drop.
     pub name: schema::Name,
 }
 
 impl Command for DropSchema {}
 
 impl<const NODE_SIZE: u8> Execute<DropSchema, controller::Database<NODE_SIZE>>
-for BackendFacade<NODE_SIZE>
+    for BackendFacade<NODE_SIZE>
 {
     type Ok = ();
     type Err = Infallible;
@@ -31,7 +34,7 @@ for BackendFacade<NODE_SIZE>
         if !db_controller.has_schema(&cmd.name) {
             return Ok(());
         }
-        
+
         let _ = db_controller.remove_schema(&cmd.name);
         Ok(())
     }
@@ -40,19 +43,19 @@ for BackendFacade<NODE_SIZE>
 #[cfg(test)]
 mod tests {
     use backend::{schema, schema::database};
-    use common::structs::hash_table::MutHashTable;
+    use common::structs::hash_table::MutHashTable as _;
 
     use crate::api::command::{
+        database::drop_schema::DropSchema,
         gateway::{test::TestBackendFacade, DatabaseGatewayError},
-        Gateway, GatewayError,
+        Gateway as _, GatewayError,
     };
-    use crate::api::command::database::drop_schema::DropSchema;
 
     #[test]
     fn drops_schema_when_exists() {
         let database_name = database::Name::from("test");
         let schema_name = schema::Name::from("schema");
-        
+
         let mut facade = TestBackendFacade::<4>::new()
             .with_database(database_name.clone())
             .with_schema(database_name.clone(), schema_name.clone())
@@ -103,8 +106,10 @@ mod tests {
 
         match result {
             Err(GatewayError::Gateway(
-                    DatabaseGatewayError::DatabaseNotFound,
-                )) => {}
+                DatabaseGatewayError::DatabaseNotFound(name),
+            )) => {
+                assert_eq!(name, database_name);
+            }
             _ => panic!("Expected `DatabaseNotFound` found {:?}", result),
         }
     }

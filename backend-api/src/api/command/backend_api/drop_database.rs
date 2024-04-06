@@ -8,8 +8,10 @@ use crate::api::{
     facade::BackendFacade,
 };
 
+/// Command to drop a database.
 #[derive(Debug, Clone)]
 pub struct DropDatabase {
+    /// The name of the database to drop.
     pub name: database::Name,
 }
 

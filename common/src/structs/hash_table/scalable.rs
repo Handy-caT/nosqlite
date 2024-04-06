@@ -286,7 +286,7 @@ mod tests {
     use crate::structs::hash_table::{
         scalable::ScalableHashTable,
         vectors::{key_value::KeyValue, static_hash_vec::StaticHashVec},
-        ExtendedFunctions, HashTable, MutHashTable, VecFunctions,
+        ExtendedFunctions as _, HashTable as _, MutHashTable as _, VecFunctions as _,
     };
 
     #[test]
