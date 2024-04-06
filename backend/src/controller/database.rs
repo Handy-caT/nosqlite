@@ -58,6 +58,15 @@ impl<const NODE_SIZE: u8> Database<NODE_SIZE> {
             true
         }
     }
+    
+    /// Removes a [`controller::Schema`] from the [`Database`].
+    /// # Arguments
+    /// * `name` - The name of the schema to remove.
+    /// # Returns
+    /// * `bool` - Whether the schema was removed.
+    pub fn remove_schema(&mut self, name: &schema::Name) -> bool {
+        self.schemas.remove(name).is_some()
+    }
 
     /// Checks if the database has a schema with the given name.
     /// # Arguments
