@@ -1,6 +1,6 @@
 use crate::lexer::token::Token;
 
-mod token;
+pub mod token;
 
 /// [`Lexer`] is a struct that represents a lexer for the source code.
 #[derive(Debug, PartialEq, Clone)]
