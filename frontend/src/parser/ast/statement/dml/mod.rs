@@ -1,2 +1,2 @@
-mod create_database;
-mod drop_database;
+mod database;
+mod schema;

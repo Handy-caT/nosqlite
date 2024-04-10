@@ -10,7 +10,7 @@ pub struct Lexer {
 
     /// The current position of the lexer.
     current_position: usize,
-    
+
     /// The read position of the lexer.
     read_position: usize,
 }
@@ -28,49 +28,68 @@ impl Lexer {
             read_position: 0,
         }
     }
-    
+
     /// Skips the whitespace characters in the input source code.
     fn skip_whitespace(&mut self) {
         if self.current_position >= self.input.len() {
             return;
         }
-        
-        let mut ch = self.input.chars().nth(self.current_position).expect("exists because of the check");
+
+        let mut ch = self
+            .input
+            .chars()
+            .nth(self.current_position)
+            .expect("exists because of the check");
         while ch.is_whitespace() {
             self.current_position += 1;
             if self.current_position >= self.input.len() {
                 return;
             }
-            ch = self.input.chars().nth(self.current_position).expect("exists because of the check");
+            ch = self
+                .input
+                .chars()
+                .nth(self.current_position)
+                .expect("exists because of the check");
         }
     }
-    
+
     /// Skips the alphanumeric characters in the input source code.
     fn read_alphanumeric(&mut self) {
         if self.read_position >= self.input.len() {
             return;
         }
-        
-        let mut ch = self.input.chars().nth(self.read_position).expect("exists because of the check");
+
+        let mut ch = self
+            .input
+            .chars()
+            .nth(self.read_position)
+            .expect("exists because of the check");
         while ch.is_alphanumeric() || ch == '_' {
             self.read_position += 1;
             if self.read_position >= self.input.len() {
                 return;
             }
-            ch = self.input.chars().nth(self.read_position).expect("exists because of the check");
+            ch = self
+                .input
+                .chars()
+                .nth(self.read_position)
+                .expect("exists because of the check");
         }
     }
-    
+
     /// Reads the next token from the lexer.
     fn next_token(&mut self) -> Option<Token> {
         self.skip_whitespace();
         if self.current_position >= self.input.len() {
             return None;
         }
-        
+
         self.read_position = self.current_position + 1;
         {
-            let substr = self.input.get(self.current_position..self.read_position).expect("exists because of the check");
+            let substr = self
+                .input
+                .get(self.current_position..self.read_position)
+                .expect("exists because of the check");
 
             let delimiter = substr.parse::<token::Delimiter>();
             if let Ok(delimiter) = delimiter {
@@ -78,9 +97,12 @@ impl Lexer {
                 return Some(Token::Delimiter(delimiter));
             }
         }
-        
+
         self.read_alphanumeric();
-        let substr = self.input.get(self.current_position..self.read_position).expect("exists because of the check");
+        let substr = self
+            .input
+            .get(self.current_position..self.read_position)
+            .expect("exists because of the check");
 
         let dml = substr.parse::<token::DMLOperator>();
         if let Ok(dml) = dml {
@@ -99,7 +121,7 @@ impl Lexer {
             self.current_position = self.read_position;
             return Some(Token::Keyword(keyword));
         }
-        
+
         self.current_position = self.read_position;
 
         let identifier = token::Identifier(substr.to_string());
@@ -117,19 +139,32 @@ impl Iterator for Lexer {
 
 #[cfg(test)]
 mod lexer_tests {
-    use crate::lexer::{Lexer, token};
-    use crate::lexer::token::Token;
-    
+    use crate::lexer::{token, token::Token, Lexer};
+
     #[test]
     fn test_lexer_next_token_basic() {
         let mut lexer = Lexer::new("CREATE TABLE users;".to_string());
-        assert_eq!(lexer.next_token(), Some(Token::DML(token::DMLOperator::Create)));
-        assert_eq!(lexer.next_token(), Some(Token::Keyword(token::Keyword::DbObject(token::DBObject::Table))));
-        assert_eq!(lexer.next_token(), Some(Token::Identifier(token::Identifier("users".to_string()))));
-        assert_eq!(lexer.next_token(), Some(Token::Delimiter(token::Delimiter::Semicolon)));
+        assert_eq!(
+            lexer.next_token(),
+            Some(Token::DML(token::DMLOperator::Create))
+        );
+        assert_eq!(
+            lexer.next_token(),
+            Some(Token::Keyword(token::Keyword::DbObject(
+                token::DBObject::Table
+            )))
+        );
+        assert_eq!(
+            lexer.next_token(),
+            Some(Token::Identifier(token::Identifier("users".to_string())))
+        );
+        assert_eq!(
+            lexer.next_token(),
+            Some(Token::Delimiter(token::Delimiter::Semicolon))
+        );
         assert_eq!(lexer.next_token(), None);
     }
-    
+
     #[test]
     fn test_lexer_next_token_with_whitespace() {
         let lexer = Lexer::new("CREATE   TABLE users;".to_string());
@@ -139,9 +174,9 @@ mod lexer_tests {
             Token::Identifier(token::Identifier("users".to_string())),
             Token::Delimiter(token::Delimiter::Semicolon),
         ];
-        
+
         let actual: Vec<Token> = lexer.collect();
-        
+
         assert_eq!(actual, expected);
     }
 

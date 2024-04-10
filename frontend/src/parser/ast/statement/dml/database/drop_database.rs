@@ -1,5 +1,7 @@
-use crate::lexer::token;
-use crate::lexer::token::Token;
+use crate::lexer::{
+    token,
+    token::{DBObject, Keyword, Token},
+};
 
 /// Describes `DROP DATABASE ...` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
@@ -31,7 +33,8 @@ impl TryFrom<&[Token]> for DropDatabase {
         let Token::DML(token::DMLOperator::Drop) = drop else {
             return Err(());
         };
-        let Token::Keyword(token::Keyword::DbObject(token::DBObject::Database)) = database else {
+        let Token::Keyword(Keyword::DbObject(DBObject::Database)) = database
+        else {
             return Err(());
         };
 
@@ -44,9 +47,9 @@ impl TryFrom<&[Token]> for DropDatabase {
 
 #[cfg(test)]
 mod create_database_tests {
-    use crate::lexer::token;
-    use crate::lexer::token::Token;
-    use crate::parser::ast::statement::dml::drop_database::DropDatabase;
+    use crate::lexer::{token, token::Token};
+
+    use super::DropDatabase;
 
     #[test]
     fn test_create_database_try_from_token_vec_basic() {
@@ -57,7 +60,8 @@ mod create_database_tests {
         ];
 
         let actual = DropDatabase::try_from(tokens.as_slice());
-        let expected = Ok(DropDatabase::new(token::Identifier("test".to_string())));
+        let expected =
+            Ok(DropDatabase::new(token::Identifier("test".to_string())));
 
         assert_eq!(actual, expected);
     }
