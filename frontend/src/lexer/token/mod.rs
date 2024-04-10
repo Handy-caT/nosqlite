@@ -6,7 +6,7 @@ mod keyword;
 pub use ddl_operator::DDLOperator;
 pub use delimiter::Delimiter;
 pub use dml_operator::DMLOperator;
-pub use keyword::{DBObject, Keyword};
+pub use keyword::{DBObject, Keyword, Preposition};
 
 /// Identifier is a token that represents an identifier in the source code.
 #[derive(Debug, PartialEq, Clone)]
