@@ -45,6 +45,22 @@ impl Lexer {
         }
     }
     
+    /// Skips the alphanumeric characters in the input source code.
+    fn read_alphanumeric(&mut self) {
+        if self.read_position >= self.input.len() {
+            return;
+        }
+        
+        let mut ch = self.input.chars().nth(self.read_position).expect("exists because of the check");
+        while ch.is_alphanumeric() || ch == '_' {
+            self.read_position += 1;
+            if self.read_position >= self.input.len() {
+                return;
+            }
+            ch = self.input.chars().nth(self.read_position).expect("exists because of the check");
+        }
+    }
+    
     /// Reads the next token from the lexer.
     fn next_token(&mut self) -> Option<Token> {
         self.skip_whitespace();
@@ -53,37 +69,35 @@ impl Lexer {
         }
         
         self.read_position = self.current_position + 1;
-        let mut substr = self.input.get(self.current_position..self.read_position).expect("exists because of the check");
-        
-        let delimiter = substr.parse::<token::Delimiter>();
-        if let Ok(delimiter) = delimiter {
-            self.current_position = self.read_position;
-            return Some(Token::Delimiter(delimiter));
+        {
+            let substr = self.input.get(self.current_position..self.read_position).expect("exists because of the check");
+
+            let delimiter = substr.parse::<token::Delimiter>();
+            if let Ok(delimiter) = delimiter {
+                self.current_position = self.read_position;
+                return Some(Token::Delimiter(delimiter));
+            }
         }
         
-        let mut ch = self.input.chars().nth(self.read_position).expect("exists because of the check");
-        while ch.is_alphanumeric() || ch == '_' {
-            self.read_position += 1;
-            substr = self.input.get(self.current_position..self.read_position).expect("exists because of the check");
-            
-            let dml = substr.parse::<token::DMLOperator>();
-            if let Ok(dml) = dml {
-                self.current_position = self.read_position;
-                return Some(Token::DML(dml));
-            }
-            
-            let ddl = substr.parse::<token::DDLOperator>();
-            if let Ok(ddl) = ddl {
-                self.current_position = self.read_position;
-                return Some(Token::DDL(ddl));
-            }
-            
-            let keyword = substr.parse::<token::Keyword>();
-            if let Ok(keyword) = keyword {
-                self.current_position = self.read_position;
-                return Some(Token::Keyword(keyword));
-            }
-            ch = self.input.chars().nth(self.read_position).expect("exists because of the check");
+        self.read_alphanumeric();
+        let substr = self.input.get(self.current_position..self.read_position).expect("exists because of the check");
+
+        let dml = substr.parse::<token::DMLOperator>();
+        if let Ok(dml) = dml {
+            self.current_position = self.read_position;
+            return Some(Token::DML(dml));
+        }
+
+        let ddl = substr.parse::<token::DDLOperator>();
+        if let Ok(ddl) = ddl {
+            self.current_position = self.read_position;
+            return Some(Token::DDL(ddl));
+        }
+
+        let keyword = substr.parse::<token::Keyword>();
+        if let Ok(keyword) = keyword {
+            self.current_position = self.read_position;
+            return Some(Token::Keyword(keyword));
         }
         
         self.current_position = self.read_position;
@@ -138,6 +152,38 @@ mod lexer_tests {
             Token::DML(token::DMLOperator::Create),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
             Token::Identifier(token::Identifier("users_user".to_string())),
+            Token::Delimiter(token::Delimiter::Semicolon),
+        ];
+
+        let actual: Vec<Token> = lexer.collect();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_lexer_next_token_identifier_with_keyword() {
+        let lexer = Lexer::new("CREATE TABLE create_user;".to_string());
+        let expected = vec![
+            Token::DML(token::DMLOperator::Create),
+            Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
+            Token::Identifier(token::Identifier("create_user".to_string())),
+            Token::Delimiter(token::Delimiter::Semicolon),
+        ];
+
+        let actual: Vec<Token> = lexer.collect();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_lexer_next_token_delimiters_without_spaces() {
+        let lexer = Lexer::new("CREATE,TABLE,create_user;".to_string());
+        let expected = vec![
+            Token::DML(token::DMLOperator::Create),
+            Token::Delimiter(token::Delimiter::Comma),
+            Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
+            Token::Delimiter(token::Delimiter::Comma),
+            Token::Identifier(token::Identifier("create_user".to_string())),
             Token::Delimiter(token::Delimiter::Semicolon),
         ];
 
