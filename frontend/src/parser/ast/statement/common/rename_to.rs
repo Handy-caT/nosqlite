@@ -2,6 +2,7 @@ use crate::lexer::{
     token,
     token::{Preposition, Keyword, Token},
 };
+use crate::preprocessor::LeafNode;
 
 /// Describes `RENAME TO ...` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
@@ -20,6 +21,8 @@ impl RenameTo {
         Self { identifier }
     }
 }
+
+impl LeafNode for RenameTo {}
 
 impl TryFrom<&[Token]> for RenameTo {
     type Error = ();
