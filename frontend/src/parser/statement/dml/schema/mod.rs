@@ -1,10 +1,10 @@
+mod alter_schema;
 mod create_schema;
 mod drop_schema;
-mod alter_schema;
 
+pub use alter_schema::AlterSchema;
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
-pub use alter_schema::AlterSchema;
 
 /// Represents an AST node for a schema operation.
 #[derive(Debug, PartialEq, Clone)]

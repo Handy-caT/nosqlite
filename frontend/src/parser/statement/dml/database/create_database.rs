@@ -1,6 +1,9 @@
-use crate::lexer::{
-    token,
-    token::{DBObject, Keyword, Token},
+use crate::{
+    lexer::{
+        token,
+        token::{DBObject, Keyword, Token},
+    },
+    preprocessor::LeafNode,
 };
 
 /// Describes `CREATE DATABASE` statement for AST.
@@ -20,6 +23,8 @@ impl CreateDatabase {
         Self { identifier }
     }
 }
+
+impl LeafNode for CreateDatabase {}
 
 impl TryFrom<&[Token]> for CreateDatabase {
     type Error = ();
@@ -47,7 +52,11 @@ impl TryFrom<&[Token]> for CreateDatabase {
 
 #[cfg(test)]
 mod create_database_tests {
-    use crate::lexer::{token, token::Token};
+    use crate::{
+        create_database_statement,
+        lexer::{token, token::Token},
+        preprocessor::Node,
+    };
 
     use super::CreateDatabase;
 
@@ -92,4 +101,30 @@ mod create_database_tests {
 
         assert_eq!(actual, expected);
     }
+
+    #[test]
+    fn test_create_database_cant_be_followed_by_nothing() {
+        let create_database = CreateDatabase {
+            identifier: token::Identifier("test".to_string()),
+        };
+        
+        let identifier = token::Identifier("test".to_string());
+
+        assert!(!create_database
+            .can_be_followed(&create_database_statement!(identifier)));
+    }
+}
+
+/// Shortcut for creating a [`CreateDatabase`] variant of [`Statement`].
+#[macro_export]
+macro_rules! create_database_statement {
+    ($arg:expr) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Database(
+                $crate::parser::statement::dml::DatabaseNode::CreateDatabase(
+                    $crate::parser::statement::dml::CreateDatabase::new($arg)
+                )
+            )
+        )
+    };
 }

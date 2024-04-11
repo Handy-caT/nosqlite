@@ -7,7 +7,7 @@ use std::str::FromStr;
 pub enum Keyword {
     /// Token for [`DBObject`].
     DbObject(DBObject),
-    
+
     /// Token for [`Preposition`].
     Preposition(Preposition),
 }
@@ -111,7 +111,7 @@ mod dbobject_tests {
 pub enum Preposition {
     /// Token for `IN` preposition.
     In,
-    
+
     /// Token for `TO` preposition.
     To,
 }

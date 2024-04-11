@@ -1,8 +1,10 @@
-use crate::lexer::{
-    token,
-    token::{Preposition, Keyword, Token},
+use crate::{
+    lexer::{
+        token,
+        token::{Keyword, Preposition, Token},
+    },
+    preprocessor::LeafNode,
 };
-use crate::preprocessor::LeafNode;
 
 /// Describes `RENAME TO ...` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
@@ -36,10 +38,9 @@ impl TryFrom<&[Token]> for RenameTo {
         let Token::DML(token::DMLOperator::Rename) = rename else {
             return Err(());
         };
-        let Token::Keyword(Keyword::Preposition(Preposition::To)) = to
-            else {
-                return Err(());
-            };
+        let Token::Keyword(Keyword::Preposition(Preposition::To)) = to else {
+            return Err(());
+        };
 
         match identifier {
             Token::Identifier(identifier) => Ok(Self::new(identifier.clone())),
@@ -63,8 +64,7 @@ mod create_database_tests {
         ];
 
         let actual = RenameTo::try_from(tokens.as_slice());
-        let expected =
-            Ok(RenameTo::new(token::Identifier("test".to_string())));
+        let expected = Ok(RenameTo::new(token::Identifier("test".to_string())));
 
         assert_eq!(actual, expected);
     }

@@ -1,4 +1,4 @@
-use crate::parser::ast::Statement;
+use crate::parser::Statement;
 
 /// Represents an AST leaf node.
 pub trait LeafNode {}
@@ -10,14 +10,14 @@ pub trait Node {
     /// * `other` - The statement to check.
     /// # Returns
     /// `true` if the node can be followed by the statement, otherwise `false`.
-    fn can_be_followed(&self, other: Statement) -> bool;
+    fn can_be_followed(&self, other: &Statement) -> bool;
 }
 
 impl<T> Node for T
 where
     T: LeafNode,
 {
-    fn can_be_followed(&self, _: Statement) -> bool {
+    fn can_be_followed(&self, _: &Statement) -> bool {
         false
     }
 }

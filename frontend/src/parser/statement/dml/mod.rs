@@ -1,8 +1,8 @@
 mod database;
 mod schema;
 
-pub use database::DatabaseNode;
-pub use schema::SchemaNode;
+pub use database::*;
+pub use schema::*;
 
 /// Represents an AST node for a DML operation.
 #[derive(Debug, PartialEq, Clone)]
