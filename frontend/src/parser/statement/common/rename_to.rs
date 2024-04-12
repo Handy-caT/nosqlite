@@ -3,6 +3,7 @@ use crate::{
         token,
         token::{Keyword, Preposition, Token},
     },
+    parser::statement::dml::DropDatabase,
     preprocessor::LeafNode,
 };
 
@@ -51,7 +52,12 @@ impl TryFrom<&[Token]> for RenameTo {
 
 #[cfg(test)]
 mod create_database_tests {
-    use crate::lexer::{token, token::Token};
+    use crate::{
+        create_database_statement,
+        lexer::{token, token::Token},
+        preprocessor::Node,
+        rename_to_statement,
+    };
 
     use super::RenameTo;
 
@@ -95,4 +101,30 @@ mod create_database_tests {
 
         assert_eq!(actual, expected);
     }
+
+    #[test]
+    fn test_create_database_cant_be_followed_by_nothing() {
+        let rename_to = RenameTo {
+            identifier: token::Identifier("test".to_string()),
+        };
+
+        let identifier = token::Identifier("test".to_string());
+
+        assert!(
+            !rename_to.can_be_followed(&create_database_statement!(identifier.clone()))
+        );
+        assert!(!rename_to.can_be_followed(&rename_to_statement!(identifier)));
+    }
+}
+
+/// Shortcut for creating a [`DropDatabase`] variant of [`Statement`].
+#[macro_export]
+macro_rules! rename_to_statement {
+    ($arg:expr) => {
+        $crate::parser::Statement::Common(
+            $crate::parser::statement::Common::RenameTo(
+                $crate::parser::statement::common::RenameTo::new($arg),
+            ),
+        )
+    };
 }

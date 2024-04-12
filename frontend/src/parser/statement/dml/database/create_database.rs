@@ -107,7 +107,7 @@ mod create_database_tests {
         let create_database = CreateDatabase {
             identifier: token::Identifier("test".to_string()),
         };
-        
+
         let identifier = token::Identifier("test".to_string());
 
         assert!(!create_database
@@ -122,9 +122,9 @@ macro_rules! create_database_statement {
         $crate::parser::Statement::Dml(
             $crate::parser::statement::DML::Database(
                 $crate::parser::statement::dml::DatabaseNode::CreateDatabase(
-                    $crate::parser::statement::dml::CreateDatabase::new($arg)
-                )
-            )
+                    $crate::parser::statement::dml::CreateDatabase::new($arg),
+                ),
+            ),
         )
     };
 }

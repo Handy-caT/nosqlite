@@ -1,6 +1,9 @@
-use crate::lexer::{
-    token,
-    token::{DBObject, Keyword, Token},
+use crate::{
+    lexer::{
+        token,
+        token::{DBObject, Keyword, Token},
+    },
+    preprocessor::LeafNode,
 };
 
 /// Describes `DROP DATABASE ...` statement for AST.
@@ -20,6 +23,8 @@ impl DropDatabase {
         Self { identifier }
     }
 }
+
+impl LeafNode for DropDatabase {}
 
 impl TryFrom<&[Token]> for DropDatabase {
     type Error = ();
@@ -47,7 +52,12 @@ impl TryFrom<&[Token]> for DropDatabase {
 
 #[cfg(test)]
 mod create_database_tests {
-    use crate::lexer::{token, token::Token};
+    use crate::{
+        create_database_statement, drop_database_statement,
+        lexer::{token, token::Token},
+        parser::statement::dml::CreateDatabase,
+        preprocessor::Node,
+    };
 
     use super::DropDatabase;
 
@@ -92,4 +102,32 @@ mod create_database_tests {
 
         assert_eq!(actual, expected);
     }
+
+    #[test]
+    fn test_create_database_cant_be_followed_by_nothing() {
+        let drop_database = DropDatabase {
+            identifier: token::Identifier("test".to_string()),
+        };
+
+        let identifier = token::Identifier("test".to_string());
+
+        assert!(!drop_database
+            .can_be_followed(&create_database_statement!(identifier.clone())));
+        assert!(!drop_database
+            .can_be_followed(&drop_database_statement!(identifier)));
+    }
+}
+
+/// Shortcut for creating a [`DropDatabase`] variant of [`Statement`].
+#[macro_export]
+macro_rules! drop_database_statement {
+    ($arg:expr) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Database(
+                $crate::parser::statement::dml::DatabaseNode::DropDatabase(
+                    $crate::parser::statement::dml::DropDatabase::new($arg),
+                ),
+            ),
+        )
+    };
 }
