@@ -5,6 +5,7 @@ use crate::{
     },
     preprocessor::LeafNode,
 };
+use crate::parser::statement::dml::CreateDatabase;
 
 /// Describes `DROP DATABASE ...` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
@@ -51,18 +52,17 @@ impl TryFrom<&[Token]> for DropDatabase {
 }
 
 #[cfg(test)]
-mod create_database_tests {
+mod drop_database_tests {
     use crate::{
         create_database_statement, drop_database_statement,
         lexer::{token, token::Token},
-        parser::statement::dml::CreateDatabase,
         preprocessor::Node,
     };
 
     use super::DropDatabase;
 
     #[test]
-    fn test_create_database_try_from_token_vec_basic() {
+    fn test_drop_database_try_from_token_vec_basic() {
         let tokens = vec![
             Token::DML(token::DMLOperator::Drop),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Database)),
@@ -77,7 +77,7 @@ mod create_database_tests {
     }
 
     #[test]
-    fn test_create_database_try_from_token_vec_invalid_tokens() {
+    fn test_drop_database_try_from_token_vec_invalid_tokens() {
         let tokens = vec![
             Token::DML(token::DMLOperator::Drop),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
@@ -91,7 +91,7 @@ mod create_database_tests {
     }
 
     #[test]
-    fn test_create_database_try_from_token_vec_not_enough_tokens() {
+    fn test_drop_database_try_from_token_vec_not_enough_tokens() {
         let tokens = vec![
             Token::DML(token::DMLOperator::Drop),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Database)),
@@ -104,7 +104,7 @@ mod create_database_tests {
     }
 
     #[test]
-    fn test_create_database_cant_be_followed_by_nothing() {
+    fn test_drop_database_cant_be_followed_by_nothing() {
         let drop_database = DropDatabase {
             identifier: token::Identifier("test".to_string()),
         };
@@ -122,11 +122,19 @@ mod create_database_tests {
 #[macro_export]
 macro_rules! drop_database_statement {
     ($arg:expr) => {
+        $crate::drop_database_statement_variant!(
+            $crate::parser::statement::dml::DropDatabase::new($arg)
+        )
+    };
+}
+
+/// Shortcut for a [`DropDatabase`] variant of [`Statement`].
+#[macro_export]
+macro_rules! drop_database_statement_variant {
+    ($($arg:tt)*) => {
         $crate::parser::Statement::Dml(
             $crate::parser::statement::DML::Database(
-                $crate::parser::statement::dml::DatabaseNode::DropDatabase(
-                    $crate::parser::statement::dml::DropDatabase::new($arg),
-                ),
+                $crate::parser::statement::dml::DatabaseNode::DropDatabase($($arg)*),
             ),
         )
     };

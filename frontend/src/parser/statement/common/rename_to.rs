@@ -117,13 +117,21 @@ mod create_database_tests {
     }
 }
 
-/// Shortcut for creating a [`DropDatabase`] variant of [`Statement`].
+/// Shortcut for creating a [`RenameTo`] variant of [`Statement`].
 #[macro_export]
 macro_rules! rename_to_statement {
     ($arg:expr) => {
+        $crate::rename_to_statement_variant!($crate::parser::statement::common::RenameTo::new($arg))
+    };
+}
+
+/// Shortcut for a [`RenameTo`] variant of [`Statement`].
+#[macro_export]
+macro_rules! rename_to_statement_variant {
+    ($($arg:tt)*) => {
         $crate::parser::Statement::Common(
             $crate::parser::statement::Common::RenameTo(
-                $crate::parser::statement::common::RenameTo::new($arg),
+                $($arg)*,
             ),
         )
     };

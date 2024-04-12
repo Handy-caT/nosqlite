@@ -118,11 +118,11 @@ mod create_database_tests {
 /// Shortcut for creating a [`CreateDatabase`] variant of [`Statement`].
 #[macro_export]
 macro_rules! create_database_statement {
-    ($arg:expr) => {
+    ($($arg:tt)*) => {
         $crate::parser::Statement::Dml(
             $crate::parser::statement::DML::Database(
                 $crate::parser::statement::dml::DatabaseNode::CreateDatabase(
-                    $crate::parser::statement::dml::CreateDatabase::new($arg),
+                    $crate::parser::statement::dml::CreateDatabase::new($($arg)*),
                 ),
             ),
         )
