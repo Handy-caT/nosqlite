@@ -3,6 +3,7 @@ use crate::{
         token,
         token::{DBObject, Keyword, Token},
     },
+    parser::Statement,
     preprocessor::LeafNode,
 };
 
@@ -18,9 +19,11 @@ impl CreateDatabase {
     /// # Arguments
     /// * `identifier` - Name of the database.
     /// # Returns
-    /// * New instance of `CreateDatabase`.
-    pub fn new(identifier: token::Identifier) -> Self {
-        Self { identifier }
+    /// * New instance of `CreateDatabase` [`Statement`].
+    pub fn new_statement(identifier: token::Identifier) -> Statement {
+        use crate::create_database_statement_variant;
+
+        create_database_statement_variant!(Self { identifier })
     }
 }
 
@@ -44,16 +47,31 @@ impl TryFrom<&[Token]> for CreateDatabase {
         };
 
         match identifier {
-            Token::Identifier(identifier) => Ok(Self::new(identifier.clone())),
+            Token::Identifier(identifier) => Ok(Self {
+                identifier: identifier.clone(),
+            }),
             _ => Err(()),
         }
     }
 }
 
+/// Shortcut for a [`CreateDatabase`] variant of [`Statement`].
+#[macro_export]
+macro_rules! create_database_statement_variant {
+    ($($arg:tt)*) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Database(
+                $crate::parser::statement::dml::DatabaseNode::CreateDatabase(
+                    $($arg)*,
+                ),
+            ),
+        )
+    };
+}
+
 #[cfg(test)]
 mod create_database_tests {
     use crate::{
-        create_database_statement,
         lexer::{token, token::Token},
         preprocessor::Node,
     };
@@ -69,8 +87,9 @@ mod create_database_tests {
         ];
 
         let actual = CreateDatabase::try_from(tokens.as_slice());
-        let expected =
-            Ok(CreateDatabase::new(token::Identifier("test".to_string())));
+        let expected = Ok(CreateDatabase {
+            identifier: token::Identifier("test".to_string()),
+        });
 
         assert_eq!(actual, expected);
     }
@@ -111,20 +130,6 @@ mod create_database_tests {
         let identifier = token::Identifier("test".to_string());
 
         assert!(!create_database
-            .can_be_followed(&create_database_statement!(identifier)));
+            .can_be_followed(&CreateDatabase::new_statement(identifier)));
     }
-}
-
-/// Shortcut for creating a [`CreateDatabase`] variant of [`Statement`].
-#[macro_export]
-macro_rules! create_database_statement {
-    ($($arg:tt)*) => {
-        $crate::parser::Statement::Dml(
-            $crate::parser::statement::DML::Database(
-                $crate::parser::statement::dml::DatabaseNode::CreateDatabase(
-                    $crate::parser::statement::dml::CreateDatabase::new($($arg)*),
-                ),
-            ),
-        )
-    };
 }

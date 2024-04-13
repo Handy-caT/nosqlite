@@ -3,7 +3,7 @@ use crate::{
         token,
         token::{Keyword, Preposition, Token},
     },
-    parser::statement::dml::DropDatabase,
+    parser::Statement,
     preprocessor::LeafNode,
 };
 
@@ -19,9 +19,11 @@ impl RenameTo {
     /// # Arguments
     /// * `identifier` - Name of the schema.
     /// # Returns
-    /// * New instance of `RenameTo`.
-    pub fn new(identifier: token::Identifier) -> Self {
-        Self { identifier }
+    /// * New instance of `RenameTo` [`Statement`].
+    pub fn new_statement(identifier: token::Identifier) -> Statement {
+        use crate::rename_to_statement_variant;
+
+        rename_to_statement_variant!(Self { identifier })
     }
 }
 
@@ -44,25 +46,38 @@ impl TryFrom<&[Token]> for RenameTo {
         };
 
         match identifier {
-            Token::Identifier(identifier) => Ok(Self::new(identifier.clone())),
+            Token::Identifier(identifier) => Ok(Self {
+                identifier: identifier.clone(),
+            }),
             _ => Err(()),
         }
     }
 }
 
+/// Shortcut for a [`RenameTo`] variant of [`Statement`].
+#[macro_export]
+macro_rules! rename_to_statement_variant {
+    ($($arg:tt)*) => {
+        $crate::parser::Statement::Common(
+            $crate::parser::statement::Common::RenameTo(
+                $($arg)*,
+            ),
+        )
+    };
+}
+
 #[cfg(test)]
-mod create_database_tests {
+mod rename_to_tests {
     use crate::{
-        create_database_statement,
         lexer::{token, token::Token},
+        parser::statement::dml::CreateDatabase,
         preprocessor::Node,
-        rename_to_statement,
     };
 
     use super::RenameTo;
 
     #[test]
-    fn test_create_database_try_from_token_vec_basic() {
+    fn test_rename_to_try_from_token_vec_basic() {
         let tokens = vec![
             Token::DML(token::DMLOperator::Rename),
             Token::Keyword(token::Keyword::Preposition(token::Preposition::To)),
@@ -70,13 +85,15 @@ mod create_database_tests {
         ];
 
         let actual = RenameTo::try_from(tokens.as_slice());
-        let expected = Ok(RenameTo::new(token::Identifier("test".to_string())));
+        let expected = Ok(RenameTo {
+            identifier: token::Identifier("test".to_string()),
+        });
 
         assert_eq!(actual, expected);
     }
 
     #[test]
-    fn test_create_database_try_from_token_vec_invalid_tokens() {
+    fn test_rename_to_try_from_token_vec_invalid_tokens() {
         let tokens = vec![
             Token::DML(token::DMLOperator::Create),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
@@ -90,7 +107,7 @@ mod create_database_tests {
     }
 
     #[test]
-    fn test_create_database_try_from_token_vec_not_enough_tokens() {
+    fn test_rename_to_try_from_token_vec_not_enough_tokens() {
         let tokens = vec![
             Token::DML(token::DMLOperator::Create),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Schema)),
@@ -103,36 +120,18 @@ mod create_database_tests {
     }
 
     #[test]
-    fn test_create_database_cant_be_followed_by_nothing() {
+    fn test_rename_to_cant_be_followed_by_nothing() {
         let rename_to = RenameTo {
             identifier: token::Identifier("test".to_string()),
         };
 
         let identifier = token::Identifier("test".to_string());
 
+        assert!(!rename_to.can_be_followed(&CreateDatabase::new_statement(
+            identifier.clone()
+        )));
         assert!(
-            !rename_to.can_be_followed(&create_database_statement!(identifier.clone()))
+            !rename_to.can_be_followed(&RenameTo::new_statement(identifier))
         );
-        assert!(!rename_to.can_be_followed(&rename_to_statement!(identifier)));
     }
-}
-
-/// Shortcut for creating a [`RenameTo`] variant of [`Statement`].
-#[macro_export]
-macro_rules! rename_to_statement {
-    ($arg:expr) => {
-        $crate::rename_to_statement_variant!($crate::parser::statement::common::RenameTo::new($arg))
-    };
-}
-
-/// Shortcut for a [`RenameTo`] variant of [`Statement`].
-#[macro_export]
-macro_rules! rename_to_statement_variant {
-    ($($arg:tt)*) => {
-        $crate::parser::Statement::Common(
-            $crate::parser::statement::Common::RenameTo(
-                $($arg)*,
-            ),
-        )
-    };
 }

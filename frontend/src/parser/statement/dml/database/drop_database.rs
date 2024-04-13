@@ -3,9 +3,9 @@ use crate::{
         token,
         token::{DBObject, Keyword, Token},
     },
+    parser::Statement,
     preprocessor::LeafNode,
 };
-use crate::parser::statement::dml::CreateDatabase;
 
 /// Describes `DROP DATABASE ...` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
@@ -19,9 +19,11 @@ impl DropDatabase {
     /// # Arguments
     /// * `identifier` - Name of the database.
     /// # Returns
-    /// * New instance of [`DropDatabase`].
-    pub fn new(identifier: token::Identifier) -> Self {
-        Self { identifier }
+    /// * New instance of `DropDatabase` [`Statement`].
+    pub fn new_statement(identifier: token::Identifier) -> Statement {
+        use crate::drop_database_statement_variant;
+
+        drop_database_statement_variant!(Self { identifier })
     }
 }
 
@@ -45,17 +47,33 @@ impl TryFrom<&[Token]> for DropDatabase {
         };
 
         match identifier {
-            Token::Identifier(identifier) => Ok(Self::new(identifier.clone())),
+            Token::Identifier(identifier) => Ok(Self {
+                identifier: identifier.clone(),
+            }),
             _ => Err(()),
         }
     }
 }
 
+/// Shortcut for a [`DropDatabase`] variant of [`Statement`].
+#[macro_export]
+macro_rules! drop_database_statement_variant {
+    ($($arg:tt)*) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Database(
+                $crate::parser::statement::dml::DatabaseNode::DropDatabase(
+                    $($arg)*,
+                ),
+            ),
+        )
+    };
+}
+
 #[cfg(test)]
 mod drop_database_tests {
     use crate::{
-        create_database_statement, drop_database_statement,
         lexer::{token, token::Token},
+        parser::statement::dml::CreateDatabase,
         preprocessor::Node,
     };
 
@@ -70,8 +88,9 @@ mod drop_database_tests {
         ];
 
         let actual = DropDatabase::try_from(tokens.as_slice());
-        let expected =
-            Ok(DropDatabase::new(token::Identifier("test".to_string())));
+        let expected = Ok(DropDatabase {
+            identifier: token::Identifier("test".to_string()),
+        });
 
         assert_eq!(actual, expected);
     }
@@ -111,31 +130,10 @@ mod drop_database_tests {
 
         let identifier = token::Identifier("test".to_string());
 
+        assert!(!drop_database.can_be_followed(
+            &CreateDatabase::new_statement(identifier.clone())
+        ));
         assert!(!drop_database
-            .can_be_followed(&create_database_statement!(identifier.clone())));
-        assert!(!drop_database
-            .can_be_followed(&drop_database_statement!(identifier)));
+            .can_be_followed(&DropDatabase::new_statement(identifier)));
     }
-}
-
-/// Shortcut for creating a [`DropDatabase`] variant of [`Statement`].
-#[macro_export]
-macro_rules! drop_database_statement {
-    ($arg:expr) => {
-        $crate::drop_database_statement_variant!(
-            $crate::parser::statement::dml::DropDatabase::new($arg)
-        )
-    };
-}
-
-/// Shortcut for a [`DropDatabase`] variant of [`Statement`].
-#[macro_export]
-macro_rules! drop_database_statement_variant {
-    ($($arg:tt)*) => {
-        $crate::parser::Statement::Dml(
-            $crate::parser::statement::DML::Database(
-                $crate::parser::statement::dml::DatabaseNode::DropDatabase($($arg)*),
-            ),
-        )
-    };
 }

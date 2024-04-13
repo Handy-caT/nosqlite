@@ -1,11 +1,12 @@
-use crate::lexer::{
-    token,
-    token::{DBObject, Keyword, Token},
+use crate::{
+    lexer::{
+        token,
+        token::{DBObject, Keyword, Token},
+    },
+    parser::Statement,
+    preprocessor::Node,
+    rename_to_statement_variant,
 };
-use crate::parser::Statement;
-use crate::parser::statement::dml::DropDatabase;
-use crate::preprocessor::Node;
-use crate::{rename_to_statement, rename_to_statement_variant};
 
 /// Describes `ALTER SCHEMA ...` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
@@ -19,9 +20,11 @@ impl AlterSchema {
     /// # Arguments
     /// * `identifier` - Name of the schema.
     /// # Returns
-    /// * New instance of `AlterSchema`.
-    pub fn new(identifier: token::Identifier) -> Self {
-        Self { identifier }
+    /// * New instance of `AlterSchema` [`Statement`].
+    pub fn new_statement(identifier: token::Identifier) -> Statement {
+        use crate::alter_schema_statement_variant;
+
+        alter_schema_statement_variant!(Self { identifier })
     }
 }
 
@@ -52,17 +55,35 @@ impl TryFrom<&[Token]> for AlterSchema {
         };
 
         match identifier {
-            Token::Identifier(identifier) => Ok(Self::new(identifier.clone())),
+            Token::Identifier(identifier) => Ok(Self {
+                identifier: identifier.clone(),
+            }),
             _ => Err(()),
         }
     }
 }
 
+/// Shortcut for creating a [`AlterSchema`] variant of [`Statement`].
+#[macro_export]
+macro_rules! alter_schema_statement_variant {
+    ($($arg:tt)*) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Schema(
+                $crate::parser::statement::dml::SchemaNode::AlterSchema(
+                    $($arg)*,
+                ),
+            ),
+        )
+    };
+}
+
 #[cfg(test)]
 mod alter_schema_tests {
-    use crate::{create_database_statement, rename_to_statement};
-    use crate::lexer::{token, token::Token};
-    use crate::preprocessor::Node;
+    use crate::{
+        lexer::{token, token::Token},
+        parser::statement::{common::RenameTo, dml::CreateDatabase},
+        preprocessor::Node,
+    };
 
     use super::AlterSchema;
 
@@ -75,8 +96,9 @@ mod alter_schema_tests {
         ];
 
         let actual = AlterSchema::try_from(tokens.as_slice());
-        let expected =
-            Ok(AlterSchema::new(token::Identifier("test".to_string())));
+        let expected = Ok(AlterSchema {
+            identifier: token::Identifier("test".to_string()),
+        });
 
         assert_eq!(actual, expected);
     }
@@ -116,23 +138,13 @@ mod alter_schema_tests {
 
         let identifier = token::Identifier("test".to_string());
 
-        assert!(!alter_schema
-            .can_be_followed(&create_database_statement!(identifier.clone())));
-        assert!(alter_schema
-            .can_be_followed(&rename_to_statement!(identifier)));
+        assert!(
+            !alter_schema.can_be_followed(&CreateDatabase::new_statement(
+                identifier.clone()
+            ))
+        );
+        assert!(
+            alter_schema.can_be_followed(&RenameTo::new_statement(identifier))
+        );
     }
-}
-
-/// Shortcut for creating a [`AlterSchema`] variant of [`Statement`].
-#[macro_export]
-macro_rules! alter_schema_statement {
-    ($($arg:tt)*) => {
-        $crate::parser::Statement::Dml(
-            $crate::parser::statement::DML::Schema(
-                $crate::parser::statement::dml::SchemaNode::AlterSchema(
-                    $crate::parser::statement::dml::AlterSchema::new($($arg)*),
-                ),
-            ),
-        )
-    };
 }
