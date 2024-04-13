@@ -63,7 +63,7 @@ impl TryFrom<&[Token]> for AlterSchema {
     }
 }
 
-/// Shortcut for creating a [`AlterSchema`] variant of [`Statement`].
+/// Shortcut for [`AlterSchema`] variant of [`Statement`].
 #[macro_export]
 macro_rules! alter_schema_statement_variant {
     ($($arg:tt)*) => {
