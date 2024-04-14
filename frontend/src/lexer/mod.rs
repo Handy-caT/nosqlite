@@ -21,9 +21,12 @@ impl Lexer {
     /// * `input` - The input source code string.
     /// # Returns
     /// A new lexer with the given input source code.
-    pub fn new(input: String) -> Self {
+    pub fn new<T>(input: T) -> Self
+    where
+        T: AsRef<str>,
+    {
         Lexer {
-            input: input.trim().to_string(),
+            input: input.as_ref().trim().to_string(),
             current_position: 0,
             read_position: 0,
         }
@@ -139,7 +142,11 @@ impl Iterator for Lexer {
 
 #[cfg(test)]
 mod lexer_tests {
-    use crate::lexer::{token, token::Token, Lexer};
+    use crate::lexer::{
+        token,
+        token::{Preposition, Token},
+        Lexer,
+    };
 
     #[test]
     fn test_lexer_next_token_basic() {
@@ -219,6 +226,24 @@ mod lexer_tests {
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
             Token::Delimiter(token::Delimiter::Comma),
             Token::Identifier(token::Identifier("create_user".to_string())),
+            Token::Delimiter(token::Delimiter::Semicolon),
+        ];
+
+        let actual: Vec<Token> = lexer.collect();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_lexer_keywords() {
+        let lexer = Lexer::new("ALTER TABLE user RENAME TO user1;".to_string());
+        let expected = vec![
+            Token::DML(token::DMLOperator::Alter),
+            Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
+            Token::Identifier(token::Identifier("user".to_string())),
+            Token::DML(token::DMLOperator::Rename),
+            Token::Keyword(token::Keyword::Preposition(Preposition::To)),
+            Token::Identifier(token::Identifier("user1".to_string())),
             Token::Delimiter(token::Delimiter::Semicolon),
         ];
 

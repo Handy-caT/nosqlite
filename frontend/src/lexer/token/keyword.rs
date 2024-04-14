@@ -20,6 +20,10 @@ impl FromStr for Keyword {
             return Ok(Keyword::DbObject(db_object));
         }
 
+        if let Ok(preposition) = s.parse::<Preposition>() {
+            return Ok(Keyword::Preposition(preposition));
+        }
+
         Err(())
     }
 }
