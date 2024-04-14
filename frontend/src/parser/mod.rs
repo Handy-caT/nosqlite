@@ -20,7 +20,7 @@ pub struct Parser {
 
     /// Represents the state of the parser.
     state: Vec<Token>,
-    
+
     /// Represents the peek token.
     peek_token: Option<Token>,
 }
@@ -41,12 +41,16 @@ impl Parser {
         } else {
             self.lexer.next()
         };
-        
+
         if let Some(mut token) = token {
             match token {
                 Token::Delimiter(Delimiter::Semicolon) => {
                     let mut tokens_finished = false;
-                    while matches!(token, Token::Delimiter(Delimiter::Semicolon)) && !tokens_finished {
+                    while matches!(
+                        token,
+                        Token::Delimiter(Delimiter::Semicolon)
+                    ) && !tokens_finished
+                    {
                         if let Some(nex_token) = self.lexer.next() {
                             token = nex_token;
                         } else {
@@ -61,9 +65,8 @@ impl Parser {
                     self.state.push(token);
                     let mut dml_parser =
                         DmlParser::new(&mut self.lexer, &mut self.state);
-                    let statement = dml_parser
-                        .parse()
-                        .map_err(ParseError::DmlParseError);
+                    let statement =
+                        dml_parser.parse().map_err(ParseError::DmlParseError);
                     Some(statement)
                 }
                 _ => {
@@ -125,9 +128,9 @@ mod test {
         let statement = parser.next();
         assert!(statement.is_some());
         let statement = statement.unwrap();
-        assert!(statement.is_ok()); 
+        assert!(statement.is_ok());
         let statement = statement.unwrap();
-        
+
         assert_eq!(statement, super::Statement::Semicolon);
     }
 

@@ -61,7 +61,7 @@ macro_rules! drop_schema_statement_variant {
     ($($arg:tt)*) => {
         $crate::parser::Statement::Dml(
             $crate::parser::statement::DML::Schema(
-                $crate::parser::statement::dml::SchemaNode::DropSchema(
+                $crate::parser::statement::dml::SchemaNode::Drop(
                     $($arg)*,
                 ),
             ),

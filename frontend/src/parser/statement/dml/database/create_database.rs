@@ -61,7 +61,7 @@ macro_rules! create_database_statement_variant {
     ($($arg:tt)*) => {
         $crate::parser::Statement::Dml(
             $crate::parser::statement::DML::Database(
-                $crate::parser::statement::dml::DatabaseNode::CreateDatabase(
+                $crate::parser::statement::dml::DatabaseNode::Create(
                     $($arg)*,
                 ),
             ),

@@ -61,7 +61,7 @@ macro_rules! drop_database_statement_variant {
     ($($arg:tt)*) => {
         $crate::parser::Statement::Dml(
             $crate::parser::statement::DML::Database(
-                $crate::parser::statement::dml::DatabaseNode::DropDatabase(
+                $crate::parser::statement::dml::DatabaseNode::Drop(
                     $($arg)*,
                 ),
             ),
