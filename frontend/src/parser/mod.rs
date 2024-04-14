@@ -9,10 +9,7 @@ use crate::{
         token::{Delimiter, Token},
         Lexer,
     },
-    parser::{
-        ast::Ast,
-        parsers::{DmlParseError, DmlParser},
-    },
+    parser::parsers::{DmlParseError, DmlParser},
 };
 
 /// Represents a parser.
@@ -23,9 +20,9 @@ pub struct Parser {
 
     /// Represents the state of the parser.
     state: Vec<Token>,
-
-    /// Represents the AST.
-    ast: Ast,
+    
+    /// Represents the peek token.
+    peek_token: Option<Token>,
 }
 
 impl Parser {
@@ -34,36 +31,59 @@ impl Parser {
         Self {
             lexer,
             state: Vec::new(),
-            ast: Ast::new(),
+            peek_token: None,
         }
     }
 
-    pub fn parse_statement(&mut self) -> Result<Option<Statement>, ParseError> {
-        let token = self.lexer.next();
-        if let Some(token) = token {
-            self.state.push(token.clone());
+    pub fn parse_statement(&mut self) -> Option<Result<Statement, ParseError>> {
+        let token = if self.peek_token.is_some() {
+            self.peek_token.clone()
+        } else {
+            self.lexer.next()
+        };
+        
+        if let Some(mut token) = token {
             match token {
                 Token::Delimiter(Delimiter::Semicolon) => {
-                    self.parse_statement()
+                    let mut tokens_finished = false;
+                    while matches!(token, Token::Delimiter(Delimiter::Semicolon)) && !tokens_finished {
+                        if let Some(nex_token) = self.lexer.next() {
+                            token = nex_token;
+                        } else {
+                            tokens_finished = true;
+                            self.peek_token = None;
+                        }
+                    }
+                    self.peek_token = Some(token);
+                    Some(Ok(Statement::Semicolon))
                 }
                 Token::DML(_) => {
+                    self.state.push(token);
                     let mut dml_parser =
                         DmlParser::new(&mut self.lexer, &mut self.state);
                     let statement = dml_parser
                         .parse()
-                        .map_err(ParseError::DmlParseError)?;
-                    Ok(Some(statement))
+                        .map_err(ParseError::DmlParseError);
+                    Some(statement)
                 }
                 _ => {
                     todo!()
                 }
             }
         } else {
-            Ok(None)
+            None
         }
     }
 
     pub fn parse_dml(&mut self) {}
+}
+
+impl Iterator for Parser {
+    type Item = Result<Statement, ParseError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.parse_statement()
+    }
 }
 
 /// Represents a parse error.
@@ -77,22 +97,24 @@ pub enum ParseError {
 mod test {
     use crate::{
         lexer::Lexer,
-        parser::statement::dml::{CreateDatabase, CreateSchema},
+        parser::statement::dml::{
+            CreateDatabase, CreateSchema, DropDatabase, DropSchema,
+        },
     };
 
     use super::Parser;
 
     #[test]
-    fn parse_create_database_statement() {
-        let input = "CREATE DATABASE test;";
+    fn parse_many_semicolons_statement() {
+        let input = "CREATE DATABASE test;;;;;;;";
         let lexer = Lexer::new(input);
 
         let mut parser = Parser::new(lexer);
-        let statement = parser.parse_statement();
+        let statement = parser.next();
 
-        assert!(statement.is_ok());
-        let statement = statement.unwrap();
         assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok());
         let statement = statement.unwrap();
 
         assert_eq!(
@@ -100,23 +122,48 @@ mod test {
             CreateDatabase::new_statement("test".to_string().into())
         );
 
-        let statement = parser.parse_statement();
+        let statement = parser.next();
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok()); 
+        let statement = statement.unwrap();
+        
+        assert_eq!(statement, super::Statement::Semicolon);
+    }
+
+    #[test]
+    fn parse_create_database_statement() {
+        let input = "CREATE DATABASE test";
+        let lexer = Lexer::new(input);
+
+        let mut parser = Parser::new(lexer);
+        let statement = parser.next();
+
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
         assert!(statement.is_ok());
         let statement = statement.unwrap();
+
+        assert_eq!(
+            statement,
+            CreateDatabase::new_statement("test".to_string().into())
+        );
+
+        let statement = parser.next();
         assert!(statement.is_none());
     }
 
     #[test]
     fn parse_create_schema_statement() {
-        let input = "CREATE SCHEMA test;";
+        let input = "CREATE SCHEMA test";
         let lexer = Lexer::new(input);
 
         let mut parser = Parser::new(lexer);
-        let statement = parser.parse_statement();
+        let statement = parser.next();
 
-        assert!(statement.is_ok());
-        let statement = statement.unwrap();
         assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok());
         let statement = statement.unwrap();
 
         assert_eq!(
@@ -124,9 +171,51 @@ mod test {
             CreateSchema::new_statement("test".to_string().into())
         );
 
-        let statement = parser.parse_statement();
+        let statement = parser.next();
+        assert!(statement.is_none());
+    }
+
+    #[test]
+    fn parse_drop_database_statement() {
+        let input = "DROP DATABASE test";
+        let lexer = Lexer::new(input);
+
+        let mut parser = Parser::new(lexer);
+        let statement = parser.next();
+
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
         assert!(statement.is_ok());
         let statement = statement.unwrap();
+
+        assert_eq!(
+            statement,
+            DropDatabase::new_statement("test".to_string().into())
+        );
+
+        let statement = parser.next();
+        assert!(statement.is_none());
+    }
+
+    #[test]
+    fn parse_drop_schema_statement() {
+        let input = "DROP SCHEMA test";
+        let lexer = Lexer::new(input);
+
+        let mut parser = Parser::new(lexer);
+        let statement = parser.next();
+
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok());
+        let statement = statement.unwrap();
+
+        assert_eq!(
+            statement,
+            DropSchema::new_statement("test".to_string().into())
+        );
+
+        let statement = parser.next();
         assert!(statement.is_none());
     }
 }

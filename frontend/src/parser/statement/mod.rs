@@ -12,4 +12,7 @@ pub enum Statement {
 
     /// Represents a common operation.
     Common(Common),
+    
+    /// Represents a semicolon to separate statements.
+    Semicolon,
 }
