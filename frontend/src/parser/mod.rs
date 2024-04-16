@@ -59,6 +59,8 @@ impl Parser {
                         }
                     }
                     self.peek_token = Some(token);
+
+                    self.state.clear();
                     Some(Ok(Statement::Semicolon))
                 }
                 Token::DML(_) => {
@@ -67,6 +69,8 @@ impl Parser {
                         DmlParser::new(&mut self.lexer, &mut self.state);
                     let statement =
                         dml_parser.parse().map_err(ParseError::DmlParseError);
+
+                    self.state.clear();
                     Some(statement)
                 }
                 _ => {
@@ -104,6 +108,8 @@ mod test {
             CreateDatabase, CreateSchema, DropDatabase, DropSchema,
         },
     };
+    use crate::parser::statement::common::RenameTo;
+    use crate::parser::statement::dml::AlterSchema;
 
     use super::Parser;
 
@@ -216,6 +222,84 @@ mod test {
         assert_eq!(
             statement,
             DropSchema::new_statement("test".to_string().into())
+        );
+
+        let statement = parser.next();
+        assert!(statement.is_none());
+    }
+
+    #[test]
+    fn parse_alter_schema_statement() {
+        let input = "ALTER SCHEMA test";
+        let lexer = Lexer::new(input);
+
+        let mut parser = Parser::new(lexer);
+        let statement = parser.next();
+
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok());
+        let statement = statement.unwrap();
+
+        assert_eq!(
+            statement,
+            AlterSchema::new_statement("test".to_string().into())
+        );
+
+        let statement = parser.next();
+        assert!(statement.is_none());
+    }
+
+    #[test]
+    fn parse_rename_to_statement() {
+        let input = "RENAME TO test";
+        let lexer = Lexer::new(input);
+
+        let mut parser = Parser::new(lexer);
+        let statement = parser.next();
+
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok());
+        let statement = statement.unwrap();
+
+        assert_eq!(
+            statement,
+            RenameTo::new_statement("test".to_string().into())
+        );
+
+        let statement = parser.next();
+        assert!(statement.is_none());
+    }
+
+    #[test]
+    fn parse_alter_schema_rename_to_statement() {
+        let input = "ALTER SCHEMA test RENAME TO test1";
+        let lexer = Lexer::new(input);
+
+        let mut parser = Parser::new(lexer);
+        let statement = parser.next();
+
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok());
+        let statement = statement.unwrap();
+
+        assert_eq!(
+            statement,
+            AlterSchema::new_statement("test".to_string().into())
+        );
+
+        let statement = parser.next();
+        
+        assert!(statement.is_some());
+        let statement = statement.unwrap();
+        assert!(statement.is_ok());
+        let statement = statement.unwrap();
+
+        assert_eq!(
+            statement,
+            RenameTo::new_statement("test1".to_string().into())
         );
 
         let statement = parser.next();

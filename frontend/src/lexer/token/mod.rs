@@ -13,6 +13,12 @@ pub use keyword::{DBObject, Keyword, Preposition};
 #[derive(Debug, PartialEq, Clone, From)]
 pub struct Identifier(pub String);
 
+impl Default for Identifier {
+    fn default() -> Self {
+        Self("`identifier`".to_string())
+    }
+}
+
 /// Token is a part of lexer that represents a single unit of the source code.
 #[derive(Debug, Clone, PartialEq, From)]
 pub enum Token {

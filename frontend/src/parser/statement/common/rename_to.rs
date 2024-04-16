@@ -6,12 +6,19 @@ use crate::{
     parser::Statement,
     preprocessor::LeafNode,
 };
+use std::fmt::Display;
 
 /// Describes `RENAME TO ...` statement for AST.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct RenameTo {
     /// Name to rename to.
     pub identifier: token::Identifier,
+}
+
+impl Display for RenameTo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "RENAME TO {}", self.identifier.0)
+    }
 }
 
 impl RenameTo {

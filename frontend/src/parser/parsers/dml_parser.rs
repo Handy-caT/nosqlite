@@ -1,11 +1,15 @@
 use crate::{
-    create_database_statement_variant, create_schema_statement_variant,
-    drop_database_statement_variant, drop_schema_statement_variant,
+    alter_schema_statement_variant, create_database_statement_variant,
+    create_schema_statement_variant, drop_database_statement_variant,
+    drop_schema_statement_variant,
     lexer::{
-        token::{DBObject, DMLOperator, Identifier, Keyword, Token},
+        token::{
+            DBObject, DMLOperator, Identifier, Keyword, Preposition, Token,
+        },
         Lexer,
     },
     parser::Statement,
+    rename_to_statement_variant,
 };
 
 /// Represents a DML parser.
@@ -33,16 +37,15 @@ impl<'a> DmlParser<'a> {
         if let Token::DML(token) = token {
             match token {
                 DMLOperator::Create => self.parse_create_statement(),
-                DMLOperator::Alter => {
-                    todo!()
-                }
-                DMLOperator::Rename => {
-                    todo!()
-                }
+                DMLOperator::Alter => self.parse_alter_statement(),
+                DMLOperator::Rename => self.parse_rename_statement(),
                 DMLOperator::Drop => self.parse_drop_statement(),
             }
         } else {
-            Err(ParseError::WrongTokenProvided(token.clone()))
+            Err(ParseError::WrongTokenProvided {
+                got: token.clone(),
+                expected: "CREATE|ALTER|RENAME|DROP".to_string(),
+            })
         }
     }
 
@@ -94,12 +97,16 @@ impl<'a> DmlParser<'a> {
 
                         todo!("Add create table support")
                     }
-                    DBObject::Column => {
-                        Err(ParseError::WrongTokenProvided(which_object))
-                    }
+                    DBObject::Column => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "DATABASE|SCHEMA|TABLE".to_string(),
+                    }),
                 }
             } else {
-                Err(ParseError::WrongTokenProvided(which_object))
+                Err(ParseError::WrongTokenProvided {
+                    got: which_object,
+                    expected: "DATABASE|SCHEMA|TABLE".to_string(),
+                })
             }
         } else {
             Err(ParseError::NotEnoughTokens)
@@ -140,12 +147,86 @@ impl<'a> DmlParser<'a> {
 
                         todo!("Add drop table support")
                     }
-                    DBObject::Column => {
-                        Err(ParseError::WrongTokenProvided(which_object))
-                    }
+                    DBObject::Column => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "DATABASE|SCHEMA|TABLE".to_string(),
+                    }),
                 }
             } else {
-                Err(ParseError::WrongTokenProvided(which_object))
+                Err(ParseError::WrongTokenProvided {
+                    got: which_object,
+                    expected: "DATABASE|SCHEMA|TABLE".to_string(),
+                })
+            }
+        } else {
+            Err(ParseError::NotEnoughTokens)
+        }
+    }
+
+    /// Parse `DROP ...` statement.
+    fn parse_alter_statement(&mut self) -> Result<Statement, ParseError> {
+        let which_object = self.lexer.next();
+        let identifier = self.parse_identifier();
+
+        if let Some(which_object) = which_object {
+            if let Token::Keyword(Keyword::DbObject(obj)) = which_object {
+                match obj {
+                    DBObject::Database => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "SCHEMA|TABLE".to_string(),
+                    }),
+                    DBObject::Schema => {
+                        self.state.push(which_object);
+                        self.state.push(identifier?.into());
+
+                        Ok(alter_schema_statement_variant!(self
+                            .state
+                            .as_slice()
+                            .try_into()
+                            .expect("valid tokens")))
+                    }
+                    DBObject::Table => {
+                        self.state.push(which_object);
+                        self.state.push(identifier?.into());
+
+                        todo!("Add alter table support")
+                    }
+                    DBObject::Column => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "SCHEMA|TABLE".to_string(),
+                    }),
+                }
+            } else {
+                Err(ParseError::WrongTokenProvided {
+                    got: which_object,
+                    expected: "SCHEMA|TABLE".to_string(),
+                })
+            }
+        } else {
+            Err(ParseError::NotEnoughTokens)
+        }
+    }
+
+    /// Parse `RENAME TO ...` statement.
+    fn parse_rename_statement(&mut self) -> Result<Statement, ParseError> {
+        let to = self.lexer.next();
+        let identifier = self.parse_identifier();
+
+        if let Some(to) = to {
+            if let Token::Keyword(Keyword::Preposition(Preposition::To)) = to {
+                self.state.push(to);
+                self.state.push(identifier?.into());
+
+                Ok(rename_to_statement_variant!(self
+                    .state
+                    .as_slice()
+                    .try_into()
+                    .expect("valid tokens")))
+            } else {
+                Err(ParseError::WrongTokenProvided {
+                    got: to,
+                    expected: "TO".to_string(),
+                })
             }
         } else {
             Err(ParseError::NotEnoughTokens)
@@ -157,7 +238,7 @@ impl<'a> DmlParser<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParseError {
     /// Wrong token provided to the [`DmlParser`].
-    WrongTokenProvided(Token),
+    WrongTokenProvided { got: Token, expected: String },
 
     /// Not enough tokens got from the [`Lexer`].
     NotEnoughTokens,
@@ -177,6 +258,7 @@ mod test {
             CreateDatabase, CreateSchema, DropDatabase, DropSchema,
         },
     };
+    use crate::parser::statement::dml::AlterSchema;
 
     use super::{DmlParser, ParseError};
 
@@ -200,9 +282,10 @@ mod test {
 
         assert_eq!(
             statement,
-            Err(ParseError::WrongTokenProvided(Token::Keyword(
-                Keyword::Preposition(Preposition::To)
-            )))
+            Err(ParseError::WrongTokenProvided {
+                got: Token::Keyword(Keyword::Preposition(Preposition::To)),
+                expected: "DATABASE|SCHEMA|TABLE".to_string()
+            })
         );
     }
 
@@ -261,6 +344,20 @@ mod test {
         assert_eq!(
             statement,
             Ok(DropSchema::new_statement(Identifier("test".to_string())))
+        );
+    }
+
+    #[test]
+    fn test_alter_schema_statement() {
+        let mut lexer = Lexer::new("ALTER SCHEMA test");
+        let mut state = vec![lexer.next().unwrap()];
+        let mut parser = DmlParser::new(&mut lexer, &mut state);
+
+        let statement = parser.parse();
+
+        assert_eq!(
+            statement,
+            Ok(AlterSchema::new_statement(Identifier("test".to_string())))
         );
     }
 }

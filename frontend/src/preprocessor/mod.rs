@@ -117,10 +117,14 @@ pub enum PreprocessorError {
 mod tests {
     use crate::{
         lexer::Lexer,
-        parser::{ast, statement::dml::CreateDatabase, Parser},
+        parser::{
+            ast,
+            statement::{common::RenameTo, dml::CreateDatabase},
+            Parser,
+        },
     };
 
-    use super::Preprocessor;
+    use super::{Preprocessor, PreprocessorError};
 
     #[test]
     fn test_create_database() {
@@ -139,6 +143,23 @@ mod tests {
                 ),
                 next: None
             }))
+        );
+    }
+
+    #[test]
+    fn test_create_database_wrong_order() {
+        let input = "CREATE DATABASE test RENAME TO test1;";
+        let lexer = Lexer::new(input);
+        let parser = Parser::new(lexer);
+
+        let mut preprocessor = Preprocessor::new(parser);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Err(PreprocessorError::WrongStatementOrder(
+                RenameTo::new_statement("test1".to_string().into())
+            )))
         );
     }
 }
