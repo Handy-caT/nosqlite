@@ -104,12 +104,14 @@ pub enum ParseError {
 mod test {
     use crate::{
         lexer::Lexer,
-        parser::statement::dml::{
-            CreateDatabase, CreateSchema, DropDatabase, DropSchema,
+        parser::statement::{
+            common::RenameTo,
+            dml::{
+                AlterSchema, CreateDatabase, CreateSchema, DropDatabase,
+                DropSchema,
+            },
         },
     };
-    use crate::parser::statement::common::RenameTo;
-    use crate::parser::statement::dml::AlterSchema;
 
     use super::Parser;
 
@@ -291,7 +293,7 @@ mod test {
         );
 
         let statement = parser.next();
-        
+
         assert!(statement.is_some());
         let statement = statement.unwrap();
         assert!(statement.is_ok());

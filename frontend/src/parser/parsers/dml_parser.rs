@@ -255,10 +255,9 @@ mod test {
             Lexer,
         },
         parser::statement::dml::{
-            CreateDatabase, CreateSchema, DropDatabase, DropSchema,
+            AlterSchema, CreateDatabase, CreateSchema, DropDatabase, DropSchema,
         },
     };
-    use crate::parser::statement::dml::AlterSchema;
 
     use super::{DmlParser, ParseError};
 

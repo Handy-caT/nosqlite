@@ -68,16 +68,16 @@ impl Preprocessor {
                         Err(err) => return Some(Err(err)),
                     };
 
-                    if matches!(next_statement, Statement::Semicolon) {
-                        return Some(Ok(node));
-                    }
-
                     if !node_ref.statement.can_be_followed(&next_statement) {
                         return Some(Err(
                             PreprocessorError::WrongStatementOrder(
                                 next_statement,
                             ),
                         ));
+                    }
+
+                    if matches!(next_statement, Statement::Semicolon) {
+                        return Some(Ok(node));
                     }
 
                     let next_node = ast::Node {
@@ -119,10 +119,15 @@ mod tests {
         lexer::Lexer,
         parser::{
             ast,
-            statement::{common::RenameTo, dml::CreateDatabase},
+            statement::{
+                common::RenameTo,
+                dml::{CreateDatabase, CreateSchema, DropDatabase, DropSchema},
+            },
             Parser,
         },
     };
+    use crate::parser::Statement;
+    use crate::parser::statement::dml::AlterSchema;
 
     use super::{Preprocessor, PreprocessorError};
 
@@ -159,6 +164,104 @@ mod tests {
             node,
             Some(Err(PreprocessorError::WrongStatementOrder(
                 RenameTo::new_statement("test1".to_string().into())
+            )))
+        );
+    }
+
+    #[test]
+    fn test_drop_database() {
+        let input = "DROP DATABASE test;";
+        let lexer = Lexer::new(input);
+        let parser = Parser::new(lexer);
+
+        let mut preprocessor = Preprocessor::new(parser);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: DropDatabase::new_statement(
+                    "test".to_string().into()
+                ),
+                next: None
+            }))
+        );
+    }
+
+    #[test]
+    fn test_create_schema() {
+        let input = "CREATE SCHEMA test;";
+        let lexer = Lexer::new(input);
+        let parser = Parser::new(lexer);
+
+        let mut preprocessor = Preprocessor::new(parser);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: CreateSchema::new_statement(
+                    "test".to_string().into()
+                ),
+                next: None
+            }))
+        );
+    }
+
+    #[test]
+    fn test_drop_schema() {
+        let input = "DROP SCHEMA test;";
+        let lexer = Lexer::new(input);
+        let parser = Parser::new(lexer);
+
+        let mut preprocessor = Preprocessor::new(parser);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: DropSchema::new_statement("test".to_string().into()),
+                next: None
+            }))
+        );
+    }
+
+    #[test]
+    fn test_alter_schema() {
+        let input = "ALTER SCHEMA test RENAME TO test1;";
+        let lexer = Lexer::new(input);
+        let parser = Parser::new(lexer);
+
+        let mut preprocessor = Preprocessor::new(parser);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: AlterSchema::new_statement("test".to_string().into()),
+                next: Some(Box::new(ast::Node {
+                    statement: RenameTo::new_statement(
+                        "test1".to_string().into()
+                    ),
+                    next: None
+                }))
+            }))
+        );
+    }
+
+    #[test]
+    fn test_wrong_alter_schema() {
+        let input = "ALTER SCHEMA test;";
+        let lexer = Lexer::new(input);
+        let parser = Parser::new(lexer);
+
+        let mut preprocessor = Preprocessor::new(parser);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Err(PreprocessorError::WrongStatementOrder(
+                Statement::Semicolon
             )))
         );
     }
