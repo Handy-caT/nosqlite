@@ -9,7 +9,7 @@ use crate::api::{
 };
 
 /// Command to drop a database.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DropDatabase {
     /// The name of the database to drop.
     pub name: database::Name,

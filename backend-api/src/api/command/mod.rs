@@ -1,7 +1,8 @@
-mod backend_api;
-mod database;
+pub mod backend_api;
+pub mod database;
+pub mod r#enum;
 mod gateway;
-mod schema;
+pub mod schema;
 
 use std::fmt::Debug;
 

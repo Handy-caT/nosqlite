@@ -9,7 +9,7 @@ use crate::api::{
 };
 
 /// [`Command`] to drop a schema from a database.
-#[derive(Debug, AsRef, Clone)]
+#[derive(Debug, AsRef, Clone, PartialEq)]
 pub struct DropSchema {
     /// The name of the database to drop the schema from.
     #[as_ref]

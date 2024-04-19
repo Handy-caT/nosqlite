@@ -7,7 +7,7 @@ use crate::api::{
 };
 
 /// [`Command`] which is used to rename a [`controller::Schema`].
-#[derive(Debug, AsRef, Clone)]
+#[derive(Debug, AsRef, Clone, PartialEq)]
 pub struct RenameSchema {
     /// The name of the database where the schema is located.
     #[as_ref]

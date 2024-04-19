@@ -7,7 +7,7 @@ use crate::api::{
 };
 
 /// Command to create a new database.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CreateDatabase {
     /// The name of the database to create.
     pub name: database::Name,

@@ -27,9 +27,12 @@ pub struct Parser {
 
 impl Parser {
     /// Creates a new parser.
-    pub fn new(lexer: Lexer) -> Self {
+    pub fn new<T>(input: T) -> Self
+    where
+        T: AsRef<str>,
+    {
         Self {
-            lexer,
+            lexer: Lexer::new(input),
             state: Vec::new(),
             peek_token: None,
         }
@@ -118,9 +121,8 @@ mod test {
     #[test]
     fn parse_many_semicolons_statement() {
         let input = "CREATE DATABASE test;;;;;;;";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());
@@ -145,9 +147,8 @@ mod test {
     #[test]
     fn parse_create_database_statement() {
         let input = "CREATE DATABASE test";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());
@@ -167,9 +168,8 @@ mod test {
     #[test]
     fn parse_create_schema_statement() {
         let input = "CREATE SCHEMA test";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());
@@ -189,9 +189,8 @@ mod test {
     #[test]
     fn parse_drop_database_statement() {
         let input = "DROP DATABASE test";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());
@@ -211,9 +210,8 @@ mod test {
     #[test]
     fn parse_drop_schema_statement() {
         let input = "DROP SCHEMA test";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());
@@ -233,9 +231,8 @@ mod test {
     #[test]
     fn parse_alter_schema_statement() {
         let input = "ALTER SCHEMA test";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());
@@ -255,9 +252,8 @@ mod test {
     #[test]
     fn parse_rename_to_statement() {
         let input = "RENAME TO test";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());
@@ -277,9 +273,8 @@ mod test {
     #[test]
     fn parse_alter_schema_rename_to_statement() {
         let input = "ALTER SCHEMA test RENAME TO test1";
-        let lexer = Lexer::new(input);
 
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let statement = parser.next();
 
         assert!(statement.is_some());

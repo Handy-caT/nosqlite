@@ -33,8 +33,13 @@ impl Preprocessor {
     /// Creates a new preprocessor.
     /// # Arguments
     /// * `parser` - The parser.
-    pub fn new(parser: Parser) -> Self {
-        Self { parser }
+    pub fn new<T>(input: T) -> Self
+    where
+        T: AsRef<str>,
+    {
+        Self {
+            parser: Parser::new(input),
+        }
     }
 
     /// Preprocesses the input.
@@ -103,6 +108,14 @@ impl Preprocessor {
     }
 }
 
+impl Iterator for Preprocessor {
+    type Item = Result<ast::Node, PreprocessorError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.preprocess()
+    }
+}
+
 /// Represents a preprocessor error.
 #[derive(Debug, PartialEq, Clone)]
 pub enum PreprocessorError {
@@ -121,23 +134,22 @@ mod tests {
             ast,
             statement::{
                 common::RenameTo,
-                dml::{CreateDatabase, CreateSchema, DropDatabase, DropSchema},
+                dml::{
+                    AlterSchema, CreateDatabase, CreateSchema, DropDatabase,
+                    DropSchema,
+                },
             },
-            Parser,
+            Parser, Statement,
         },
     };
-    use crate::parser::Statement;
-    use crate::parser::statement::dml::AlterSchema;
 
     use super::{Preprocessor, PreprocessorError};
 
     #[test]
     fn test_create_database() {
         let input = "CREATE DATABASE test;";
-        let lexer = Lexer::new(input);
-        let parser = Parser::new(lexer);
 
-        let mut preprocessor = Preprocessor::new(parser);
+        let mut preprocessor = Preprocessor::new(input);
         let node = preprocessor.preprocess();
 
         assert_eq!(
@@ -154,10 +166,8 @@ mod tests {
     #[test]
     fn test_create_database_wrong_order() {
         let input = "CREATE DATABASE test RENAME TO test1;";
-        let lexer = Lexer::new(input);
-        let parser = Parser::new(lexer);
 
-        let mut preprocessor = Preprocessor::new(parser);
+        let mut preprocessor = Preprocessor::new(input);
         let node = preprocessor.preprocess();
 
         assert_eq!(
@@ -171,10 +181,8 @@ mod tests {
     #[test]
     fn test_drop_database() {
         let input = "DROP DATABASE test;";
-        let lexer = Lexer::new(input);
-        let parser = Parser::new(lexer);
 
-        let mut preprocessor = Preprocessor::new(parser);
+        let mut preprocessor = Preprocessor::new(input);
         let node = preprocessor.preprocess();
 
         assert_eq!(
@@ -191,10 +199,8 @@ mod tests {
     #[test]
     fn test_create_schema() {
         let input = "CREATE SCHEMA test;";
-        let lexer = Lexer::new(input);
-        let parser = Parser::new(lexer);
 
-        let mut preprocessor = Preprocessor::new(parser);
+        let mut preprocessor = Preprocessor::new(input);
         let node = preprocessor.preprocess();
 
         assert_eq!(
@@ -211,10 +217,8 @@ mod tests {
     #[test]
     fn test_drop_schema() {
         let input = "DROP SCHEMA test;";
-        let lexer = Lexer::new(input);
-        let parser = Parser::new(lexer);
 
-        let mut preprocessor = Preprocessor::new(parser);
+        let mut preprocessor = Preprocessor::new(input);
         let node = preprocessor.preprocess();
 
         assert_eq!(
@@ -229,16 +233,16 @@ mod tests {
     #[test]
     fn test_alter_schema() {
         let input = "ALTER SCHEMA test RENAME TO test1;";
-        let lexer = Lexer::new(input);
-        let parser = Parser::new(lexer);
 
-        let mut preprocessor = Preprocessor::new(parser);
+        let mut preprocessor = Preprocessor::new(input);
         let node = preprocessor.preprocess();
 
         assert_eq!(
             node,
             Some(Ok(ast::Node {
-                statement: AlterSchema::new_statement("test".to_string().into()),
+                statement: AlterSchema::new_statement(
+                    "test".to_string().into()
+                ),
                 next: Some(Box::new(ast::Node {
                     statement: RenameTo::new_statement(
                         "test1".to_string().into()
@@ -252,10 +256,8 @@ mod tests {
     #[test]
     fn test_wrong_alter_schema() {
         let input = "ALTER SCHEMA test;";
-        let lexer = Lexer::new(input);
-        let parser = Parser::new(lexer);
 
-        let mut preprocessor = Preprocessor::new(parser);
+        let mut preprocessor = Preprocessor::new(input);
         let node = preprocessor.preprocess();
 
         assert_eq!(

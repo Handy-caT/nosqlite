@@ -7,7 +7,7 @@ use crate::api::{
 };
 
 /// [`Command`] to create a new schema in a database.
-#[derive(Debug, AsRef, Clone)]
+#[derive(Debug, AsRef, Clone, PartialEq)]
 pub struct CreateSchema {
     /// The name of the database where the schema will be created.
     #[as_ref]
