@@ -1,4 +1,4 @@
-workspace = { members = [ "backend", "backend-api", "common", "frontend", "ser-storage-derive","serde-storage"] }
+workspace = { members = [ "backend", "backend-api", "common", "fronted-api", "frontend", "ser-storage-derive","serde-storage"] }
 [package]
 name = "nosqlite"
 version = "0.1.0"

@@ -156,6 +156,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "fronted-api"
+version = "0.1.0"
+
+[[package]]
 name = "frontend"
 version = "0.1.0"
 dependencies = [
