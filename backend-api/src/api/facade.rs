@@ -1,10 +1,12 @@
-use common::structs::hash_table::scalable::ScalableHashTable;
 use std::sync::{Arc, Mutex};
 
+use common::structs::hash_table::scalable::ScalableHashTable;
 use backend::{
     controller, data::id, page::page_controller::PageController,
     schema::database,
 };
+
+use crate::context::Context;
 
 #[derive(Debug)]
 pub struct BackendFacade<const NODE_SIZE: u8> {
@@ -19,6 +21,9 @@ pub struct BackendFacade<const NODE_SIZE: u8> {
     /// [`Database`] controller.
     pub database_controllers:
         ScalableHashTable<database::Name, controller::Database<NODE_SIZE>>,
+    
+    /// [`Context`] is used to store the current database and schema.
+    pub context: Context,
 }
 
 impl<const NODE_SIZE: u8> BackendFacade<NODE_SIZE> {
@@ -36,6 +41,7 @@ impl<const NODE_SIZE: u8> BackendFacade<NODE_SIZE> {
             page_controller,
             id_registry,
             database_controllers: ScalableHashTable::default(),
+            context: Context::default(),
         }
     }
 

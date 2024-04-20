@@ -2,6 +2,7 @@ mod ddl_operator;
 mod delimiter;
 mod dml_operator;
 mod keyword;
+mod shortcut;
 
 pub use ddl_operator::DDLOperator;
 pub use delimiter::Delimiter;
