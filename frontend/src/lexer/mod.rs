@@ -107,6 +107,12 @@ impl Lexer {
             .get(self.current_position..self.read_position)
             .expect("exists because of the check");
 
+        let shortcut = substr.parse::<token::Shortcut>();
+        if let Ok(shortcut) = shortcut {
+            self.current_position = self.read_position;
+            return Some(Token::Shortcut(shortcut));
+        }
+
         let dml = substr.parse::<token::DMLOperator>();
         if let Ok(dml) = dml {
             self.current_position = self.read_position;
@@ -150,7 +156,7 @@ mod lexer_tests {
 
     #[test]
     fn test_lexer_next_token_basic() {
-        let mut lexer = Lexer::new("CREATE TABLE users;".to_string());
+        let mut lexer = Lexer::new("CREATE TABLE users;");
         assert_eq!(
             lexer.next_token(),
             Some(Token::DML(token::DMLOperator::Create))
@@ -174,7 +180,7 @@ mod lexer_tests {
 
     #[test]
     fn test_lexer_next_token_with_whitespace() {
-        let lexer = Lexer::new("CREATE   TABLE users;".to_string());
+        let lexer = Lexer::new("CREATE   TABLE users;");
         let expected = vec![
             Token::DML(token::DMLOperator::Create),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
@@ -189,7 +195,7 @@ mod lexer_tests {
 
     #[test]
     fn test_lexer_next_token_identifier_with_underscore() {
-        let lexer = Lexer::new("CREATE TABLE users_user;".to_string());
+        let lexer = Lexer::new("CREATE TABLE users_user;");
         let expected = vec![
             Token::DML(token::DMLOperator::Create),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
@@ -204,7 +210,7 @@ mod lexer_tests {
 
     #[test]
     fn test_lexer_next_token_identifier_with_keyword() {
-        let lexer = Lexer::new("CREATE TABLE create_user;".to_string());
+        let lexer = Lexer::new("CREATE TABLE create_user;");
         let expected = vec![
             Token::DML(token::DMLOperator::Create),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
@@ -219,7 +225,7 @@ mod lexer_tests {
 
     #[test]
     fn test_lexer_next_token_delimiters_without_spaces() {
-        let lexer = Lexer::new("CREATE,TABLE,create_user;".to_string());
+        let lexer = Lexer::new("CREATE,TABLE,create_user;");
         let expected = vec![
             Token::DML(token::DMLOperator::Create),
             Token::Delimiter(token::Delimiter::Comma),
@@ -236,7 +242,7 @@ mod lexer_tests {
 
     #[test]
     fn test_lexer_keywords() {
-        let lexer = Lexer::new("ALTER TABLE user RENAME TO user1;".to_string());
+        let lexer = Lexer::new("ALTER TABLE user RENAME TO user1;");
         let expected = vec![
             Token::DML(token::DMLOperator::Alter),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
@@ -245,6 +251,19 @@ mod lexer_tests {
             Token::Keyword(token::Keyword::Preposition(Preposition::To)),
             Token::Identifier(token::Identifier("user1".to_string())),
             Token::Delimiter(token::Delimiter::Semicolon),
+        ];
+
+        let actual: Vec<Token> = lexer.collect();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_lexer_shortcuts() {
+        let lexer = Lexer::new("\\q \\quit");
+        let expected = vec![
+            Token::Shortcut(token::Shortcut::Quit),
+            Token::Shortcut(token::Shortcut::Quit),
         ];
 
         let actual: Vec<Token> = lexer.collect();

@@ -138,6 +138,7 @@ mod tests {
                     AlterSchema, CreateDatabase, CreateSchema, DropDatabase,
                     DropSchema,
                 },
+                shortcut::Quit,
             },
             Parser, Statement,
         },
@@ -265,6 +266,22 @@ mod tests {
             Some(Err(PreprocessorError::WrongStatementOrder(
                 Statement::Semicolon
             )))
+        );
+    }
+
+    #[test]
+    fn test_quit() {
+        let input = "\\quit";
+
+        let mut preprocessor = Preprocessor::new(input);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: Quit::new_statement(),
+                next: None
+            }))
         );
     }
 }

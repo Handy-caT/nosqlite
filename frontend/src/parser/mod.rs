@@ -9,7 +9,7 @@ use crate::{
         token::{Delimiter, Token},
         Lexer,
     },
-    parser::parsers::{DmlParseError, DmlParser},
+    parser::parsers::{DmlParseError, DmlParser, ShortcutParseError},
 };
 
 /// Represents a parser.
@@ -76,6 +76,19 @@ impl Parser {
                     self.state.clear();
                     Some(statement)
                 }
+                Token::Shortcut(_) => {
+                    self.state.push(token);
+                    let mut shortcut_parser = parsers::ShortcutParser::new(
+                        &mut self.lexer,
+                        &mut self.state,
+                    );
+                    let statement = shortcut_parser
+                        .parse()
+                        .map_err(ParseError::ShortcutParseError);
+
+                    self.state.clear();
+                    Some(statement)
+                }
                 _ => {
                     todo!()
                 }
@@ -99,8 +112,11 @@ impl Iterator for Parser {
 /// Represents a parse error.
 #[derive(Debug, PartialEq, Clone)]
 pub enum ParseError {
-    /// Represents an DML parser fails.
+    /// Represents a DML parser fails.
     DmlParseError(DmlParseError),
+
+    /// Represents a Shortcut parser fails.
+    ShortcutParseError(ShortcutParseError),
 }
 
 #[cfg(test)]

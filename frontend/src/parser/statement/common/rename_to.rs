@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     lexer::{
         token,
@@ -6,7 +8,6 @@ use crate::{
     parser::Statement,
     preprocessor::LeafNode,
 };
-use std::fmt::Display;
 
 /// Describes `RENAME TO ...` statement for AST.
 #[derive(Debug, Clone, Default, PartialEq)]

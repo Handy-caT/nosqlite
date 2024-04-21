@@ -4,11 +4,13 @@ mod dml_operator;
 mod keyword;
 mod shortcut;
 
+use derive_more::From;
+
 pub use ddl_operator::DDLOperator;
 pub use delimiter::Delimiter;
-use derive_more::From;
 pub use dml_operator::DMLOperator;
 pub use keyword::{DBObject, Keyword, Preposition};
+pub use shortcut::Shortcut;
 
 /// Identifier is a token that represents an identifier in the source code.
 #[derive(Debug, PartialEq, Clone, From)]
@@ -37,4 +39,7 @@ pub enum Token {
 
     /// Token for [`Identifier`].
     Identifier(Identifier),
+
+    /// Token for [`Shortcut`].
+    Shortcut(shortcut::Shortcut),
 }

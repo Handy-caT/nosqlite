@@ -1,13 +1,12 @@
 mod adapter;
+mod command;
 
-use crate::{
-    create_database_statement_variant, drop_database_statement_variant,
-    preprocessor::{Preprocessor, PreprocessorError},
-};
+use crate::{create_database_statement_variant, drop_database_statement_variant, planner::adapter::PlannerCommand, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant};
 use backend_api::api::command::{
     backend_api::DatabaseCommand, r#enum::BackendCommand,
 };
 use derive_more::From;
+use crate::planner::command::FrontendCommand;
 
 /// Represents a query planner.
 #[derive(Debug, Clone, PartialEq)]
@@ -31,7 +30,7 @@ impl Planner {
 
     pub fn next_command(
         &mut self,
-    ) -> Option<Result<BackendCommand, PlannerError>> {
+    ) -> Option<Result<PlannerCommand, PlannerError>> {
         let node = self.preprocessor.next();
         if let Some(node) = node {
             let Ok(node) = node else {
@@ -41,13 +40,18 @@ impl Planner {
                 create_database_statement_variant!(_) => {
                     Some(Ok(BackendCommand::Database(DatabaseCommand::Create(
                         node.try_into().expect("is create database"),
-                    ))))
+                    ))
+                    .into()))
                 }
                 drop_database_statement_variant!(_) => {
                     Some(Ok(BackendCommand::Database(DatabaseCommand::Drop(
                         node.try_into().expect("is drop database"),
-                    ))))
+                    ))
+                    .into()))
                 }
+                quit_statement_variant!(_) => { 
+                    Some(Ok(FrontendCommand::Quit.into()))
+                },
                 _ => unimplemented!(),
             }
         } else {
@@ -63,48 +67,72 @@ pub enum PlannerError {
 
 #[cfg(test)]
 mod tests {
-    use backend_api::api::command::backend_api::{CreateDatabase, DatabaseCommand, DropDatabase};
-    use backend_api::api::command::r#enum::BackendCommand;
-    use crate::planner::Planner;
+    use crate::planner::{adapter::PlannerCommand, Planner};
+    use backend_api::api::command::{
+        backend_api::{CreateDatabase, DatabaseCommand, DropDatabase},
+        r#enum::BackendCommand,
+    };
+    use crate::planner::command::FrontendCommand;
 
     #[test]
     fn test_create_database() {
         let query = "CREATE DATABASE test;";
-        
+
         let mut planner = Planner::new(query);
         let command = planner.next_command();
-        
+
         assert!(command.is_some());
         let command = command.unwrap();
         assert!(command.is_ok());
         let command = command.unwrap();
-        
-        
+
         assert_eq!(
             command,
-            BackendCommand::Database(DatabaseCommand::Create(CreateDatabase {
-                name: "test".into()
-            }))
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::Create(CreateDatabase {
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_drop_database() {
+        let query = "DROP DATABASE test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::Drop(DropDatabase {
+                    name: "test".into()
+                })
+            ))
         );
     }
     
     #[test]
-    fn test_drop_database() {
-        let query = "DROP DATABASE test;";
-        
+    fn test_quit() {
+        let query = "\\quit";
+
         let mut planner = Planner::new(query);
         let command = planner.next_command();
-        
+
         assert!(command.is_some());
         let command = command.unwrap();
         assert!(command.is_ok());
         let command = command.unwrap();
-        
+
         assert_eq!(
             command,
-            BackendCommand::Database(DatabaseCommand::Drop(DropDatabase {
-                name: "test".into()
-            }))
+            PlannerCommand::Frontend(FrontendCommand::Quit)
         );
     }
 }

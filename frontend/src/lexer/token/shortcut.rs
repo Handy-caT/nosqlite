@@ -1,15 +1,15 @@
-use std::str::FromStr;
 use crate::lexer::token::DMLOperator;
+use std::str::FromStr;
 
 /// Represents a shortcut for frontend commands.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Shortcut {
     /// Token for `Help` command.
     Help,
-    
+
     /// Token for `Quit` command.
     Quit,
-    
+
     /// Token for `Clear` command.
     Clear,
 }
@@ -21,7 +21,7 @@ impl FromStr for Shortcut {
         if !s.starts_with('\\') {
             return Err(());
         }
-        
+
         match s.to_lowercase().as_str() {
             "\\h" | "\\help" => Ok(Shortcut::Help),
             "\\q" | "\\quit" => Ok(Shortcut::Quit),
@@ -40,11 +40,11 @@ mod shortcut_tests {
         assert_eq!("\\help".parse(), Ok(Shortcut::Help));
         assert_eq!("\\quit".parse(), Ok(Shortcut::Quit));
         assert_eq!("\\clear".parse(), Ok(Shortcut::Clear));
-        
+
         assert_eq!("\\h".parse(), Ok(Shortcut::Help));
         assert_eq!("\\q".parse(), Ok(Shortcut::Quit));
         assert_eq!("\\c".parse(), Ok(Shortcut::Clear));
-        
+
         assert_eq!("".parse::<Shortcut>(), Err(()));
         assert_eq!("invalid".parse::<Shortcut>(), Err(()));
     }
@@ -55,7 +55,7 @@ mod shortcut_tests {
         assert_eq!("\\qUiT".parse(), Ok(Shortcut::Quit));
         assert_eq!("\\cLeAr".parse(), Ok(Shortcut::Clear));
     }
-    
+
     #[test]
     fn test_shortcut_from_str_not_starting_with_backslash() {
         assert_eq!("help".parse::<Shortcut>(), Err(()));
