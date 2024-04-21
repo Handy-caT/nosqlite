@@ -1,12 +1,16 @@
-mod adapter;
-mod command;
+pub mod adapter;
+pub mod command;
 
-use crate::{create_database_statement_variant, drop_database_statement_variant, planner::adapter::PlannerCommand, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant};
+use crate::{
+    create_database_statement_variant, drop_database_statement_variant,
+    planner::{adapter::PlannerCommand, command::FrontendCommand},
+    preprocessor::{Preprocessor, PreprocessorError},
+    quit_statement_variant,
+};
 use backend_api::api::command::{
     backend_api::DatabaseCommand, r#enum::BackendCommand,
 };
 use derive_more::From;
-use crate::planner::command::FrontendCommand;
 
 /// Represents a query planner.
 #[derive(Debug, Clone, PartialEq)]
@@ -49,14 +53,22 @@ impl Planner {
                     ))
                     .into()))
                 }
-                quit_statement_variant!(_) => { 
+                quit_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::Quit.into()))
-                },
+                }
                 _ => unimplemented!(),
             }
         } else {
             None
         }
+    }
+}
+
+impl Iterator for Planner {
+    type Item = Result<PlannerCommand, PlannerError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_command()
     }
 }
 
@@ -67,12 +79,14 @@ pub enum PlannerError {
 
 #[cfg(test)]
 mod tests {
-    use crate::planner::{adapter::PlannerCommand, Planner};
     use backend_api::api::command::{
         backend_api::{CreateDatabase, DatabaseCommand, DropDatabase},
         r#enum::BackendCommand,
     };
-    use crate::planner::command::FrontendCommand;
+
+    use crate::planner::{
+        adapter::PlannerCommand, command::FrontendCommand, Planner,
+    };
 
     #[test]
     fn test_create_database() {
@@ -117,7 +131,7 @@ mod tests {
             ))
         );
     }
-    
+
     #[test]
     fn test_quit() {
         let query = "\\quit";
@@ -130,9 +144,6 @@ mod tests {
         assert!(command.is_ok());
         let command = command.unwrap();
 
-        assert_eq!(
-            command,
-            PlannerCommand::Frontend(FrontendCommand::Quit)
-        );
+        assert_eq!(command, PlannerCommand::Frontend(FrontendCommand::Quit));
     }
 }

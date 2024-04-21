@@ -25,7 +25,7 @@ impl<const NODE_SIZE: u8> Execute<DropSchema, controller::Database<NODE_SIZE>>
     for BackendFacade<NODE_SIZE>
 {
     type Ok = ();
-    type Err = Infallible;
+    type Err = ExecutionError;
 
     fn execute(
         cmd: DropSchema,
@@ -39,6 +39,8 @@ impl<const NODE_SIZE: u8> Execute<DropSchema, controller::Database<NODE_SIZE>>
         Ok(())
     }
 }
+
+pub type ExecutionError = Infallible;
 
 #[cfg(test)]
 mod tests {

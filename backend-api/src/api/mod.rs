@@ -1,2 +1,2 @@
 pub mod command;
-mod facade;
+pub mod facade;

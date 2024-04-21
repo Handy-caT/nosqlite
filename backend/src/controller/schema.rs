@@ -104,10 +104,10 @@ mod tests {
 
     /// Creates a new instance of `DataStorage`.
     fn data_storage_factory() -> DataStorage {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         DataStorage::new(controller, registry)
     }

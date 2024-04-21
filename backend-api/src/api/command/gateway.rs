@@ -91,8 +91,9 @@ pub mod test {
     impl<const NODE_SIZE: u8> TestBackendFacade<NODE_SIZE> {
         /// Creates a new instance of `BackendFacade` for testing.
         pub fn new() -> Self {
-            let id_registry = Arc::new(Mutex::new(id::Registry::new()));
-            let page_controller = Arc::new(Mutex::new(PageController::new()));
+            let id_registry = Arc::new(Mutex::new(id::Registry::default()));
+            let page_controller =
+                Arc::new(Mutex::new(PageController::default()));
 
             TestBackendFacade(BackendFacade::new(page_controller, id_registry))
         }

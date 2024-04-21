@@ -26,6 +26,17 @@ pub struct BackendFacade<const NODE_SIZE: u8> {
     pub context: Context,
 }
 
+impl<const NODE_SIZE: u8> Default for BackendFacade<NODE_SIZE> {
+    fn default() -> Self {
+        BackendFacade {
+            page_controller: Arc::new(Mutex::new(PageController::default())),
+            id_registry: Arc::new(Mutex::new(id::Registry::default())),
+            database_controllers: ScalableHashTable::default(),
+            context: Context::default(),
+        }
+    }
+}
+
 impl<const NODE_SIZE: u8> BackendFacade<NODE_SIZE> {
     /// Creates a new [`BackendFacade`] with the given parameters.
     /// # Arguments

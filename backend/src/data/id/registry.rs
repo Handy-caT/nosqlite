@@ -15,6 +15,18 @@ pub struct Registry<G = NumericIdGenerator> {
     link_storage: LinkStorage,
 }
 
+impl<G> Default for Registry<G>
+where
+    G: IdGenerator<NumericId>,
+{
+    fn default() -> Self {
+        Self {
+            id_generator: G::new(),
+            link_storage: LinkStorage::new(10),
+        }
+    }
+}
+
 impl<G> Registry<G>
 where
     G: IdGenerator<NumericId>,
@@ -22,12 +34,6 @@ where
     /// Creates a new [`Registry`].
     /// # Returns
     /// * `Self` - [`Registry`].
-    pub fn new() -> Self {
-        Self {
-            id_generator: G::new(),
-            link_storage: LinkStorage::new(10),
-        }
-    }
 
     /// Adds a new [`PageLink`] to the [`Registry`].
     /// # Arguments
@@ -157,7 +163,7 @@ mod tests {
 
     #[test]
     fn test_registry_new() {
-        let registry = Registry::<NumericIdGenerator>::new();
+        let registry = Registry::<NumericIdGenerator>::default();
 
         assert_eq!(registry.link_storage.len(), 0);
         assert_eq!(registry.id_generator.get_id_count(), 0);
@@ -165,7 +171,7 @@ mod tests {
 
     #[test]
     fn test_registry_add_link() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
 
@@ -178,7 +184,7 @@ mod tests {
 
     #[test]
     fn test_registry_add_link_existing() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
 
@@ -199,7 +205,7 @@ mod tests {
 
     #[test]
     fn test_registry_add_after_retrieving() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
 
@@ -228,7 +234,7 @@ mod tests {
 
     #[test]
     fn test_registry_remove_link() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
 
@@ -248,7 +254,7 @@ mod tests {
 
     #[test]
     fn test_registry_remove_link_not_found() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
 
@@ -270,7 +276,7 @@ mod tests {
 
     #[test]
     fn test_registry_update_link() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
 
@@ -292,7 +298,7 @@ mod tests {
 
     #[test]
     fn test_registry_update_link_not_found() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
 
@@ -314,7 +320,7 @@ mod tests {
 
     #[test]
     fn test_registry_get_link() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
         let id = registry.add_link(link);
@@ -326,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_registry_get_link_not_found() {
-        let mut registry = Registry::<NumericIdGenerator>::new();
+        let mut registry = Registry::<NumericIdGenerator>::default();
 
         let link = PageLink::new(1, 0, 100);
         let _id = registry.add_link(link);

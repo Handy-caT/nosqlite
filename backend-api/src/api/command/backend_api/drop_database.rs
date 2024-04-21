@@ -21,7 +21,7 @@ impl<const NODE_SIZE: u8> Execute<DropDatabase, Self>
     for BackendFacade<NODE_SIZE>
 {
     type Ok = ();
-    type Err = Infallible;
+    type Err = ExecutionError;
 
     fn execute(
         cmd: DropDatabase,
@@ -34,6 +34,8 @@ impl<const NODE_SIZE: u8> Execute<DropDatabase, Self>
         Ok(())
     }
 }
+
+pub type ExecutionError = Infallible;
 
 #[cfg(test)]
 mod tests {

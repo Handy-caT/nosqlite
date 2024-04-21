@@ -229,10 +229,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_new() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let data_storage = DataStorage::new(controller, registry);
 
@@ -249,10 +249,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_check_data_type() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -265,10 +265,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_set_data_type() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -281,10 +281,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_append_data_type() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -298,10 +298,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_add_data() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -325,10 +325,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_remove_data() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -354,10 +354,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_remove_data_not_found() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -384,10 +384,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_add_data_after_remove() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -429,10 +429,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_update_data() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![StorageDataType::Integer]);
@@ -460,10 +460,10 @@ mod tests {
 
     #[test]
     fn test_data_storage_get_data() {
-        let mut controller = PageController::new();
+        let mut controller = PageController::default();
         controller.add_page();
         let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::new()));
+        let registry = Arc::new(Mutex::new(id::Registry::default()));
 
         let mut data_storage = DataStorage::new(controller, registry);
         data_storage.set_data_type(vec![
