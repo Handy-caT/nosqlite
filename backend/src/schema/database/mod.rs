@@ -1,7 +1,9 @@
+use derive_more::Display;
+
 use crate::gen_name;
 
 /// Represents a database info.
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, Display, PartialEq, Hash)]
 pub struct Database {
     /// The name of the database.
     name: Name,

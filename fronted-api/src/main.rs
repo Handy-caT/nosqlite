@@ -2,11 +2,12 @@ mod api;
 mod command;
 mod r#static;
 
-use crate::{api::Api, r#static::welcome};
+use std::{io, io::Write};
+
 use backend_api::api::command::{r#enum::BackendCommand, Gateway};
 use frontend::planner::adapter::PlannerCommand;
-use std::{io, io::Write};
-use crate::command::execute_frontend_command;
+
+use crate::{api::Api, command::execute_frontend_command, r#static::welcome};
 
 fn clear_screen() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -46,7 +47,8 @@ fn repl<const NODE_SIZE: u8>(mut api: Api<NODE_SIZE>) -> io::Result<()> {
                             }
                         },
                         PlannerCommand::Frontend(command) => {
-                            if let Err(error) = execute_frontend_command(&mut api, command)
+                            if let Err(error) =
+                                execute_frontend_command(&mut api, command)
                             {
                                 println!("{:?}", error);
                             }
@@ -58,11 +60,11 @@ fn repl<const NODE_SIZE: u8>(mut api: Api<NODE_SIZE>) -> io::Result<()> {
                 }
             }
         }
-        
+
         if api.context.quit {
             return Ok(());
         }
-        
+
         buffer.clear();
     }
 }

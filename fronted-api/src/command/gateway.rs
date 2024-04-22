@@ -1,10 +1,10 @@
 use std::fmt::Debug;
 
 use crate::{
+    api,
     api::Api,
     command::{Command, Execute, Extract, Gateway},
 };
-use crate::api::Context;
 
 impl<Cmd, Context, const NODE_SIZE: u8> Gateway<Cmd, Context> for Api<NODE_SIZE>
 where
@@ -27,8 +27,14 @@ where
     }
 }
 
-impl<const NODE_SIZE: u8> Extract<Context> for Api<NODE_SIZE> {
-    fn extract(&mut self) -> &mut Context {
+impl<const NODE_SIZE: u8> Extract<api::Context> for Api<NODE_SIZE> {
+    fn extract(&mut self) -> &mut api::Context {
         &mut self.context
+    }
+}
+
+impl<const NODE_SIZE: u8> Extract<backend_api::Context> for Api<NODE_SIZE> {
+    fn extract(&mut self) -> &mut backend_api::Context {
+        &mut self.backend_api.context
     }
 }

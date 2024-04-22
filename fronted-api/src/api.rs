@@ -9,7 +9,7 @@ pub struct Api<const NODE_SIZE: u8> {
 
     /// The frontend API.
     pub frontend_api: FrontendApi,
-    
+
     /// The context.
     pub context: Context,
 }

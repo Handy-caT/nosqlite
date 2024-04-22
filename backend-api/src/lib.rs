@@ -1,2 +1,4 @@
 pub mod api;
-mod context;
+pub mod context;
+
+pub use context::Context;

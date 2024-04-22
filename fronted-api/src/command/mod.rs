@@ -3,8 +3,8 @@ use frontend::planner::command::FrontendCommand;
 use crate::api::Api;
 
 mod gateway;
+mod get_context;
 mod quit;
-mod r#enum;
 
 /// Trait for database frontend commands.
 pub trait Execute<Cmd, Ctx = ()> {
@@ -42,7 +42,10 @@ where
 }
 
 /// Executes a frontend command.
-pub fn execute_frontend_command<const NODE_SIZE: u8>(api: &mut Api<NODE_SIZE>, cmd: FrontendCommand) -> Result<(), ()> {
+pub fn execute_frontend_command<const NODE_SIZE: u8>(
+    api: &mut Api<NODE_SIZE>,
+    cmd: FrontendCommand,
+) -> Result<(), ()> {
     match cmd {
         FrontendCommand::Quit => {
             let cmd = quit::Quit;
@@ -55,7 +58,8 @@ pub fn execute_frontend_command<const NODE_SIZE: u8>(api: &mut Api<NODE_SIZE>, c
             todo!()
         }
         FrontendCommand::GetContext => {
-            todo!()
+            let cmd = get_context::GetContext;
+            api.send(cmd).map_err(|_| ())
         }
     }
 }
