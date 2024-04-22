@@ -3,7 +3,10 @@ use crate::{
         token::{Shortcut, Token},
         Lexer,
     },
-    parser::{statement::shortcut::Quit, Statement},
+    parser::{
+        statement::shortcut::{GetContext, Quit},
+        Statement,
+    },
 };
 
 /// Represents a Shortcut parser.
@@ -31,6 +34,7 @@ impl<'a> ShortcutParser<'a> {
         if let Token::Shortcut(token) = token {
             match token {
                 Shortcut::Quit => Ok(Quit::new_statement()),
+                Shortcut::GetContext => Ok(GetContext::new_statement()),
                 Shortcut::Help => {
                     todo!()
                 }

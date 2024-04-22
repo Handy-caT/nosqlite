@@ -1,7 +1,6 @@
 mod create_database;
 mod drop_database;
 
-use backend::schema::database;
 use std::fmt::Debug;
 
 use crate::api::{command::Execute, facade::BackendFacade};

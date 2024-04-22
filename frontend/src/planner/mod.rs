@@ -3,6 +3,7 @@ pub mod command;
 
 use crate::{
     create_database_statement_variant, drop_database_statement_variant,
+    get_context_statement_variant,
     planner::{adapter::PlannerCommand, command::FrontendCommand},
     preprocessor::{Preprocessor, PreprocessorError},
     quit_statement_variant,
@@ -55,6 +56,9 @@ impl Planner {
                 }
                 quit_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::Quit.into()))
+                }
+                get_context_statement_variant!(_) => {
+                    Some(Ok(FrontendCommand::GetContext.into()))
                 }
                 _ => unimplemented!(),
             }
@@ -145,5 +149,23 @@ mod tests {
         let command = command.unwrap();
 
         assert_eq!(command, PlannerCommand::Frontend(FrontendCommand::Quit));
+    }
+
+    #[test]
+    fn test_get_context() {
+        let query = "\\get_context";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Frontend(FrontendCommand::GetContext)
+        );
     }
 }

@@ -41,5 +41,5 @@ pub enum Token {
     Identifier(Identifier),
 
     /// Token for [`Shortcut`].
-    Shortcut(shortcut::Shortcut),
+    Shortcut(Shortcut),
 }

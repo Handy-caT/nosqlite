@@ -9,3 +9,4 @@ edition = "2021"
 backend-api = { path = "../backend-api" }
 backend = { path = "../backend" }
 frontend = { path = "../frontend" }
+prettytable-rs = "^0.10"

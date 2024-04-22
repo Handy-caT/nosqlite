@@ -9,4 +9,7 @@ pub enum FrontendCommand {
 
     /// Represents a `Clear` command.
     Clear,
+
+    /// Represents a `GetContext` command.
+    GetContext,
 }

@@ -128,20 +128,17 @@ pub enum PreprocessorError {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        lexer::Lexer,
-        parser::{
-            ast,
-            statement::{
-                common::RenameTo,
-                dml::{
-                    AlterSchema, CreateDatabase, CreateSchema, DropDatabase,
-                    DropSchema,
-                },
-                shortcut::Quit,
+    use crate::parser::{
+        ast,
+        statement::{
+            common::RenameTo,
+            dml::{
+                AlterSchema, CreateDatabase, CreateSchema, DropDatabase,
+                DropSchema,
             },
-            Parser, Statement,
+            shortcut::{GetContext, Quit},
         },
+        Statement,
     };
 
     use super::{Preprocessor, PreprocessorError};
@@ -280,6 +277,22 @@ mod tests {
             node,
             Some(Ok(ast::Node {
                 statement: Quit::new_statement(),
+                next: None
+            }))
+        );
+    }
+
+    #[test]
+    fn test_get_context() {
+        let input = "\\get_context";
+
+        let mut preprocessor = Preprocessor::new(input);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: GetContext::new_statement(),
                 next: None
             }))
         );
