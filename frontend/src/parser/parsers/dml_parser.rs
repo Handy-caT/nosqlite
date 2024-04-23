@@ -9,7 +9,8 @@ use crate::{
         Lexer,
     },
     parser::Statement,
-    rename_to_statement_variant,
+    rename_to_statement_variant, use_database_statement_variant,
+    use_schema_statement_variant,
 };
 
 /// Represents a DML parser.
@@ -40,12 +41,10 @@ impl<'a> DmlParser<'a> {
                 DMLOperator::Alter => self.parse_alter_statement(),
                 DMLOperator::Rename => self.parse_rename_statement(),
                 DMLOperator::Drop => self.parse_drop_statement(),
+                DMLOperator::Use => self.parse_use_statement(),
             }
         } else {
-            Err(ParseError::WrongTokenProvided {
-                got: token.clone(),
-                expected: "CREATE|ALTER|RENAME|DROP".to_string(),
-            })
+            panic!("Wrong token provided to the DML parser")
         }
     }
 
@@ -226,6 +225,53 @@ impl<'a> DmlParser<'a> {
                 Err(ParseError::WrongTokenProvided {
                     got: to,
                     expected: "TO".to_string(),
+                })
+            }
+        } else {
+            Err(ParseError::NotEnoughTokens)
+        }
+    }
+
+    fn parse_use_statement(&mut self) -> Result<Statement, ParseError> {
+        let which_object = self.lexer.next();
+        let identifier = self.parse_identifier();
+
+        if let Some(which_object) = which_object {
+            if let Token::Keyword(Keyword::DbObject(obj)) = which_object {
+                match obj {
+                    DBObject::Database => {
+                        self.state.push(which_object);
+                        self.state.push(identifier?.into());
+
+                        Ok(use_database_statement_variant!(self
+                            .state
+                            .as_slice()
+                            .try_into()
+                            .expect("valid tokens")))
+                    }
+                    DBObject::Schema => {
+                        self.state.push(which_object);
+                        self.state.push(identifier?.into());
+
+                        Ok(use_schema_statement_variant!(self
+                            .state
+                            .as_slice()
+                            .try_into()
+                            .expect("valid tokens")))
+                    }
+                    DBObject::Table => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "DATABASE|SCHEMA".to_string(),
+                    }),
+                    DBObject::Column => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "DATABASE|SCHEMA".to_string(),
+                    }),
+                }
+            } else {
+                Err(ParseError::WrongTokenProvided {
+                    got: which_object,
+                    expected: "DATABASE|SCHEMA".to_string(),
                 })
             }
         } else {

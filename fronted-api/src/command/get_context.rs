@@ -24,10 +24,13 @@ impl<const NODE_SIZE: u8> Execute<GetContext, Context> for Api<NODE_SIZE> {
         table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
 
         table.set_titles(row!["database", "schema"]);
-        
+
         let db = ctx.current_db().map(|db| db.0.as_str()).unwrap_or("None");
-        let schema = ctx.current_schema().map(|schema| schema.0.as_str()).unwrap_or("None");
-        
+        let schema = ctx
+            .current_schema()
+            .map(|schema| schema.0.as_str())
+            .unwrap_or("None");
+
         table.add_row(row![db, schema]);
 
         table.printstd();

@@ -1,5 +1,7 @@
 mod create_database;
 mod drop_database;
+mod use_database;
+mod use_schema;
 
 use std::fmt::Debug;
 

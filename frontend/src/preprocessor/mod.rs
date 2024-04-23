@@ -134,7 +134,7 @@ mod tests {
             common::RenameTo,
             dml::{
                 AlterSchema, CreateDatabase, CreateSchema, DropDatabase,
-                DropSchema,
+                DropSchema, UseDatabase, UseSchema,
             },
             shortcut::{GetContext, Quit},
         },
@@ -263,6 +263,40 @@ mod tests {
             Some(Err(PreprocessorError::WrongStatementOrder(
                 Statement::Semicolon
             )))
+        );
+    }
+
+    #[test]
+    fn test_use_schema() {
+        let input = "USE SCHEMA test;";
+
+        let mut preprocessor = Preprocessor::new(input);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: UseSchema::new_statement("test".to_string().into()),
+                next: None
+            }))
+        );
+    }
+
+    #[test]
+    fn test_use_database() {
+        let input = "USE DATABASE test;";
+
+        let mut preprocessor = Preprocessor::new(input);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: UseDatabase::new_statement(
+                    "test".to_string().into()
+                ),
+                next: None
+            }))
         );
     }
 

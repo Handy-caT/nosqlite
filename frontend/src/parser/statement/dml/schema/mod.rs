@@ -1,12 +1,14 @@
-mod alter_schema;
-mod create_schema;
-mod drop_schema;
+mod alter;
+mod create;
+mod drop;
+mod r#use;
 
 use crate::{parser::Statement, preprocessor::Node};
 
-pub use alter_schema::AlterSchema;
-pub use create_schema::CreateSchema;
-pub use drop_schema::DropSchema;
+pub use alter::AlterSchema;
+pub use create::CreateSchema;
+pub use drop::DropSchema;
+pub use r#use::UseSchema;
 
 /// Represents an AST node for a schema operation.
 #[derive(Debug, PartialEq, Clone)]
@@ -19,6 +21,9 @@ pub enum SchemaNode {
 
     /// Represents a `ALTER SCHEMA ...` statement.
     Alter(AlterSchema),
+
+    /// Represents a `USE SCHEMA ...` statement.
+    Use(UseSchema),
 }
 
 impl Node for SchemaNode {
@@ -27,6 +32,7 @@ impl Node for SchemaNode {
             SchemaNode::Drop(stmnt) => stmnt.can_be_followed(next),
             SchemaNode::Create(stmnt) => stmnt.can_be_followed(next),
             SchemaNode::Alter(stmnt) => stmnt.can_be_followed(next),
+            SchemaNode::Use(stmnt) => stmnt.can_be_followed(next),
         }
     }
 }

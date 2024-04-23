@@ -118,9 +118,6 @@ pub enum Preposition {
 
     /// Token for `TO` preposition.
     To,
-
-    /// Token for `USE` preposition.
-    Use,
 }
 
 impl FromStr for Preposition {
@@ -130,7 +127,6 @@ impl FromStr for Preposition {
         match s.to_lowercase().as_str() {
             "in" => Ok(Preposition::In),
             "to" => Ok(Preposition::To),
-            "use" => Ok(Preposition::Use),
             _ => Err(()),
         }
     }
@@ -144,7 +140,6 @@ mod preposition_tests {
     fn test_preposition_from_str() {
         assert_eq!("in".parse(), Ok(Preposition::In));
         assert_eq!("to".parse(), Ok(Preposition::To));
-        assert_eq!("use".parse(), Ok(Preposition::Use));
 
         assert_eq!("".parse::<Preposition>(), Err(()));
         assert_eq!("invalid".parse::<Preposition>(), Err(()));
@@ -154,6 +149,5 @@ mod preposition_tests {
     fn test_preposition_from_str_case_insensitive() {
         assert_eq!("iN".parse(), Ok(Preposition::In));
         assert_eq!("tO".parse(), Ok(Preposition::To));
-        assert_eq!("uSE".parse(), Ok(Preposition::Use));
     }
 }
