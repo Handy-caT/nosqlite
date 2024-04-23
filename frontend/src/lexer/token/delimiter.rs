@@ -11,9 +11,6 @@ pub enum Delimiter {
     /// Token for `;` delimiter.
     Semicolon,
 
-    /// Token for `.` delimiter.
-    Dot,
-
     /// Token for `(` delimiter.
     LeftParenthesis,
 
@@ -28,7 +25,6 @@ impl FromStr for Delimiter {
         match s {
             "," => Ok(Delimiter::Comma),
             ";" => Ok(Delimiter::Semicolon),
-            "." => Ok(Delimiter::Dot),
             "(" => Ok(Delimiter::LeftParenthesis),
             ")" => Ok(Delimiter::RightParenthesis),
             _ => Err(()),
@@ -44,7 +40,6 @@ mod delimiter_tests {
     fn test_delimiter_from_str() {
         assert_eq!(",".parse(), Ok(Delimiter::Comma));
         assert_eq!(";".parse(), Ok(Delimiter::Semicolon));
-        assert_eq!(".".parse(), Ok(Delimiter::Dot));
         assert_eq!("(".parse(), Ok(Delimiter::LeftParenthesis));
         assert_eq!(")".parse(), Ok(Delimiter::RightParenthesis));
         assert_eq!("".parse::<Delimiter>(), Err(()));

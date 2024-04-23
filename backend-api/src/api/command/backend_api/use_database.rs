@@ -1,4 +1,4 @@
-use backend::{schema::database};
+use backend::schema::database;
 use common::structs::hash_table::HashTable;
 
 use crate::api::{
@@ -16,7 +16,7 @@ pub struct UseDatabase {
 impl Command for UseDatabase {}
 
 impl<const NODE_SIZE: u8> Execute<UseDatabase, Self>
-for BackendFacade<NODE_SIZE>
+    for BackendFacade<NODE_SIZE>
 {
     type Ok = ();
     type Err = ExecutionError;
@@ -45,11 +45,10 @@ mod tests {
     use backend::schema::database;
 
     use crate::api::command::{
-        gateway::test::TestBackendFacade,
-        Gateway, GatewayError,
+        gateway::test::TestBackendFacade, Gateway, GatewayError,
     };
-    
-    use super::{UseDatabase, ExecutionError};
+
+    use super::{ExecutionError, UseDatabase};
 
     #[test]
     fn use_db_when_exists() {
@@ -60,11 +59,11 @@ mod tests {
         let cmd = UseDatabase { name: name.clone() };
         let result = facade.send(cmd);
         assert!(result.is_ok());
-        
+
         assert!(facade.context.current_db().is_some());
         assert_eq!(facade.context.current_db().unwrap(), &name)
     }
-    
+
     #[test]
     fn use_db_when_not_exists() {
         let name = database::Name::from("test");
@@ -72,19 +71,18 @@ mod tests {
         let cmd = UseDatabase { name: name.clone() };
         let result = facade.send(cmd);
         assert!(result.is_err());
-        
+
         match result {
             Err(GatewayError::Cmd(ExecutionError::DatabaseNotExists(
-                                      db_name,
-                                  ))) => {
+                db_name,
+            ))) => {
                 assert_eq!(name, db_name)
             }
-            _ => panic!(
-                "Expected `DatabaseNotExists` error, found {:?}",
-                result
-            ),
+            _ => {
+                panic!("Expected `DatabaseNotExists` error, found {:?}", result)
+            }
         }
-        
+
         assert!(facade.context.current_db().is_none());
     }
 }

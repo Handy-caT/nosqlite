@@ -5,10 +5,13 @@ use derive_more::From;
 
 mod database;
 
-impl From<token::Identifier> for db::Name {
-    fn from(identifier: token::Identifier) -> Self {
-        db::Name(identifier.0)
-    }
+/// Parses an identifier into a vector of names.
+/// # Arguments
+/// * `identifier` - An identifier.
+/// # Returns
+/// A vector of names.
+pub fn parse_identifier(identifier: token::Identifier) -> Vec<String> {
+    identifier.0.split('.').map(String::from).collect()
 }
 
 /// Represents a planner command.

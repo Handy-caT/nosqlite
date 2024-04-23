@@ -67,7 +67,7 @@ impl Lexer {
             .chars()
             .nth(self.read_position)
             .expect("exists because of the check");
-        while ch.is_alphanumeric() || ch == '_' {
+        while ch.is_alphanumeric() || ch == '_' || ch == '.' {
             self.read_position += 1;
             if self.read_position >= self.input.len() {
                 return;
@@ -200,6 +200,21 @@ mod lexer_tests {
             Token::DML(token::DMLOperator::Create),
             Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
             Token::Identifier(token::Identifier("users_user".to_string())),
+            Token::Delimiter(token::Delimiter::Semicolon),
+        ];
+
+        let actual: Vec<Token> = lexer.collect();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_lexer_next_token_identifier_with_dot() {
+        let lexer = Lexer::new("CREATE TABLE users.user;");
+        let expected = vec![
+            Token::DML(token::DMLOperator::Create),
+            Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
+            Token::Identifier(token::Identifier("users.user".to_string())),
             Token::Delimiter(token::Delimiter::Semicolon),
         ];
 
