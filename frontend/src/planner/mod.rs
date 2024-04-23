@@ -6,7 +6,7 @@ use crate::{
     get_context_statement_variant,
     planner::{adapter::PlannerCommand, command::FrontendCommand},
     preprocessor::{Preprocessor, PreprocessorError},
-    quit_statement_variant,
+    quit_statement_variant, use_database_statement_variant,
 };
 use backend_api::api::command::{
     backend_api::DatabaseCommand, r#enum::BackendCommand,
@@ -60,6 +60,12 @@ impl Planner {
                 get_context_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::GetContext.into()))
                 }
+                use_database_statement_variant!(_) => {
+                    Some(Ok(BackendCommand::Database(DatabaseCommand::Use(
+                        node.try_into().expect("is use database"),
+                    ))
+                    .into()))
+                }
                 _ => unimplemented!(),
             }
         } else {
@@ -84,7 +90,7 @@ pub enum PlannerError {
 #[cfg(test)]
 mod tests {
     use backend_api::api::command::{
-        backend_api::{CreateDatabase, DatabaseCommand, DropDatabase},
+        backend_api::{CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase},
         r#enum::BackendCommand,
     };
 
@@ -130,6 +136,28 @@ mod tests {
             command,
             PlannerCommand::Backend(BackendCommand::Database(
                 DatabaseCommand::Drop(DropDatabase {
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_use_database() {
+        let query = "USE DATABASE test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::Use(UseDatabase {
                     name: "test".into()
                 })
             ))

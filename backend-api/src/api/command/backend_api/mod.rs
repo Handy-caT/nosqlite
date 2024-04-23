@@ -5,11 +5,14 @@ mod use_schema;
 
 use std::fmt::Debug;
 
-use crate::api::{command::Execute, facade::BackendFacade};
+use crate::api::{
+    command::{Command, Execute},
+    facade::BackendFacade,
+};
 
-use crate::api::command::Command;
 pub use create_database::CreateDatabase;
 pub use drop_database::DropDatabase;
+pub use use_database::UseDatabase;
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]
@@ -19,6 +22,8 @@ pub enum DatabaseCommand {
 
     /// Command to drop a database.
     Drop(DropDatabase),
+
+    Use(UseDatabase),
 }
 
 impl Command for DatabaseCommand {}
@@ -42,6 +47,10 @@ impl<const NODE_SIZE: u8> Execute<DatabaseCommand, Self>
                 <Self as Execute<DropDatabase, Self>>::execute(cmd, backend)
                     .map_err(ExecutionError::DropDatabase)
             }
+            DatabaseCommand::Use(cmd) => {
+                <Self as Execute<UseDatabase, Self>>::execute(cmd, backend)
+                    .map_err(ExecutionError::UseDatabase)
+            }
         }
     }
 }
@@ -54,4 +63,6 @@ pub enum ExecutionError {
 
     /// Drop database error.
     DropDatabase(drop_database::ExecutionError),
+
+    UseDatabase(use_database::ExecutionError),
 }
