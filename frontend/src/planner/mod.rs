@@ -90,7 +90,9 @@ pub enum PlannerError {
 #[cfg(test)]
 mod tests {
     use backend_api::api::command::{
-        backend_api::{CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase},
+        backend_api::{
+            CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase,
+        },
         r#enum::BackendCommand,
     };
 

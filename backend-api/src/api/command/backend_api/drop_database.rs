@@ -3,10 +3,7 @@ use std::convert::Infallible;
 use backend::schema::database;
 use common::structs::hash_table::HashTable;
 
-use crate::api::{
-    command::{Command, Execute},
-    facade::BackendFacade,
-};
+use crate::api::{command::Command, facade::BackendFacade};
 
 /// Command to drop a database.
 #[derive(Debug, Clone, PartialEq)]
@@ -15,22 +12,24 @@ pub struct DropDatabase {
     pub name: database::Name,
 }
 
-impl Command for DropDatabase {}
+impl AsRef<()> for DropDatabase {
+    fn as_ref(&self) -> &() {
+        &()
+    }
+}
 
-impl<const NODE_SIZE: u8> Execute<DropDatabase, Self>
-    for BackendFacade<NODE_SIZE>
-{
+impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropDatabase {
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
-        cmd: DropDatabase,
-        backend: &mut Self,
+        self,
+        backend: &mut BackendFacade<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        if !backend.database_controllers.contains_key(&cmd.name) {
+        if !backend.database_controllers.contains_key(&self.name) {
             return Ok(());
         }
-        backend.database_controllers.remove(&cmd.name);
+        backend.database_controllers.remove(&self.name);
         Ok(())
     }
 }

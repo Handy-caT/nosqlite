@@ -2,7 +2,7 @@ use backend::{controller, schema};
 use derive_more::AsRef;
 
 use crate::api::{
-    command::{Command, Execute},
+    command::{Command},
     facade::BackendFacade,
 };
 
@@ -20,34 +20,32 @@ pub struct RenameSchema {
     pub new_name: schema::Name,
 }
 
-impl Command for RenameSchema {}
-
-impl<const NODE_SIZE: u8> Execute<RenameSchema, controller::Database<NODE_SIZE>>
-    for BackendFacade<NODE_SIZE>
+impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
+    for RenameSchema
 {
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
-        cmd: RenameSchema,
+        self,
         db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        if !db_controller.has_schema(&cmd.old_name) {
-            return Err(ExecutionError::SchemaNotFound(cmd.old_name));
+        if !db_controller.has_schema(&self.old_name) {
+            return Err(ExecutionError::SchemaNotFound(self.old_name));
         }
-        if db_controller.has_schema(&cmd.new_name) {
-            return Err(ExecutionError::SchemaAlreadyExists(cmd.new_name));
+        if db_controller.has_schema(&self.new_name) {
+            return Err(ExecutionError::SchemaAlreadyExists(self.new_name));
         }
 
-        let schema = db_controller.remove_schema(&cmd.old_name);
+        let schema = db_controller.remove_schema(&self.old_name);
         if let Some(mut schema) = schema {
             let info = schema.get_mut_info();
-            info.name = cmd.new_name;
+            info.name = self.new_name;
             db_controller.add_schema(schema);
 
             Ok(())
         } else {
-            Err(ExecutionError::SchemaNotFound(cmd.old_name))
+            Err(ExecutionError::SchemaNotFound(self.old_name))
         }
     }
 }
@@ -69,9 +67,11 @@ mod tests {
 
     use crate::api::command::{
         database::rename_schema::{ExecutionError, RenameSchema},
-        gateway::{test::TestBackendFacade, DatabaseGatewayError},
-        Gateway as _, GatewayError,
+        gateway::{test::TestBackendFacade},
+        Gateway as _,
     };
+    use crate::api::command::extract::DatabaseExtractionError;
+    use crate::api::command::gateway::GatewayError;
 
     #[test]
     fn renames_schema_when_exists() {
@@ -123,7 +123,7 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::SchemaAlreadyExists(
+            Err(GatewayError::CommandError(ExecutionError::SchemaAlreadyExists(
                 name,
             ))) => {
                 assert_eq!(name, new_schema_name);
@@ -150,7 +150,7 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::SchemaNotFound(name))) => {
+            Err(GatewayError::CommandError(ExecutionError::SchemaNotFound(name))) => {
                 assert_eq!(name, schema_name);
             }
             _ => panic!("Expected `SchemaNotFound` found {:?}", result),
@@ -173,8 +173,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Gateway(
-                DatabaseGatewayError::DatabaseNotFound(name),
+            Err(GatewayError::ExtractionError(
+                DatabaseExtractionError::DatabaseNotFound(name),
             )) => {
                 assert_eq!(name, database_name);
             }

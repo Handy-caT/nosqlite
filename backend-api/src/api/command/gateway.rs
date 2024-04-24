@@ -1,76 +1,45 @@
-use backend::{controller, schema::database};
-use common::structs::hash_table::MutHashTable;
 use std::fmt::Debug;
 
 use crate::api::{
-    command::{
-        Command, Gateway,
-        GatewayError,
-    },
+    command::{Command, Gateway, TryExtractBy},
     facade::BackendFacade,
 };
 
-impl<Cmd, const NODE_SIZE: u8> Gateway<Cmd, controller::Database<NODE_SIZE>>
+impl<Cmd, Ctx, By, const NODE_SIZE: u8> Gateway<Cmd, Ctx>
     for BackendFacade<NODE_SIZE>
 where
-    Self: ExecuteDatabase<Cmd, NODE_SIZE>,
-    <Self as Execute<Cmd, controller::Database<NODE_SIZE>>>::Err: Debug,
-    Cmd: Command + AsRef<database::Name>,
+    Cmd: Command<Ctx> + AsRef<By>,
+    <Cmd as Command<Ctx>>::Err: Debug,
+    Self: TryExtractBy<Ctx, By = By>,
+    <Self as TryExtractBy<Ctx>>::Err: Debug,
 {
-    type Ok = <Self as Execute<Cmd, controller::Database<NODE_SIZE>>>::Ok;
+    type Ok = <Cmd as Command<Ctx>>::Ok;
     type Err = GatewayError<
-        <Self as Execute<Cmd, controller::Database<NODE_SIZE>>>::Err,
-        DatabaseGatewayError,
+        <Cmd as Command<Ctx>>::Err,
+        <Self as TryExtractBy<Ctx>>::Err,
     >;
 
+    #[rustfmt::skip]
     fn send(
         &mut self,
         cmd: Cmd,
     ) -> Result<
-        <Self as Gateway<Cmd, controller::Database<NODE_SIZE>>>::Ok,
-        <Self as Gateway<Cmd, controller::Database<NODE_SIZE>>>::Err,
+        <Self as Gateway<Cmd, Ctx>>::Ok,
+        <Self as Gateway<Cmd, Ctx>>::Err,
     > {
-        let database_name = cmd.as_ref();
-        let database = self.database_controllers.get_mut_value(database_name);
-        if let Some(database) = database {
-            <Self as Execute<Cmd, controller::Database<NODE_SIZE>>>::execute(
-                cmd, database,
-            )
-            .map_err(GatewayError::Cmd)
-        } else {
-            Err(GatewayError::Gateway(
-                DatabaseGatewayError::DatabaseNotFound(database_name.clone()),
-            ))
-        }
+        let ctx = self
+            .try_extract(cmd.as_ref())
+            .map_err(GatewayError::ExtractionError)?;
+        <Cmd as Command<Ctx>>::execute(cmd, ctx)
+            .map_err(GatewayError::CommandError)
     }
 }
 
-/// Errors that can occur during the execution of the [`DatabaseGateway`].
+/// Represents an error that occurred during the execution of a command.
 #[derive(Debug)]
-pub enum DatabaseGatewayError {
-    /// The database was not found.
-    DatabaseNotFound(database::Name),
-}
-
-impl<Cmd, const NODE_SIZE: u8> Gateway<Cmd, Self> for BackendFacade<NODE_SIZE>
-where
-    Self: ExecuteBackend<Cmd, NODE_SIZE>,
-    <Self as Execute<Cmd, Self>>::Err: Debug,
-    Cmd: Command,
-{
-    type Ok = <Self as Execute<Cmd, Self>>::Ok;
-    type Err = GatewayError<<Self as Execute<Cmd, Self>>::Err, ()>;
-
-    fn send(
-        &mut self,
-        cmd: Cmd,
-    ) -> Result<
-        <Self as Gateway<Cmd, Self>>::Ok,
-        <Self as Gateway<Cmd, Self>>::Err,
-    > {
-        <Self as Execute<Cmd, Self>>::execute(cmd, self)
-            .map_err(GatewayError::Cmd)
-    }
+pub enum GatewayError<CmdErr, ExtractErr> {
+    CommandError(CmdErr),
+    ExtractionError(ExtractErr),
 }
 
 #[cfg(test)]

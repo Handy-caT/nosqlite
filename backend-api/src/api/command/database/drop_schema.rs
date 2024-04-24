@@ -3,10 +3,7 @@ use std::convert::Infallible;
 use backend::{controller, schema};
 use derive_more::AsRef;
 
-use crate::api::{
-    command::{Command, Execute},
-    facade::BackendFacade,
-};
+use crate::api::command::Command;
 
 /// [`Command`] to drop a schema from a database.
 #[derive(Debug, AsRef, Clone, PartialEq)]
@@ -19,23 +16,21 @@ pub struct DropSchema {
     pub name: schema::Name,
 }
 
-impl Command for DropSchema {}
-
-impl<const NODE_SIZE: u8> Execute<DropSchema, controller::Database<NODE_SIZE>>
-    for BackendFacade<NODE_SIZE>
+impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
+    for DropSchema
 {
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
-        cmd: DropSchema,
+        self,
         db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        if !db_controller.has_schema(&cmd.name) {
+        if !db_controller.has_schema(&self.name) {
             return Ok(());
         }
 
-        let _ = db_controller.remove_schema(&cmd.name);
+        let _ = db_controller.remove_schema(&self.name);
         Ok(())
     }
 }
@@ -49,8 +44,9 @@ mod tests {
 
     use crate::api::command::{
         database::drop_schema::DropSchema,
-        gateway::{test::TestBackendFacade, DatabaseGatewayError},
-        Gateway as _, GatewayError,
+        extract::DatabaseExtractionError,
+        gateway::{test::TestBackendFacade, GatewayError},
+        Gateway as _,
     };
 
     #[test]
@@ -107,8 +103,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Gateway(
-                DatabaseGatewayError::DatabaseNotFound(name),
+            Err(GatewayError::ExtractionError(
+                DatabaseExtractionError::DatabaseNotFound(name),
             )) => {
                 assert_eq!(name, database_name);
             }

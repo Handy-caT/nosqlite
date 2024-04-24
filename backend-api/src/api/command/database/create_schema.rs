@@ -1,10 +1,7 @@
 use backend::{controller, schema};
 use derive_more::AsRef;
 
-use crate::api::{
-    command::{Command, Execute},
-    facade::BackendFacade,
-};
+use crate::api::command::Command;
 
 /// [`Command`] to create a new schema in a database.
 #[derive(Debug, AsRef, Clone, PartialEq)]
@@ -17,27 +14,25 @@ pub struct CreateSchema {
     pub name: schema::Name,
 }
 
-impl Command for CreateSchema {}
-
-impl<const NODE_SIZE: u8> Execute<CreateSchema, controller::Database<NODE_SIZE>>
-    for BackendFacade<NODE_SIZE>
+impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
+    for CreateSchema
 {
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
-        cmd: CreateSchema,
+        self,
         db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        if db_controller.has_schema(&cmd.name) {
-            return Err(ExecutionError::SchemaAlreadyExists(cmd.name));
+        if db_controller.has_schema(&self.name) {
+            return Err(ExecutionError::SchemaAlreadyExists(self.name));
         }
 
-        let schema = controller::Schema::new(cmd.name.clone());
+        let schema = controller::Schema::new(self.name.clone());
         if db_controller.add_schema(schema) {
             Ok(())
         } else {
-            Err(ExecutionError::SchemaAlreadyExists(cmd.name))
+            Err(ExecutionError::SchemaAlreadyExists(self.name))
         }
     }
 }
@@ -56,8 +51,9 @@ mod tests {
 
     use crate::api::command::{
         database::create_schema::{CreateSchema, ExecutionError},
-        gateway::{test::TestBackendFacade, DatabaseGatewayError},
-        Gateway, GatewayError,
+        extract::DatabaseExtractionError,
+        gateway::{test::TestBackendFacade, GatewayError},
+        Gateway,
     };
 
     #[test]
@@ -98,9 +94,9 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::SchemaAlreadyExists(
-                name,
-            ))) => {
+            Err(GatewayError::CommandError(
+                ExecutionError::SchemaAlreadyExists(name),
+            )) => {
                 assert_eq!(name, schema_name);
             }
             _ => panic!("Expected `SchemaAlreadyExists` found {:?}", result),
@@ -121,8 +117,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Gateway(
-                DatabaseGatewayError::DatabaseNotFound(name),
+            Err(GatewayError::ExtractionError(
+                DatabaseExtractionError::DatabaseNotFound(name),
             )) => {
                 assert_eq!(name, database_name);
             }

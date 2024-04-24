@@ -1,10 +1,7 @@
 use backend::{controller, schema::database};
 use common::structs::hash_table::HashTable;
 
-use crate::api::{
-    command::{Command, Execute},
-    facade::BackendFacade,
-};
+use crate::api::{command::Command, facade::BackendFacade};
 
 /// Command to create a new database.
 #[derive(Debug, Clone, PartialEq)]
@@ -13,23 +10,25 @@ pub struct CreateDatabase {
     pub name: database::Name,
 }
 
-impl Command for CreateDatabase {}
+impl AsRef<()> for CreateDatabase {
+    fn as_ref(&self) -> &() {
+        &()
+    }
+}
 
-impl<const NODE_SIZE: u8> Execute<CreateDatabase, Self>
-    for BackendFacade<NODE_SIZE>
-{
+impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for CreateDatabase {
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
-        cmd: CreateDatabase,
-        backend: &mut Self,
+        self,
+        backend: &mut BackendFacade<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        if backend.database_controllers.contains_key(&cmd.name) {
-            return Err(ExecutionError::DatabaseAlreadyExists(cmd.name));
+        if backend.database_controllers.contains_key(&self.name) {
+            return Err(ExecutionError::DatabaseAlreadyExists(self.name));
         }
-        let db = controller::Database::new(cmd.name.clone());
-        backend.database_controllers.insert(cmd.name, db);
+        let db = controller::Database::new(self.name.clone());
+        backend.database_controllers.insert(self.name, db);
         Ok(())
     }
 }
@@ -48,8 +47,8 @@ mod tests {
 
     use crate::api::command::{
         backend_api::create_database::{CreateDatabase, ExecutionError},
-        gateway::test::TestBackendFacade,
-        Gateway, GatewayError,
+        gateway::{test::TestBackendFacade, GatewayError},
+        Gateway,
     };
 
     #[test]
@@ -77,9 +76,9 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::DatabaseAlreadyExists(
-                name,
-            ))) => {
+            Err(GatewayError::CommandError(
+                ExecutionError::DatabaseAlreadyExists(name),
+            )) => {
                 assert_eq!(name, db_name)
             }
             _ => panic!(

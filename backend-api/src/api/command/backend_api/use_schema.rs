@@ -1,51 +1,57 @@
-use backend::{controller, schema, schema::database};
+use backend::{schema, schema::database};
 use common::structs::hash_table::{HashTable, MutHashTable};
 use derive_more::AsRef;
 
-use crate::api::{
-    command::{Command, Execute},
-    facade::BackendFacade,
-};
+use crate::api::{command::Command, facade::BackendFacade};
 
 /// [`Command`] to use a schema in a database.
-#[derive(Debug, AsRef, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct UseSchema {
     /// The name of the database where the schema will be used.
-    #[as_ref]
-    pub database_name: database::Name,
+    pub database_name: Option<database::Name>,
 
     /// The name of the schema to use.
     pub name: schema::Name,
 }
 
-impl Command for UseSchema {}
+impl AsRef<()> for UseSchema {
+    fn as_ref(&self) -> &() {
+        &()
+    }
+}
 
-impl<const NODE_SIZE: u8> Execute<UseSchema, Self>
-    for BackendFacade<NODE_SIZE>
-{
+impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseSchema {
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
-        cmd: UseSchema,
-        backend: &mut Self,
+        self,
+        backend: &mut BackendFacade<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
+        let database_name = self
+            .database_name
+            .as_ref()
+            .or(backend.context.current_db())
+            .ok_or(ExecutionError::DatabaseNotProvided)?;
+        
         if !backend
             .database_controllers
-            .contains_key(&cmd.database_name)
+            .contains_key(database_name)
         {
-            return Err(ExecutionError::DatabaseNotExists(cmd.database_name));
+            return Err(ExecutionError::DatabaseNotExists(
+                database_name.clone(),
+            ));
         }
 
         let db_controller = backend
             .database_controllers
-            .get_mut_value(&cmd.database_name)
-            .expect("exitst because of the check above");
-        if !db_controller.has_schema(&cmd.name) {
-            return Err(ExecutionError::SchemaNotExists(cmd.name));
+            .get_mut_value(database_name)
+            .expect("exist because of the check above");
+        if !db_controller.has_schema(&self.name) {
+            return Err(ExecutionError::SchemaNotExists(self.name));
         }
 
-        backend.context.set_current_schema(cmd.name);
+        backend.context.set_current_schema(self.name);
         Ok(())
     }
 }
@@ -53,6 +59,9 @@ impl<const NODE_SIZE: u8> Execute<UseSchema, Self>
 /// Errors that can occur during the execution of [`UseSchema`].
 #[derive(Debug)]
 pub enum ExecutionError {
+    /// The database was not provided.
+    DatabaseNotProvided,
+    
     /// The schema not exists in the database.
     DatabaseNotExists(database::Name),
 
@@ -65,7 +74,8 @@ mod tests {
     use backend::{schema, schema::database};
 
     use crate::api::command::{
-        gateway::test::TestBackendFacade, Gateway, GatewayError,
+        gateway::{test::TestBackendFacade, GatewayError},
+        Gateway,
     };
 
     use super::{ExecutionError, UseSchema};
@@ -80,7 +90,7 @@ mod tests {
             .with_schema(database_name.clone(), schema_name.clone())
             .build();
         let cmd = UseSchema {
-            database_name: database_name.clone(),
+            database_name: Some(database_name.clone()),
             name: schema_name.clone(),
         };
         let result = facade.send(cmd);
@@ -99,14 +109,16 @@ mod tests {
             .with_database(database_name.clone())
             .build();
         let cmd = UseSchema {
-            database_name: database_name.clone(),
+            database_name: Some(database_name.clone()),
             name: schema_name.clone(),
         };
         let result = facade.send(cmd);
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::SchemaNotExists(name))) => {
+            Err(GatewayError::CommandError(
+                ExecutionError::SchemaNotExists(name),
+            )) => {
                 assert_eq!(name, schema_name);
             }
             _ => panic!("Expected `SchemaNotExists` found {:?}", result),
@@ -120,14 +132,16 @@ mod tests {
 
         let mut facade = TestBackendFacade::<4>::new().build();
         let cmd = UseSchema {
-            database_name: database_name.clone(),
+            database_name: Some(database_name.clone()),
             name: schema_name.clone(),
         };
         let result = facade.send(cmd);
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::DatabaseNotExists(name))) => {
+            Err(GatewayError::CommandError(
+                ExecutionError::DatabaseNotExists(name),
+            )) => {
                 assert_eq!(name, database_name);
             }
             _ => panic!("Expected `DatabaseNotExists` found {:?}", result),

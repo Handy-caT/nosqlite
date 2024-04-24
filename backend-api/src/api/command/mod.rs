@@ -1,35 +1,44 @@
 pub mod backend_api;
 pub mod database;
 pub mod r#enum;
+mod extract;
 mod gateway;
 pub mod schema;
-mod extract;
 
-use std::fmt::Debug;
-
-use backend::{
-    controller, schema as schema_info,
-    schema::{database as database_info, table},
-};
-
-use crate::api::facade::BackendFacade;
+use std::convert::Infallible;
 
 /// Trait for commands.
 pub trait Command<Ctx> {
     type Ok;
     type Err;
 
-    fn execute(&self, ctx: &mut Ctx) -> Result<<Self as Command<Ctx>>::Ok, <Self as Command<Ctx>>::Err>;
+    fn execute(
+        self,
+        ctx: &mut Ctx,
+    ) -> Result<<Self as Command<Ctx>>::Ok, <Self as Command<Ctx>>::Err>;
 }
 
 pub trait Extract<Ctx> {
-    fn extract(&self) -> &mut Ctx;
+    fn extract(&mut self) -> &mut Ctx;
 }
 
-pub trait TryExtract<Ctx> {
+pub trait TryExtractBy<Ctx> {
     type Err;
+    type By;
 
-    fn try_extract(&self) -> Result<&mut Ctx, Self::Err>;
+    fn try_extract(&mut self, by: &Self::By) -> Result<&mut Ctx, Self::Err>;
+}
+
+impl<Ctx, T> TryExtractBy<Ctx> for T
+where
+    T: Extract<Ctx>,
+{
+    type Err = Infallible;
+    type By = ();
+
+    fn try_extract(&mut self, (): &()) -> Result<&mut Ctx, Self::Err> {
+        Ok(self.extract())
+    }
 }
 
 pub trait Gateway<Cmd, Ctx = ()>
@@ -48,11 +57,4 @@ where
         <Self as Gateway<Cmd, Ctx>>::Ok,
         <Self as Gateway<Cmd, Ctx>>::Err,
     >;
-}
-
-/// Represents an error that occurred during the execution of a command.
-#[derive(Debug)]
-pub enum GatewayError<CmdErr, GatewayErr> {
-    Cmd(CmdErr),
-    Gateway(GatewayErr),
 }

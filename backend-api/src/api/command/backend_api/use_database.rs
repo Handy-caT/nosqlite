@@ -1,10 +1,7 @@
 use backend::schema::database;
 use common::structs::hash_table::HashTable;
 
-use crate::api::{
-    command::{Command, Execute},
-    facade::BackendFacade,
-};
+use crate::api::{command::Command, facade::BackendFacade};
 
 /// Command to use a database.
 #[derive(Debug, Clone, PartialEq)]
@@ -13,22 +10,24 @@ pub struct UseDatabase {
     pub name: database::Name,
 }
 
-impl Command for UseDatabase {}
+impl AsRef<()> for UseDatabase {
+    fn as_ref(&self) -> &() {
+        &()
+    }
+}
 
-impl<const NODE_SIZE: u8> Execute<UseDatabase, Self>
-    for BackendFacade<NODE_SIZE>
-{
+impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseDatabase {
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
-        cmd: UseDatabase,
-        backend: &mut Self,
+        self,
+        backend: &mut BackendFacade<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        if !backend.database_controllers.contains_key(&cmd.name) {
-            return Err(ExecutionError::DatabaseNotExists(cmd.name));
+        if !backend.database_controllers.contains_key(&self.name) {
+            return Err(ExecutionError::DatabaseNotExists(self.name));
         }
-        backend.context.set_current_db(cmd.name);
+        backend.context.set_current_db(self.name);
         Ok(())
     }
 }
@@ -45,7 +44,8 @@ mod tests {
     use backend::schema::database;
 
     use crate::api::command::{
-        gateway::test::TestBackendFacade, Gateway, GatewayError,
+        gateway::{test::TestBackendFacade, GatewayError},
+        Gateway,
     };
 
     use super::{ExecutionError, UseDatabase};
@@ -73,9 +73,9 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::Cmd(ExecutionError::DatabaseNotExists(
-                db_name,
-            ))) => {
+            Err(GatewayError::CommandError(
+                ExecutionError::DatabaseNotExists(db_name),
+            )) => {
                 assert_eq!(name, db_name)
             }
             _ => {
