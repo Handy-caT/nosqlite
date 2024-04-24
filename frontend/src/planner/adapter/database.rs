@@ -1,6 +1,7 @@
 use backend_api::api::command::backend_api::{CreateDatabase, DropDatabase, UseDatabase};
 
-use crate::{create_database_statement_variant, drop_database_statement_variant, lexer::token, parser::ast, planner::adapter::parse_identifier, use_database_statement_variant};
+use crate::{create_database_statement_variant, drop_database_statement_variant, parser::ast, planner::adapter::parse_identifier, use_database_statement_variant};
+use crate::planner::adapter::{ParseError, WrongIdentifierError};
 
 impl TryFrom<ast::Node> for CreateDatabase {
     type Error = ParseError;
@@ -69,24 +70,4 @@ impl TryFrom<ast::Node> for UseDatabase {
             Err(ParseError::UnexpectedStatement)
         }
     }
-}
-
-/// Error that can occur during parsing.
-#[derive(Debug, Clone, PartialEq)]
-pub enum ParseError {
-    /// Error of wrong identifier type.
-    WrongIdentifier(WrongIdentifierError),
-
-    /// Error of unexpected statement.
-    UnexpectedStatement,
-}
-
-/// Error of wrong identifier type.
-#[derive(Debug, Clone, PartialEq)]
-pub struct WrongIdentifierError {
-    /// Provided token.
-    pub got: token::Identifier,
-
-    /// Expected type.
-    pub expected_type: &'static str,
 }

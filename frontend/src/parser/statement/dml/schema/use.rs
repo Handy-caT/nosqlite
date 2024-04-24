@@ -10,7 +10,7 @@ use crate::{
 /// Describes `USE SCHEMA` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
 pub struct UseSchema {
-    /// Name of the database.
+    /// Name of the schema and optionally database.
     pub identifier: token::Identifier,
 }
 

@@ -13,6 +13,7 @@ use crate::api::{
 pub use create_database::CreateDatabase;
 pub use drop_database::DropDatabase;
 pub use use_database::UseDatabase;
+pub use use_schema::UseSchema;
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]
@@ -23,7 +24,11 @@ pub enum DatabaseCommand {
     /// Command to drop a database.
     Drop(DropDatabase),
 
+    /// Command to use a database.
     Use(UseDatabase),
+
+    /// Command to use a schema.
+    UseSchema(UseSchema),
 }
 
 impl Command for DatabaseCommand {}
@@ -51,6 +56,10 @@ impl<const NODE_SIZE: u8> Execute<DatabaseCommand, Self>
                 <Self as Execute<UseDatabase, Self>>::execute(cmd, backend)
                     .map_err(ExecutionError::UseDatabase)
             }
+            DatabaseCommand::UseSchema(cmd) => {
+                <Self as Execute<UseSchema, Self>>::execute(cmd, backend)
+                    .map_err(ExecutionError::UseSchema)
+            }
         }
     }
 }
@@ -64,5 +73,9 @@ pub enum ExecutionError {
     /// Drop database error.
     DropDatabase(drop_database::ExecutionError),
 
+    /// Use database error.
     UseDatabase(use_database::ExecutionError),
+
+    /// Use schema error.
+    UseSchema(use_schema::ExecutionError),
 }

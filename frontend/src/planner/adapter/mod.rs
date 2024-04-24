@@ -4,6 +4,7 @@ use backend_api::api::command::r#enum::BackendCommand;
 use derive_more::From;
 
 mod database;
+//mod schema;
 
 /// Parses an identifier into a vector of names.
 /// # Arguments
@@ -22,4 +23,24 @@ pub enum PlannerCommand {
 
     /// Represents a frontend command.
     Frontend(FrontendCommand),
+}
+
+/// Error that can occur during parsing.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ParseError {
+    /// Error of wrong identifier type.
+    WrongIdentifier(WrongIdentifierError),
+
+    /// Error of unexpected statement.
+    UnexpectedStatement,
+}
+
+/// Error of wrong identifier type.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WrongIdentifierError {
+    /// Provided token.
+    pub got: token::Identifier,
+
+    /// Expected type.
+    pub expected_type: &'static str,
 }
