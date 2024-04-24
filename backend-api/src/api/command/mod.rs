@@ -3,6 +3,7 @@ pub mod database;
 pub mod r#enum;
 mod gateway;
 pub mod schema;
+mod extract;
 
 use std::fmt::Debug;
 
@@ -13,71 +14,27 @@ use backend::{
 
 use crate::api::facade::BackendFacade;
 
-/// Trait for commands that operate on a full backend instance.
-pub trait ExecuteBackend<Cmd, const NODE_SIZE: u8>:
-    Execute<Cmd, BackendFacade<NODE_SIZE>>
-{
-}
-
-impl<Cmd, T, const NODE_SIZE: u8> ExecuteBackend<Cmd, NODE_SIZE> for T where
-    T: Execute<Cmd, BackendFacade<NODE_SIZE>>
-{
-}
-
-/// Trait for commands that operate on a database.
-pub trait ExecuteDatabase<Cmd, const NODE_SIZE: u8>:
-    Execute<Cmd, controller::Database<NODE_SIZE>>
-{
-}
-
-impl<Cmd, T, const NODE_SIZE: u8> ExecuteDatabase<Cmd, NODE_SIZE> for T
-where
-    T: Execute<Cmd, controller::Database<NODE_SIZE>>,
-    Cmd: AsRef<database_info::Name>,
-{
-}
-
-/// Trait for commands that operate on a schema.
-pub trait ExecuteSchema<Cmd, const NODE_SIZE: u8>:
-    Execute<Cmd, controller::Schema<NODE_SIZE>>
-{
-}
-
-impl<Cmd, T, const NODE_SIZE: u8> ExecuteSchema<Cmd, NODE_SIZE> for T
-where
-    T: Execute<Cmd, controller::Schema<NODE_SIZE>>,
-    Cmd: AsRef<schema_info::Name>,
-{
-}
-
-/// Trait for commands that operate on a table.
-pub trait ExecuteTable<Cmd, const NODE_SIZE: u8>:
-    Execute<Cmd, controller::Table<NODE_SIZE>>
-{
-}
-
-impl<Cmd, T, const NODE_SIZE: u8> ExecuteTable<Cmd, NODE_SIZE> for T
-where
-    T: Execute<Cmd, controller::Table<NODE_SIZE>>,
-    Cmd: AsRef<table::Name>,
-{
-}
-
-/// Trait for database backend commands.
-pub trait Execute<Cmd, Ctx = ()> {
+/// Trait for commands.
+pub trait Command<Ctx> {
     type Ok;
     type Err;
 
-    /// Executes the command with the given context.
-    fn execute(cmd: Cmd, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err>;
+    fn execute(&self, ctx: &mut Ctx) -> Result<<Self as Command<Ctx>>::Ok, <Self as Command<Ctx>>::Err>;
 }
 
-/// Trait for commands.
-pub trait Command {}
+pub trait Extract<Ctx> {
+    fn extract(&self) -> &mut Ctx;
+}
+
+pub trait TryExtract<Ctx> {
+    type Err;
+
+    fn try_extract(&self) -> Result<&mut Ctx, Self::Err>;
+}
 
 pub trait Gateway<Cmd, Ctx = ()>
 where
-    Self: Execute<Cmd, Ctx>,
+    Cmd: Command<Ctx>,
 {
     type Ok;
     type Err;

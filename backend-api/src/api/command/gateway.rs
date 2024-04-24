@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 use crate::api::{
     command::{
-        Command, Execute, ExecuteBackend, ExecuteDatabase, Gateway,
+        Command, Gateway,
         GatewayError,
     },
     facade::BackendFacade,
