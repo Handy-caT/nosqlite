@@ -1,17 +1,12 @@
 pub mod adapter;
 pub mod command;
 
-use crate::{
-    create_database_statement_variant, drop_database_statement_variant,
-    get_context_statement_variant,
-    planner::{adapter::PlannerCommand, command::FrontendCommand},
-    preprocessor::{Preprocessor, PreprocessorError},
-    quit_statement_variant, use_database_statement_variant,
-};
+use crate::{create_database_statement_variant, create_schema_statement_variant, drop_database_statement_variant, get_context_statement_variant, planner::{adapter::PlannerCommand, command::FrontendCommand}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, use_database_statement_variant, use_schema_statement_variant};
 use backend_api::api::command::{
     backend_api::DatabaseCommand, r#enum::BackendCommand,
 };
 use derive_more::From;
+use backend_api::api::command::database::SchemaCommand;
 
 /// Represents a query planner.
 #[derive(Debug, Clone, PartialEq)]
@@ -66,6 +61,18 @@ impl Planner {
                     ))
                     .into()))
                 }
+                use_schema_statement_variant!(_) => Some(Ok(
+                    BackendCommand::Database(DatabaseCommand::UseSchema(
+                        node.try_into().expect("is use schema"),
+                    ))
+                    .into(),
+                )),
+                create_schema_statement_variant!(_) => Some(Ok(
+                    BackendCommand::Schema(SchemaCommand::Create(
+                        node.try_into().expect("is create schema"),
+                    ))
+                    .into(),
+                )),
                 _ => unimplemented!(),
             }
         } else {
@@ -95,6 +102,8 @@ mod tests {
         },
         r#enum::BackendCommand,
     };
+    use backend_api::api::command::backend_api::UseSchema;
+    use backend_api::api::command::database::{CreateSchema, SchemaCommand};
 
     use crate::planner::{
         adapter::PlannerCommand, command::FrontendCommand, Planner,
@@ -160,6 +169,98 @@ mod tests {
             command,
             PlannerCommand::Backend(BackendCommand::Database(
                 DatabaseCommand::Use(UseDatabase {
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_use_schema() {
+        let query = "USE SCHEMA test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::UseSchema(UseSchema {
+                    database_name: None,
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_use_schema_with_db() {
+        let query = "USE SCHEMA xd.test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::UseSchema(UseSchema {
+                    database_name: Some("xd".into()),
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+    
+    #[test]
+    fn test_create_schema() {
+        let query = "CREATE SCHEMA test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Create(CreateSchema {
+                    database_name: None,
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+    
+    #[test]
+    fn test_create_schema_with_db() {
+        let query = "CREATE SCHEMA xd.test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Create(CreateSchema {
+                    database_name: Some("xd".into()),
                     name: "test".into()
                 })
             ))

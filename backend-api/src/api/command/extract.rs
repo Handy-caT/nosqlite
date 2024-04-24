@@ -32,7 +32,7 @@ impl<const NODE_SIZE: u8> TryExtractBy<controller::Database<NODE_SIZE>>
         name: &database::Name,
     ) -> Result<&mut controller::Database<NODE_SIZE>, Self::Err> {
         self.database_controllers
-            .get_mut_value(&name)
+            .get_mut_value(name)
             .ok_or(DatabaseExtractionError::DatabaseNotFound(name.clone()))
     }
 }

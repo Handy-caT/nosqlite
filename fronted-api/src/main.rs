@@ -39,12 +39,11 @@ fn repl<const NODE_SIZE: u8>(mut api: Api<NODE_SIZE>) -> io::Result<()> {
                                 }
                             }
                             BackendCommand::Schema(command) => {
-                                // if let Err(error) =
-                                //     api.backend_api.send(command)
-                                // {
-                                //     println!("{:?}", error);
-                                // }
-                                todo!()
+                                if let Err(error) =
+                                    api.backend_api.send(command)
+                                {
+                                    println!("{:?}", error);
+                                }
                             }
                         },
                         PlannerCommand::Frontend(command) => {

@@ -1,10 +1,7 @@
 use backend::{controller, schema};
 use derive_more::AsRef;
 
-use crate::api::{
-    command::{Command},
-    facade::BackendFacade,
-};
+use crate::api::{command::Command, facade::BackendFacade};
 
 /// [`Command`] which is used to rename a [`controller::Schema`].
 #[derive(Debug, AsRef, Clone, PartialEq)]
@@ -67,11 +64,10 @@ mod tests {
 
     use crate::api::command::{
         database::rename_schema::{ExecutionError, RenameSchema},
-        gateway::{test::TestBackendFacade},
+        extract::DatabaseExtractionError,
+        gateway::{test::TestBackendFacade, GatewayError},
         Gateway as _,
     };
-    use crate::api::command::extract::DatabaseExtractionError;
-    use crate::api::command::gateway::GatewayError;
 
     #[test]
     fn renames_schema_when_exists() {
@@ -123,9 +119,9 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(ExecutionError::SchemaAlreadyExists(
-                name,
-            ))) => {
+            Err(GatewayError::CommandError(
+                ExecutionError::SchemaAlreadyExists(name),
+            )) => {
                 assert_eq!(name, new_schema_name);
             }
             _ => panic!("Expected `SchemaAlreadyExists` found {:?}", result),
@@ -150,7 +146,9 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(ExecutionError::SchemaNotFound(name))) => {
+            Err(GatewayError::CommandError(
+                ExecutionError::SchemaNotFound(name),
+            )) => {
                 assert_eq!(name, schema_name);
             }
             _ => panic!("Expected `SchemaNotFound` found {:?}", result),

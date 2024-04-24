@@ -5,12 +5,11 @@ mod use_schema;
 
 use std::fmt::Debug;
 
+use crate::api::{command::Command, facade::BackendFacade};
 pub use create_database::CreateDatabase;
 pub use drop_database::DropDatabase;
 pub use use_database::UseDatabase;
 pub use use_schema::UseSchema;
-use crate::api::command::Command;
-use crate::api::facade::BackendFacade;
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]
@@ -34,20 +33,29 @@ impl AsRef<()> for DatabaseCommand {
     }
 }
 
-impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DatabaseCommand {
+impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
+    for DatabaseCommand
+{
     type Ok = ();
     type Err = ExecutionError;
 
-    fn execute(self, facade: &mut BackendFacade<NODE_SIZE>) -> Result<Self::Ok, Self::Err> {
+    fn execute(
+        self,
+        facade: &mut BackendFacade<NODE_SIZE>,
+    ) -> Result<Self::Ok, Self::Err> {
         match self {
-            DatabaseCommand::Create(command) => command.execute(facade)
+            DatabaseCommand::Create(command) => command
+                .execute(facade)
                 .map_err(ExecutionError::CreateDatabase),
-            DatabaseCommand::Drop(command) => command.execute(facade)
+            DatabaseCommand::Drop(command) => command
+                .execute(facade)
                 .map_err(ExecutionError::DropDatabase),
-            DatabaseCommand::Use(command) => command.execute(facade)
-                .map_err(ExecutionError::UseDatabase),
-            DatabaseCommand::UseSchema(command) => command.execute(facade)
-                .map_err(ExecutionError::UseSchema),
+            DatabaseCommand::Use(command) => {
+                command.execute(facade).map_err(ExecutionError::UseDatabase)
+            }
+            DatabaseCommand::UseSchema(command) => {
+                command.execute(facade).map_err(ExecutionError::UseSchema)
+            }
         }
     }
 }

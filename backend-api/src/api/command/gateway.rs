@@ -90,6 +90,12 @@ pub mod test {
             self
         }
 
+        /// Sets the current database in the `BackendFacade`'s context.
+        pub fn with_db_in_context(mut self, name: database::Name) -> Self {
+            self.0.context.set_current_db(name);
+            self
+        }
+
         /// Builds the `BackendFacade`.
         pub fn build(self) -> BackendFacade<NODE_SIZE> {
             self.0

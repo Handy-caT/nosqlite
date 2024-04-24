@@ -4,7 +4,7 @@ use backend_api::api::command::r#enum::BackendCommand;
 use derive_more::From;
 
 mod database;
-//mod schema;
+mod schema;
 
 /// Parses an identifier into a vector of names.
 /// # Arguments
@@ -26,7 +26,7 @@ pub enum PlannerCommand {
 }
 
 /// Error that can occur during parsing.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, From, PartialEq)]
 pub enum ParseError {
     /// Error of wrong identifier type.
     WrongIdentifier(WrongIdentifierError),
