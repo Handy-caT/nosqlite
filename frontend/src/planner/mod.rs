@@ -89,10 +89,11 @@ mod tests {
         backend_api::{
             CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase,
         },
-        database::{CreateSchema, SchemaCommand, UseSchema},
+        database::{
+            CreateSchema, DropSchema, RenameSchema, SchemaCommand, UseSchema,
+        },
         r#enum::BackendCommand,
     };
-    use backend_api::api::command::database::{DropSchema, RenameSchema};
 
     use crate::planner::{
         adapter::PlannerCommand, command::FrontendCommand, Planner,

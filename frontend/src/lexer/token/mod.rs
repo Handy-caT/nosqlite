@@ -1,3 +1,4 @@
+mod data_type;
 mod ddl_operator;
 mod delimiter;
 mod dml_operator;
@@ -6,10 +7,11 @@ mod shortcut;
 
 use derive_more::From;
 
+pub use data_type::DataType;
 pub use ddl_operator::DDLOperator;
 pub use delimiter::Delimiter;
 pub use dml_operator::DMLOperator;
-pub use keyword::{DBObject, Keyword, Preposition};
+pub use keyword::{DBObject, Key, Keyword, Preposition};
 pub use shortcut::Shortcut;
 
 /// Identifier is a token that represents an identifier in the source code.
@@ -42,4 +44,7 @@ pub enum Token {
 
     /// Token for [`Shortcut`].
     Shortcut(Shortcut),
+
+    /// Token for [`DataType`].
+    DataType(DataType),
 }

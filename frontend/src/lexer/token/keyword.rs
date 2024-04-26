@@ -10,6 +10,9 @@ pub enum Keyword {
 
     /// Token for [`Preposition`].
     Preposition(Preposition),
+
+    /// Token for [`Key`].
+    Key(Key),
 }
 
 impl FromStr for Keyword {
@@ -22,6 +25,10 @@ impl FromStr for Keyword {
 
         if let Ok(preposition) = s.parse::<Preposition>() {
             return Ok(Keyword::Preposition(preposition));
+        }
+
+        if let Ok(key) = s.parse::<Key>() {
+            return Ok(Keyword::Key(key));
         }
 
         Err(())
@@ -149,5 +156,53 @@ mod preposition_tests {
     fn test_preposition_from_str_case_insensitive() {
         assert_eq!("iN".parse(), Ok(Preposition::In));
         assert_eq!("tO".parse(), Ok(Preposition::To));
+    }
+}
+
+/// Represents a keyword in the SQL language for the keys.
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Key {
+    /// Token for `PRIMARY` key.
+    Primary,
+
+    /// Token for `FOREIGN` key.
+    Foreign,
+
+    /// Token for `Key`.
+    Key,
+}
+
+impl FromStr for Key {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "primary" => Ok(Key::Primary),
+            "foreign" => Ok(Key::Foreign),
+            "key" => Ok(Key::Key),
+            _ => Err(()),
+        }
+    }
+}
+
+#[cfg(test)]
+mod key_tests {
+    use crate::lexer::token::keyword::Key;
+
+    #[test]
+    fn test_key_from_str() {
+        assert_eq!("primary".parse(), Ok(Key::Primary));
+        assert_eq!("foreign".parse(), Ok(Key::Foreign));
+        assert_eq!("key".parse(), Ok(Key::Key));
+
+        assert_eq!("".parse::<Key>(), Err(()));
+        assert_eq!("invalid".parse::<Key>(), Err(()));
+    }
+
+    #[test]
+    fn test_key_from_str_case_insensitive() {
+        assert_eq!("pRiMaRy".parse(), Ok(Key::Primary));
+        assert_eq!("fOrEiGn".parse(), Ok(Key::Foreign));
+        assert_eq!("kEy".parse(), Ok(Key::Key));
     }
 }

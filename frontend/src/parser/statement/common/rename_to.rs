@@ -25,7 +25,7 @@ impl Display for RenameTo {
 impl RenameTo {
     /// Creates a new `RenameTo` statement.
     /// # Arguments
-    /// * `identifier` - Name of the schema.
+    /// * `identifier` - Name to rename to.
     /// # Returns
     /// * New instance of `RenameTo` [`Statement`].
     pub fn new_statement(identifier: token::Identifier) -> Statement {

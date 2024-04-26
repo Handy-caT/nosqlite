@@ -131,6 +131,12 @@ impl Lexer {
             return Some(Token::Keyword(keyword));
         }
 
+        let data_type = substr.parse::<token::DataType>();
+        if let Ok(data_type) = data_type {
+            self.current_position = self.read_position;
+            return Some(Token::DataType(data_type));
+        }
+
         self.current_position = self.read_position;
 
         let identifier = token::Identifier(substr.to_string());
@@ -279,6 +285,30 @@ mod lexer_tests {
         let expected = vec![
             Token::Shortcut(token::Shortcut::Quit),
             Token::Shortcut(token::Shortcut::Quit),
+        ];
+
+        let actual: Vec<Token> = lexer.collect();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_lexer_next_token_key_datatype() {
+        let lexer = Lexer::new(
+            "CREATE TABLE users(id INT4 PRIMARY \
+                                       KEY);",
+        );
+        let expected = vec![
+            Token::DML(token::DMLOperator::Create),
+            Token::Keyword(token::Keyword::DbObject(token::DBObject::Table)),
+            Token::Identifier(token::Identifier("users".to_string())),
+            Token::Delimiter(token::Delimiter::LeftParenthesis),
+            Token::Identifier(token::Identifier("id".to_string())),
+            Token::DataType(token::DataType::Integer),
+            Token::Keyword(token::Keyword::Key(token::Key::Primary)),
+            Token::Keyword(token::Keyword::Key(token::Key::Key)),
+            Token::Delimiter(token::Delimiter::RightParenthesis),
+            Token::Delimiter(token::Delimiter::Semicolon),
         ];
 
         let actual: Vec<Token> = lexer.collect();
