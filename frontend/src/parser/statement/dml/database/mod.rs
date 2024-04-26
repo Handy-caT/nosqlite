@@ -30,3 +30,15 @@ impl Node for DatabaseNode {
         }
     }
 }
+
+/// Shortcut for a [`DatabaseNode`] variant of [`Statement`].
+#[macro_export]
+macro_rules! database_statement_variant {
+    ($($arg:tt)*) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Database(
+                    $($arg)*
+            )
+        )
+    };
+}

@@ -1,12 +1,14 @@
 mod create_schema;
 mod drop_schema;
 mod rename_schema;
+pub mod use_schema;
+
+use crate::api::{command::Command, facade::BackendFacade};
 
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
 pub use rename_schema::RenameSchema;
-use crate::api::command::Command;
-use crate::api::facade::BackendFacade;
+pub use use_schema::UseSchema;
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]
@@ -19,6 +21,9 @@ pub enum SchemaCommand {
 
     /// Command to rename a schema.
     Rename(RenameSchema),
+    
+    /// Command to use a schema.
+    Use(UseSchema),
 }
 
 impl AsRef<()> for SchemaCommand {
@@ -39,8 +44,15 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for SchemaCommand {
             SchemaCommand::Create(command) => command
                 .execute(facade)
                 .map_err(ExecutionError::CreateSchema),
-            SchemaCommand::Drop(command) => todo!(),
-            SchemaCommand::Rename(command) => todo!(),
+            SchemaCommand::Use(command) => command
+                .execute(facade)
+                .map_err(ExecutionError::UseSchema),
+            SchemaCommand::Drop(command) => command
+                .execute(facade)
+                .map_err(ExecutionError::DropSchema),
+            SchemaCommand::Rename(command) => command
+                .execute(facade)
+                .map_err(ExecutionError::RenameSchema),
         }
     }
 }
@@ -56,4 +68,7 @@ pub enum ExecutionError {
 
     /// Rename schema error.
     RenameSchema(rename_schema::ExecutionError),
+    
+    /// Use schema error.
+    UseSchema(use_schema::ExecutionError),
 }

@@ -1,6 +1,12 @@
-use crate::{create_database_statement_variant, create_schema_statement_variant, parser::ast, planner::adapter::{parse_identifier, ParseError, WrongIdentifierError}, use_schema_statement_variant};
-use backend_api::api::command::backend_api::UseSchema;
-use backend_api::api::command::database::CreateSchema;
+use crate::{
+    create_schema_statement_variant,
+    parser::ast,
+    planner::adapter::{parse_identifier, ParseError, WrongIdentifierError},
+    use_schema_statement_variant,
+};
+use backend_api::api::command::{
+    database::UseSchema, database::CreateSchema,
+};
 
 impl TryFrom<ast::Node> for UseSchema {
     type Error = ParseError;
@@ -15,7 +21,8 @@ impl TryFrom<ast::Node> for UseSchema {
                     expected_type: "`schema_name`",
                 }))?
                 .to_string();
-            let (schema_name, db_name) = if let Some(schema_name) = names.get(1) {
+            let (schema_name, db_name) = if let Some(schema_name) = names.get(1)
+            {
                 (schema_name.clone(), Some(name.into()))
             } else {
                 (name.clone(), None)
@@ -44,7 +51,8 @@ impl TryFrom<ast::Node> for CreateSchema {
                     expected_type: "`schema_name`",
                 }))?
                 .to_string();
-            let (schema_name, db_name) = if let Some(schema_name) = names.get(1) {
+            let (schema_name, db_name) = if let Some(schema_name) = names.get(1)
+            {
                 (schema_name.clone(), Some(name.into()))
             } else {
                 (name.clone(), None)

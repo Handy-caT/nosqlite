@@ -1,12 +1,15 @@
 pub mod adapter;
 pub mod command;
+mod planners;
 
-use crate::{create_database_statement_variant, create_schema_statement_variant, drop_database_statement_variant, get_context_statement_variant, planner::{adapter::PlannerCommand, command::FrontendCommand}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, use_database_statement_variant, use_schema_statement_variant};
+use crate::{create_database_statement_variant, create_schema_statement_variant, database_statement_variant, drop_database_statement_variant, get_context_statement_variant, planner::{adapter::PlannerCommand, command::FrontendCommand}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, use_database_statement_variant, use_schema_statement_variant};
 use backend_api::api::command::{
-    backend_api::DatabaseCommand, r#enum::BackendCommand,
+    backend_api::DatabaseCommand, database::SchemaCommand,
+    r#enum::BackendCommand,
 };
 use derive_more::From;
-use backend_api::api::command::database::SchemaCommand;
+use crate::parser::Statement;
+use crate::planner::planners::DatabasePlanner;
 
 /// Represents a query planner.
 #[derive(Debug, Clone, PartialEq)]
@@ -37,17 +40,8 @@ impl Planner {
                 return Some(Err(node.expect_err("is error").into()));
             };
             match &node.statement {
-                create_database_statement_variant!(_) => {
-                    Some(Ok(BackendCommand::Database(DatabaseCommand::Create(
-                        node.try_into().expect("is create database"),
-                    ))
-                    .into()))
-                }
-                drop_database_statement_variant!(_) => {
-                    Some(Ok(BackendCommand::Database(DatabaseCommand::Drop(
-                        node.try_into().expect("is drop database"),
-                    ))
-                    .into()))
+                database_statement_variant!(_) => {
+                    Some(DatabasePlanner::new(node).parse_command())
                 }
                 quit_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::Quit.into()))
@@ -55,24 +49,18 @@ impl Planner {
                 get_context_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::GetContext.into()))
                 }
-                use_database_statement_variant!(_) => {
-                    Some(Ok(BackendCommand::Database(DatabaseCommand::Use(
-                        node.try_into().expect("is use database"),
-                    ))
-                    .into()))
-                }
                 use_schema_statement_variant!(_) => Some(Ok(
-                    BackendCommand::Database(DatabaseCommand::UseSchema(
+                    BackendCommand::Schema(SchemaCommand::Use(
                         node.try_into().expect("is use schema"),
                     ))
                     .into(),
                 )),
-                create_schema_statement_variant!(_) => Some(Ok(
-                    BackendCommand::Schema(SchemaCommand::Create(
+                create_schema_statement_variant!(_) => {
+                    Some(Ok(BackendCommand::Schema(SchemaCommand::Create(
                         node.try_into().expect("is create schema"),
                     ))
-                    .into(),
-                )),
+                    .into()))
+                }
                 _ => unimplemented!(),
             }
         } else {
@@ -89,9 +77,14 @@ impl Iterator for Planner {
     }
 }
 
+/// Represents a query planner error.
 #[derive(Debug, Clone, From, PartialEq)]
 pub enum PlannerError {
+    /// Represents a preprocessor error.
     PreprocessorError(PreprocessorError),
+    
+    /// Represents an unexpected statement.
+    UnexpectedStatement(Statement),
 }
 
 #[cfg(test)]
@@ -100,10 +93,9 @@ mod tests {
         backend_api::{
             CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase,
         },
+        database::{CreateSchema, SchemaCommand, UseSchema},
         r#enum::BackendCommand,
     };
-    use backend_api::api::command::backend_api::UseSchema;
-    use backend_api::api::command::database::{CreateSchema, SchemaCommand};
 
     use crate::planner::{
         adapter::PlannerCommand, command::FrontendCommand, Planner,
@@ -189,8 +181,8 @@ mod tests {
 
         assert_eq!(
             command,
-            PlannerCommand::Backend(BackendCommand::Database(
-                DatabaseCommand::UseSchema(UseSchema {
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Use(UseSchema {
                     database_name: None,
                     name: "test".into()
                 })
@@ -212,15 +204,15 @@ mod tests {
 
         assert_eq!(
             command,
-            PlannerCommand::Backend(BackendCommand::Database(
-                DatabaseCommand::UseSchema(UseSchema {
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Use(UseSchema {
                     database_name: Some("xd".into()),
                     name: "test".into()
                 })
             ))
         );
     }
-    
+
     #[test]
     fn test_create_schema() {
         let query = "CREATE SCHEMA test;";
@@ -243,7 +235,7 @@ mod tests {
             ))
         );
     }
-    
+
     #[test]
     fn test_create_schema_with_db() {
         let query = "CREATE SCHEMA xd.test;";
