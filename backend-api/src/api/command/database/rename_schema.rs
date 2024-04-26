@@ -1,6 +1,6 @@
 use backend::{controller, schema};
-use derive_more::AsRef;
 use common::structs::hash_table::MutHashTable;
+use derive_more::AsRef;
 
 use crate::api::{command::Command, facade::BackendFacade};
 
@@ -23,9 +23,7 @@ impl AsRef<()> for RenameSchema {
     }
 }
 
-impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
-    for RenameSchema
-{
+impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for RenameSchema {
     type Ok = ();
     type Err = ExecutionError;
 
@@ -43,7 +41,7 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
             .database_controllers
             .get_mut_value(database_name)
             .ok_or(ExecutionError::DatabaseNotExists(database_name.clone()))?;
-        
+
         if !db_controller.has_schema(&self.old_name) {
             return Err(ExecutionError::SchemaNotFound(self.old_name));
         }
@@ -72,7 +70,7 @@ pub enum ExecutionError {
 
     /// Provided database does not exist.
     DatabaseNotExists(schema::database::Name),
-    
+
     /// The schema with the old name was not found.
     SchemaNotFound(schema::Name),
 
@@ -126,7 +124,7 @@ mod tests {
         let database_name = database::Name::from("test");
         let schema_name = schema::Name::from("schema");
         let new_schema_name = schema::Name::from("new_schema");
-        
+
         let mut facade = TestBackendFacade::<4>::new()
             .with_database(database_name.clone())
             .with_schema(database_name.clone(), schema_name.clone())
@@ -171,8 +169,8 @@ mod tests {
 
         match result {
             Err(GatewayError::CommandError(
-                    ExecutionError::DatabaseNotProvided,
-                )) => {}
+                ExecutionError::DatabaseNotProvided,
+            )) => {}
             _ => panic!("Expected `DatabaseNotProvided` found {:?}", result),
         }
     }

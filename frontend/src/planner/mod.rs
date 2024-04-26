@@ -2,14 +2,19 @@ pub mod adapter;
 pub mod command;
 mod planners;
 
-use crate::{create_database_statement_variant, create_schema_statement_variant, database_statement_variant, drop_database_statement_variant, get_context_statement_variant, planner::{adapter::PlannerCommand, command::FrontendCommand}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, use_database_statement_variant, use_schema_statement_variant};
-use backend_api::api::command::{
-    backend_api::DatabaseCommand, database::SchemaCommand,
-    r#enum::BackendCommand,
+use crate::{
+    database_statement_variant, get_context_statement_variant,
+    parser::Statement,
+    planner::{
+        adapter::PlannerCommand, command::FrontendCommand,
+        planners::DatabasePlanner,
+    },
+    preprocessor::{Preprocessor, PreprocessorError},
+    quit_statement_variant, schema_statement_variant,
 };
+
+use crate::planner::planners::SchemaPlanner;
 use derive_more::From;
-use crate::parser::Statement;
-use crate::planner::planners::DatabasePlanner;
 
 /// Represents a query planner.
 #[derive(Debug, Clone, PartialEq)]
@@ -43,23 +48,14 @@ impl Planner {
                 database_statement_variant!(_) => {
                     Some(DatabasePlanner::new(node).parse_command())
                 }
+                schema_statement_variant!(_) => {
+                    Some(SchemaPlanner::new(node).parse_command())
+                }
                 quit_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::Quit.into()))
                 }
                 get_context_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::GetContext.into()))
-                }
-                use_schema_statement_variant!(_) => Some(Ok(
-                    BackendCommand::Schema(SchemaCommand::Use(
-                        node.try_into().expect("is use schema"),
-                    ))
-                    .into(),
-                )),
-                create_schema_statement_variant!(_) => {
-                    Some(Ok(BackendCommand::Schema(SchemaCommand::Create(
-                        node.try_into().expect("is create schema"),
-                    ))
-                    .into()))
                 }
                 _ => unimplemented!(),
             }
@@ -82,7 +78,7 @@ impl Iterator for Planner {
 pub enum PlannerError {
     /// Represents a preprocessor error.
     PreprocessorError(PreprocessorError),
-    
+
     /// Represents an unexpected statement.
     UnexpectedStatement(Statement),
 }
@@ -96,6 +92,7 @@ mod tests {
         database::{CreateSchema, SchemaCommand, UseSchema},
         r#enum::BackendCommand,
     };
+    use backend_api::api::command::database::{DropSchema, RenameSchema};
 
     use crate::planner::{
         adapter::PlannerCommand, command::FrontendCommand, Planner,
@@ -254,6 +251,124 @@ mod tests {
                 SchemaCommand::Create(CreateSchema {
                     database_name: Some("xd".into()),
                     name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_drop_schema() {
+        let query = "DROP SCHEMA test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Drop(DropSchema {
+                    database_name: None,
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_drop_schema_with_db() {
+        let query = "DROP SCHEMA xd.test;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Drop(DropSchema {
+                    database_name: Some("xd".into()),
+                    name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_rename_schema() {
+        let query = "ALTER SCHEMA test RENAME TO test1;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Rename(RenameSchema {
+                    database_name: None,
+                    new_name: "test1".into(),
+                    old_name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_rename_schema_with_db() {
+        let query = "ALTER SCHEMA xd.test RENAME TO xd.test1;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Rename(RenameSchema {
+                    database_name: Some("xd".into()),
+                    new_name: "test1".into(),
+                    old_name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_rename_schema_with_db_from() {
+        let query = "ALTER SCHEMA xd.test RENAME TO test1;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Rename(RenameSchema {
+                    database_name: Some("xd".into()),
+                    new_name: "test1".into(),
+                    old_name: "test".into()
                 })
             ))
         );

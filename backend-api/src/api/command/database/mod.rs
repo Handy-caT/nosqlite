@@ -21,7 +21,7 @@ pub enum SchemaCommand {
 
     /// Command to rename a schema.
     Rename(RenameSchema),
-    
+
     /// Command to use a schema.
     Use(UseSchema),
 }
@@ -44,12 +44,12 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for SchemaCommand {
             SchemaCommand::Create(command) => command
                 .execute(facade)
                 .map_err(ExecutionError::CreateSchema),
-            SchemaCommand::Use(command) => command
-                .execute(facade)
-                .map_err(ExecutionError::UseSchema),
-            SchemaCommand::Drop(command) => command
-                .execute(facade)
-                .map_err(ExecutionError::DropSchema),
+            SchemaCommand::Use(command) => {
+                command.execute(facade).map_err(ExecutionError::UseSchema)
+            }
+            SchemaCommand::Drop(command) => {
+                command.execute(facade).map_err(ExecutionError::DropSchema)
+            }
             SchemaCommand::Rename(command) => command
                 .execute(facade)
                 .map_err(ExecutionError::RenameSchema),
@@ -68,7 +68,7 @@ pub enum ExecutionError {
 
     /// Rename schema error.
     RenameSchema(rename_schema::ExecutionError),
-    
+
     /// Use schema error.
     UseSchema(use_schema::ExecutionError),
 }

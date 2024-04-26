@@ -5,6 +5,7 @@ mod r#use;
 
 use crate::{parser::Statement, preprocessor::Node};
 
+use crate::parser::statement::dml::DatabaseNode;
 pub use alter::AlterSchema;
 pub use create::CreateSchema;
 pub use drop::DropSchema;
@@ -35,4 +36,16 @@ impl Node for SchemaNode {
             SchemaNode::Use(stmnt) => stmnt.can_be_followed(next),
         }
     }
+}
+
+/// Shortcut for a [`SchemaNode`] variant of [`Statement`].
+#[macro_export]
+macro_rules! schema_statement_variant {
+    ($($arg:tt)*) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Schema(
+                    $($arg)*
+            )
+        )
+    };
 }

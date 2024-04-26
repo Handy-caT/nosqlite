@@ -1,8 +1,7 @@
-use backend::{schema};
+use backend::schema;
 use common::structs::hash_table::MutHashTable;
 
-use crate::api::command::Command;
-use crate::api::facade::BackendFacade;
+use crate::api::{command::Command, facade::BackendFacade};
 
 /// [`Command`] to drop a schema from a database.
 #[derive(Debug, Clone, PartialEq)]
@@ -20,9 +19,7 @@ impl AsRef<()> for DropSchema {
     }
 }
 
-impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
-    for DropSchema
-{
+impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropSchema {
     type Ok = ();
     type Err = ExecutionError;
 
@@ -40,7 +37,7 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
             .database_controllers
             .get_mut_value(database_name)
             .ok_or(ExecutionError::DatabaseNotExists(database_name.clone()))?;
-        
+
         if !db_controller.has_schema(&self.name) {
             return Ok(());
         }
@@ -133,8 +130,8 @@ mod tests {
 
         match result {
             Err(GatewayError::CommandError(
-                    ExecutionError::DatabaseNotProvided,
-                )) => {}
+                ExecutionError::DatabaseNotProvided,
+            )) => {}
             _ => panic!("Expected `DatabaseNotProvided` found {:?}", result),
         }
     }

@@ -31,6 +31,9 @@ pub enum ParseError {
     /// Error of wrong identifier type.
     WrongIdentifier(WrongIdentifierError),
 
+    /// Error of identifier mismatch.
+    IdentifierMismatch { got: String, expected: String },
+
     /// Error of unexpected statement.
     UnexpectedStatement,
 }
