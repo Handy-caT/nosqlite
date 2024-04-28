@@ -58,10 +58,12 @@ pub mod test {
     use std::sync::{Arc, Mutex};
 
     use backend::{
-        controller, data::id, page::page_controller::PageController, schema,
-        schema::database,
+        controller,
+        data::id,
+        page::page_controller::PageController,
+        schema,
+        schema::{database, table},
     };
-    use backend::schema::table;
     use common::structs::hash_table::{HashTable, MutHashTable};
 
     use crate::api::facade::BackendFacade;
@@ -101,7 +103,7 @@ pub mod test {
             database.add_schema(schema);
             self
         }
-        
+
         /// Adds a table to the `BackendFacade`.
         pub fn with_table(
             mut self,
@@ -127,11 +129,9 @@ pub mod test {
             self.0.context.set_current_db(name);
             self
         }
-        
+
         /// Sets the current schema in the `BackendFacade`'s context.
-        pub fn with_schema_in_context(
-            mut self, name: schema::Name
-        ) -> Self {
+        pub fn with_schema_in_context(mut self, name: schema::Name) -> Self {
             self.0.context.set_current_schema(name);
             self
         }

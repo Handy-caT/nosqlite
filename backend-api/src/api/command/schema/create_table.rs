@@ -1,7 +1,5 @@
 use crate::{
-    api::command::{
-        Command, ContextReceiver, OptionalBy,
-    },
+    api::command::{Command, ContextReceiver, OptionalBy},
     Context,
 };
 use backend::{
@@ -13,7 +11,7 @@ use backend::{
     },
 };
 
-/// [`Command`] to create a new schema in a database.
+/// [`Command`] to create a new table in a database.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CreateTable {
     /// The name of the database where the table will be created.
@@ -105,13 +103,11 @@ mod tests {
     use common::structs::hash_table::MutHashTable;
 
     use crate::api::command::{
-        gateway::test::TestBackendFacade,
+        extract::SchemaExtractionError,
+        gateway::{test::TestBackendFacade, GatewayError},
         Gateway,
     };
-    use crate::api::command::database::CreateSchema;
-    use crate::api::command::extract::{DatabaseExtractionError, SchemaExtractionError};
-    use crate::api::command::gateway::GatewayError;
-    
+
     use super::{CreateTable, ExecutionError};
 
     #[test]
@@ -122,7 +118,7 @@ mod tests {
         let column_name = column::Name::from("id");
 
         let mut test_cases = Vec::new();
-        
+
         let facade = TestBackendFacade::<4>::new()
             .with_database(database_name.clone())
             .with_schema(database_name.clone(), schema_name.clone())
@@ -141,7 +137,7 @@ mod tests {
             columns: vec![(column_name.clone(), column.clone())],
             primary_key: primary_key.clone(),
         };
-        
+
         test_cases.push((facade, cmd));
 
         let facade = TestBackendFacade::<4>::new()
@@ -157,7 +153,7 @@ mod tests {
             columns: vec![(column_name.clone(), column.clone())],
             primary_key: primary_key.clone(),
         };
-        
+
         test_cases.push((facade, cmd));
 
         let facade = TestBackendFacade::<4>::new()
@@ -176,7 +172,7 @@ mod tests {
         };
 
         test_cases.push((facade, cmd));
-        
+
         for (mut facade, cmd) in test_cases.into_iter() {
             let result = facade.send(cmd);
             assert!(result.is_ok());
@@ -214,7 +210,11 @@ mod tests {
         let mut facade = TestBackendFacade::<4>::new()
             .with_database(database_name.clone())
             .with_schema(database_name.clone(), schema_name.clone())
-            .with_table(database_name.clone(), schema_name.clone(), table_name.clone())
+            .with_table(
+                database_name.clone(),
+                schema_name.clone(),
+                table_name.clone(),
+            )
             .build();
 
         let column = Column::new(StorageDataType::Integer);
@@ -230,14 +230,14 @@ mod tests {
             columns: vec![(column_name.clone(), column.clone())],
             primary_key: primary_key.clone(),
         };
-        
+
         let result = facade.send(cmd);
         assert!(result.is_err());
 
         match result {
             Err(GatewayError::CommandError(
-                    ExecutionError::TableAlreadyExists(name),
-                )) => {
+                ExecutionError::TableAlreadyExists(name),
+            )) => {
                 assert_eq!(name, table_name);
             }
             _ => panic!("Expected `TableAlreadyExists` found {:?}", result),
@@ -251,8 +251,7 @@ mod tests {
         let table_name = table::Name::from("table");
         let column_name = column::Name::from("id");
 
-        let mut facade = TestBackendFacade::<4>::new()
-            .build();
+        let mut facade = TestBackendFacade::<4>::new().build();
 
         let column = Column::new(StorageDataType::Integer);
 
@@ -272,8 +271,8 @@ mod tests {
 
         match result {
             Err(GatewayError::ExtractionError(
-                    SchemaExtractionError::DatabaseNotFound(name),
-                )) => {
+                SchemaExtractionError::DatabaseNotFound(name),
+            )) => {
                 assert_eq!(name, database_name);
             }
             _ => panic!("Expected `DatabaseNotFound` found {:?}", result),
@@ -309,8 +308,8 @@ mod tests {
 
         match result {
             Err(GatewayError::ExtractionError(
-                    SchemaExtractionError::SchemaNotFound(name, db_name),
-                )) => {
+                SchemaExtractionError::SchemaNotFound(name, db_name),
+            )) => {
                 assert_eq!(db_name, database_name);
                 assert_eq!(name, schema_name);
             }
