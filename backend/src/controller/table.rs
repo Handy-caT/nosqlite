@@ -6,7 +6,7 @@ use crate::{
     schema::{
         column,
         column::{primary_key, primary_key::PrimaryKey},
-        r#type::{r#enum::StorageData, DataRow},
+        r#type::DataRow,
         table::Name,
     },
 };

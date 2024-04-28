@@ -1,6 +1,13 @@
-use backend_api::api::command::backend_api::{CreateDatabase, DropDatabase, UseDatabase, UseSchema};
+use backend_api::api::command::backend_api::{
+    CreateDatabase, DropDatabase, UseDatabase, UseSchema,
+};
 
-use crate::{create_database_statement_variant, drop_database_statement_variant, parser::ast, planner::adapter::{parse_identifier, ParseError, WrongIdentifierError}, use_database_statement_variant, use_schema_statement_variant};
+use crate::{
+    create_database_statement_variant, drop_database_statement_variant,
+    parser::ast,
+    planner::adapter::{parse_identifier, ParseError, WrongIdentifierError},
+    use_database_statement_variant, use_schema_statement_variant,
+};
 
 impl TryFrom<ast::Node> for CreateDatabase {
     type Error = ParseError;
@@ -100,4 +107,3 @@ impl TryFrom<ast::Node> for UseSchema {
         }
     }
 }
-

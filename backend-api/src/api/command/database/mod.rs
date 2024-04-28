@@ -5,11 +5,13 @@ mod rename_schema;
 use crate::api::{command::Command, facade::BackendFacade};
 use backend::{controller, schema};
 
+use crate::{
+    api::command::{ContextReceiver, OptionalBy},
+    Context,
+};
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
 pub use rename_schema::RenameSchema;
-use crate::api::command::{ContextReceiver, OptionalRef};
-use crate::Context;
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]
@@ -24,12 +26,12 @@ pub enum SchemaCommand {
     Rename(RenameSchema),
 }
 
-impl OptionalRef<schema::database::Name> for SchemaCommand {
-    fn as_ref(&self) -> Option<&schema::database::Name> {
+impl OptionalBy<schema::database::Name> for SchemaCommand {
+    fn by(&self) -> Option<schema::database::Name> {
         match self {
-            SchemaCommand::Create(command) => command.as_ref(),
-            SchemaCommand::Drop(command) => command.as_ref(),
-            SchemaCommand::Rename(command) => command.as_ref(),
+            SchemaCommand::Create(command) => command.by(),
+            SchemaCommand::Drop(command) => command.by(),
+            SchemaCommand::Rename(command) => command.by(),
         }
     }
 }
@@ -42,7 +44,6 @@ impl ContextReceiver for SchemaCommand {
             SchemaCommand::Rename(command) => command.receive(context),
         }
     }
-
 }
 
 impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>

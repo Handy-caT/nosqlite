@@ -20,13 +20,13 @@ pub trait Command<Ctx> {
 }
 
 /// Trait for objects that can be optionally referenced.
-pub trait OptionalRef<T> {
-    fn as_ref(&self) -> Option<&T>;
+pub trait OptionalBy<T> {
+    fn by(&self) -> Option<T>;
 }
 
-impl<T> OptionalRef<()> for T {
-    fn as_ref(&self) -> Option<&()> {
-        Some(&())
+impl<T> OptionalBy<()> for T {
+    fn by(&self) -> Option<()> {
+        Some(())
     }
 }
 
@@ -37,42 +37,41 @@ pub trait ContextReceiver {
 }
 
 pub trait Extract<Ctx> {
-    fn extract(&mut self) -> &mut Ctx;
+    fn extract_mut(&mut self) -> &mut Ctx;
 }
 
-pub trait TryExtractBy<Ctx> {
+pub trait TryExtract<Ctx> {
     type Err;
     type By;
 
-    fn try_extract(&mut self, by: &Self::By) -> Result<&mut Ctx, Self::Err>;
+    fn try_extract_mut(&mut self, by: Self::By) -> Result<&mut Ctx, Self::Err>;
 }
 
-impl<Ctx, T> TryExtractBy<Ctx> for T
+impl<Ctx, T> TryExtract<Ctx> for T
 where
     T: Extract<Ctx>,
 {
     type Err = Infallible;
     type By = ();
 
-    fn try_extract(&mut self, (): &()) -> Result<&mut Ctx, Self::Err> {
-        Ok(self.extract())
+    fn try_extract_mut(&mut self, (): ()) -> Result<&mut Ctx, Self::Err> {
+        Ok(self.extract_mut())
     }
 }
 
-pub trait Gateway<Cmd, Ctx = ()>
+pub trait Gateway<Cmd, CtxMut = ()>
 where
-    Cmd: Command<Ctx>,
+    Cmd: Command<CtxMut>,
 {
     type Ok;
     type Err;
 
     /// Sends a command to the gateway for the execution.
-    #[rustfmt::skip]
     fn send(
         &mut self,
         cmd: Cmd,
     ) -> Result<
-        <Self as Gateway<Cmd, Ctx>>::Ok,
-        <Self as Gateway<Cmd, Ctx>>::Err,
+        <Self as Gateway<Cmd, CtxMut>>::Ok,
+        <Self as Gateway<Cmd, CtxMut>>::Err,
     >;
 }

@@ -6,12 +6,12 @@ pub mod use_schema;
 use std::fmt::Debug;
 
 use crate::api::{command::Command, facade::BackendFacade};
+use crate::api::command::ContextReceiver;
 
 pub use create_database::CreateDatabase;
 pub use drop_database::DropDatabase;
 pub use use_database::UseDatabase;
 pub use use_schema::UseSchema;
-use crate::api::command::{ContextReceiver, OptionalRef};
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]

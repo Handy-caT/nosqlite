@@ -1,12 +1,8 @@
-use std::convert::Infallible;
 use backend::{controller, schema, schema::database};
-use common::structs::hash_table::MutHashTable;
+use std::convert::Infallible;
 
 use crate::{
-    api::{
-        command::{Command, ContextReceiver, OptionalRef},
-        facade::BackendFacade,
-    },
+    api::command::{Command, ContextReceiver, OptionalBy},
     Context,
 };
 
@@ -20,9 +16,9 @@ pub struct DropSchema {
     pub name: schema::Name,
 }
 
-impl OptionalRef<database::Name> for DropSchema {
-    fn as_ref(&self) -> Option<&database::Name> {
-        self.database_name.as_ref()
+impl OptionalBy<database::Name> for DropSchema {
+    fn by(&self) -> Option<database::Name> {
+        self.database_name.clone()
     }
 }
 
@@ -62,10 +58,10 @@ mod tests {
     use common::structs::hash_table::MutHashTable as _;
 
     use crate::api::command::{
+        extract::DatabaseExtractionError,
         gateway::{test::TestBackendFacade, GatewayError},
         Gateway as _,
     };
-    use crate::api::command::extract::DatabaseExtractionError;
 
     use super::{DropSchema, ExecutionError};
 

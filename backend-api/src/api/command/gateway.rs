@@ -1,22 +1,22 @@
 use std::fmt::Debug;
 
 use crate::api::{
-    command::{Command, ContextReceiver, Gateway, OptionalRef, TryExtractBy},
+    command::{Command, ContextReceiver, Gateway, OptionalBy, TryExtract},
     facade::BackendFacade,
 };
 
 impl<Cmd, Ctx, By, const NODE_SIZE: u8> Gateway<Cmd, Ctx>
     for BackendFacade<NODE_SIZE>
 where
-    Cmd: Command<Ctx> + OptionalRef<By> + ContextReceiver,
+    Cmd: Command<Ctx> + OptionalBy<By> + ContextReceiver,
     <Cmd as Command<Ctx>>::Err: Debug,
-    Self: TryExtractBy<Ctx, By = By>,
-    <Self as TryExtractBy<Ctx>>::Err: Debug,
+    Self: TryExtract<Ctx, By = By>,
+    <Self as TryExtract<Ctx>>::Err: Debug,
 {
     type Ok = <Cmd as Command<Ctx>>::Ok;
     type Err = GatewayError<
         <Cmd as Command<Ctx>>::Err,
-        <Self as TryExtractBy<Ctx>>::Err,
+        <Self as TryExtract<Ctx>>::Err,
     >;
 
     #[rustfmt::skip]
@@ -29,10 +29,10 @@ where
     > {
         cmd.receive(&self.context);
 
-        let by = cmd.as_ref().ok_or(GatewayError::ByNotProvided)?;
+        let by = cmd.by().ok_or(GatewayError::ByNotProvided)?;
 
         let ctx = self
-            .try_extract(by)
+            .try_extract_mut(by)
             .map_err(GatewayError::ExtractionError)?;
         <Cmd as Command<Ctx>>::execute(cmd, ctx)
             .map_err(GatewayError::CommandError)

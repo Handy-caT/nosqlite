@@ -1,13 +1,7 @@
 use backend::{controller, schema, schema::database};
-use common::structs::hash_table::MutHashTable;
 
 use crate::{
-    api::{
-        command::{
-            database::DropSchema, Command, ContextReceiver, OptionalRef,
-        },
-        facade::BackendFacade,
-    },
+    api::command::{Command, ContextReceiver, OptionalBy},
     Context,
 };
 
@@ -24,9 +18,9 @@ pub struct RenameSchema {
     pub new_name: schema::Name,
 }
 
-impl OptionalRef<database::Name> for RenameSchema {
-    fn as_ref(&self) -> Option<&database::Name> {
-        self.database_name.as_ref()
+impl OptionalBy<database::Name> for RenameSchema {
+    fn by(&self) -> Option<database::Name> {
+        self.database_name.clone()
     }
 }
 
@@ -75,7 +69,7 @@ pub enum ExecutionError {
     DatabaseNotProvided,
 
     /// Provided database does not exist.
-    DatabaseNotExists(schema::database::Name),
+    DatabaseNotExists(database::Name),
 
     /// The schema with the old name was not found.
     SchemaNotFound(schema::Name),
@@ -91,10 +85,10 @@ mod tests {
 
     use crate::api::command::{
         database::rename_schema::{ExecutionError, RenameSchema},
+        extract::DatabaseExtractionError,
         gateway::{test::TestBackendFacade, GatewayError},
         Gateway as _,
     };
-    use crate::api::command::extract::DatabaseExtractionError;
 
     #[test]
     fn renames_schema_when_exists() {

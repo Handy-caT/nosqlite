@@ -59,9 +59,7 @@ impl SchemaPlanner {
                         )),
                     }
                 } else {
-                    Err(PlannerError::UnexpectedStatement(
-                        node.statement,
-                    ))
+                    Err(PlannerError::UnexpectedStatement(node.statement))
                 }
             }
             _ => Err(PlannerError::UnexpectedStatement(node.statement)),

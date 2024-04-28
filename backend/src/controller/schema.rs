@@ -81,6 +81,15 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     ) -> Option<&mut controller::Table<NODE_SIZE>> {
         self.tables.get_mut_value(name)
     }
+
+    /// Checks if the schema has a table with the given name.
+    /// # Arguments
+    /// * `name` - The name of the table to check for.
+    /// # Returns
+    /// * `bool` - Whether the schema has a table with the given name.
+    pub fn has_table(&mut self, name: &table::Name) -> bool {
+        self.tables.contains_key(name)
+    }
 }
 
 impl<const NODE_SIZE: u8> PartialEq for Schema<NODE_SIZE> {

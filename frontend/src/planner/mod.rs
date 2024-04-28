@@ -2,10 +2,17 @@ pub mod adapter;
 pub mod command;
 mod planners;
 
-use crate::{database_statement_variant, get_context_statement_variant, parser::Statement, planner::{
-    adapter::PlannerCommand, command::FrontendCommand,
-    planners::DatabasePlanner,
-}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, schema_statement_variant, use_schema_statement_variant};
+use crate::{
+    database_statement_variant, get_context_statement_variant,
+    parser::Statement,
+    planner::{
+        adapter::PlannerCommand, command::FrontendCommand,
+        planners::DatabasePlanner,
+    },
+    preprocessor::{Preprocessor, PreprocessorError},
+    quit_statement_variant, schema_statement_variant,
+    use_schema_statement_variant,
+};
 
 use crate::planner::planners::SchemaPlanner;
 use derive_more::From;

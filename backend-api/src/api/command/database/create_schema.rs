@@ -1,7 +1,7 @@
 use backend::{controller, schema, schema::database};
 
 use crate::{
-    api::command::{Command, ContextReceiver, OptionalRef},
+    api::command::{Command, ContextReceiver, OptionalBy},
     Context,
 };
 
@@ -15,9 +15,9 @@ pub struct CreateSchema {
     pub name: schema::Name,
 }
 
-impl OptionalRef<database::Name> for CreateSchema {
-    fn as_ref(&self) -> Option<&database::Name> {
-        self.database_name.as_ref()
+impl OptionalBy<database::Name> for CreateSchema {
+    fn by(&self) -> Option<database::Name> {
+        self.database_name.clone()
     }
 }
 

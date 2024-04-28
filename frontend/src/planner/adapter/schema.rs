@@ -8,8 +8,8 @@ use crate::{
     },
     rename_to_statement_variant,
 };
-use backend_api::api::command::{
-    database::{CreateSchema, DropSchema, RenameSchema},
+use backend_api::api::command::database::{
+    CreateSchema, DropSchema, RenameSchema,
 };
 
 impl TryFrom<ast::Node> for CreateSchema {
