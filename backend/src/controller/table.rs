@@ -1,3 +1,4 @@
+use std::sync::{Arc, Mutex};
 use common::structs::tree::object::{tree::Tree as _, BTree};
 
 use crate::{
@@ -52,7 +53,7 @@ pub struct Table<const NODE_SIZE: u8> {
     /// Vector of page indexes that store the table's data.
     table_pages: Vec<usize>,
     /// The data storage to use.
-    data_storage: DataStorage,
+    data_storage: Arc<Mutex<DataStorage>>,
 }
 
 impl<const NODE_SIZE: u8> PartialEq for Table<NODE_SIZE> {
@@ -73,7 +74,7 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
             info: schema::Table::new(name),
             index: BTree::default(),
             table_pages: Vec::new(),
-            data_storage,
+            data_storage: Arc::new(Mutex::new(data_storage)),
         }
     }
 
@@ -89,7 +90,10 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     /// * `name` - The name of the column.
     /// * `column` - The column to add.
     pub fn add_column(&mut self, name: column::Name, column: schema::Column) {
-        self.data_storage.append_data_type(column.get_type());
+        {
+            let mut data_storage = self.data_storage.lock().unwrap();
+            data_storage.append_data_type(column.get_type());
+        }
         self.info.add_column(name, column);
 
         //todo!("Add data update when new column added")
@@ -151,8 +155,13 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
         };
 
         let values = DataRow(data.get_values());
-        let Ok(id) = self.data_storage.add_data(values) else {
-            return Err(TableControllerError::DataStorageError);
+
+        let id = {
+            let mut data_storage = self.data_storage.lock().unwrap();
+            let Ok(id) = data_storage.add_data(values) else {
+                return Err(TableControllerError::DataStorageError);
+            };
+            id
         };
 
         let key_id = KeyId {
@@ -208,20 +217,10 @@ mod tests {
     };
     use std::sync::{Arc, Mutex};
 
-    /// Creates a new instance of `DataStorage`.
-    fn data_storage_factory() -> DataStorage {
-        let mut controller = PageController::default();
-        controller.add_page();
-        let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::default()));
-
-        DataStorage::new(controller, registry)
-    }
-
     #[test]
     fn test_new() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let table = Table::<16>::new(name.clone(), data_storage);
 
         assert_eq!(table.get_name(), &name);
@@ -230,7 +229,7 @@ mod tests {
     #[test]
     fn test_add_data() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
         table.add_column(
             "id".into(),
@@ -254,7 +253,7 @@ mod tests {
     #[test]
     fn test_set_primary_key_without_column() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let primary_key =
@@ -268,7 +267,7 @@ mod tests {
     #[test]
     fn test_set_primary_key() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
         table.add_column(
             "id".into(),
@@ -286,7 +285,7 @@ mod tests {
     #[test]
     fn test_set_primary_key_wrong_type() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
         table.add_column(
             "id".into(),
@@ -307,7 +306,7 @@ mod tests {
     #[test]
     fn test_get_name() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let table = Table::<16>::new(name.clone(), data_storage);
 
         assert_eq!(table.get_name(), &name);
@@ -316,7 +315,7 @@ mod tests {
     #[test]
     fn test_get_column() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let column = schema::Column::new(StorageDataType::Integer);
@@ -328,23 +327,27 @@ mod tests {
     #[test]
     fn test_add_column() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let column = schema::Column::new(StorageDataType::Integer);
         table.add_column("column".into(), column.clone());
 
         assert_eq!(table.get_column(&"column".into()), Some(column));
-        assert_eq!(
-            table.data_storage.get_data_type(),
-            &vec![StorageDataType::Integer]
-        );
+
+        {
+            let data_storage = table.data_storage.lock().unwrap();
+            assert_eq!(
+                data_storage.get_data_type(),
+                &vec![StorageDataType::Integer]
+            );
+        }
     }
 
     #[test]
     fn test_add_column_multiple() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         let column = schema::Column::new(StorageDataType::Integer);
@@ -366,7 +369,7 @@ mod tests {
     #[test]
     fn test_add_page() {
         let name: table::Name = "table".into();
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let mut table = Table::<16>::new(name.clone(), data_storage);
 
         table.add_page(0);

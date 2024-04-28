@@ -27,18 +27,20 @@ pub struct DataAllocator {
     tail_link: PageLink,
 }
 
-impl DataAllocator {
+impl Default for DataAllocator {
     /// Creates a new [`DataAllocator`].
     /// # Returns
     /// * `DataAllocator` - New [`DataAllocator`]
-    pub fn new() -> Self {
+    fn default() -> Self {
         Self {
             empty_link_registry:
-                BestFitEmptyLinkRegistryFactory::create_empty_link_registry(),
+            BestFitEmptyLinkRegistryFactory::create_empty_link_registry(),
             tail_link: PageLink::new(0, 0, PAGE_SIZE),
         }
     }
+}
 
+impl DataAllocator {
     /// Gets [`PlaceAdvisorStrategy`] that is used to provide
     /// place for new data.
     /// # Returns
@@ -116,7 +118,7 @@ mod tests {
 
     #[test]
     fn test_data_allocator_new() {
-        let data_allocator = DataAllocator::new();
+        let data_allocator = DataAllocator::default();
 
         assert_eq!(data_allocator.empty_link_registry.get_name(), "BestFit");
         assert_eq!(data_allocator.tail_link, PageLink::new(0, 0, 0));
@@ -125,7 +127,7 @@ mod tests {
 
     #[test]
     fn test_data_allocator_allocate() {
-        let mut data_allocator = DataAllocator::new();
+        let mut data_allocator = DataAllocator::default();
 
         let link = data_allocator.allocate(10);
 
@@ -139,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_data_allocator_allocate_end_of_page() {
-        let mut data_allocator = DataAllocator::new();
+        let mut data_allocator = DataAllocator::default();
 
         let link = data_allocator.allocate(PAGE_SIZE - 10);
 
@@ -160,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_data_allocator_remove() {
-        let mut data_allocator = DataAllocator::new();
+        let mut data_allocator = DataAllocator::default();
 
         let link = data_allocator.allocate(10);
 
@@ -182,7 +184,7 @@ mod tests {
 
     #[test]
     fn test_data_allocator_add_after_remove() {
-        let mut data_allocator = DataAllocator::new();
+        let mut data_allocator = DataAllocator::default();
 
         let link = data_allocator.allocate(10);
 

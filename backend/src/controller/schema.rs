@@ -111,16 +111,6 @@ mod tests {
         page::page_controller::PageController,
     };
 
-    /// Creates a new instance of `DataStorage`.
-    fn data_storage_factory() -> DataStorage {
-        let mut controller = PageController::default();
-        controller.add_page();
-        let controller = Arc::new(Mutex::new(controller));
-        let registry = Arc::new(Mutex::new(id::Registry::default()));
-
-        DataStorage::new(controller, registry)
-    }
-
     #[test]
     fn test_schema_new() {
         let schema = Schema::<4>::new("test".into());
@@ -138,7 +128,7 @@ mod tests {
     fn test_schema_add_table() {
         let mut schema = Schema::<4>::new("test".into());
 
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let table = controller::Table::<4>::new("table".into(), data_storage);
         schema.add_table(table);
         assert_eq!(schema.tables.len(), 1);
@@ -148,7 +138,7 @@ mod tests {
     fn test_schema_get_table_names() {
         let mut schema = Schema::<4>::new("test".into());
 
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let table = controller::Table::<4>::new("table".into(), data_storage);
         schema.add_table(table);
 
@@ -161,7 +151,7 @@ mod tests {
     fn test_schema_get_mut_table() {
         let mut schema = Schema::<4>::new("test".into());
 
-        let data_storage = data_storage_factory();
+        let data_storage =  DataStorage::default();
         let table = controller::Table::<4>::new("table".into(), data_storage);
         schema.add_table(table);
 

@@ -1,9 +1,19 @@
 use crate::page::page_struct::Page;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct PageController {
     pages: Vec<Page>,
     page_count: usize,
+}
+
+impl Default for PageController {
+    fn default() -> Self {
+        let pages = vec![Page::new(0)];
+        PageController {
+            pages,
+            page_count: 1,
+        }
+    }
 }
 
 impl PageController {
@@ -34,16 +44,16 @@ mod test {
     #[test]
     fn test_page_controller_new() {
         let controller = PageController::default();
-        assert_eq!(controller.get_page_count(), 0);
-        assert_eq!(controller.pages.len(), 0);
+        assert_eq!(controller.get_page_count(), 1);
+        assert_eq!(controller.pages.len(), 1);
     }
 
     #[test]
     fn test_page_controller_add_page() {
         let mut controller = PageController::default();
         controller.add_page();
-        assert_eq!(controller.get_page_count(), 1);
-        assert_eq!(controller.pages.len(), 1);
+        assert_eq!(controller.get_page_count(), 2);
+        assert_eq!(controller.pages.len(), 2);
     }
 
     #[test]
@@ -57,7 +67,6 @@ mod test {
     #[test]
     fn test_page_controller_get_last_page() {
         let mut controller = PageController::default();
-        controller.add_page();
         controller.add_page();
         let page = controller.get_last_page();
         assert_eq!(page.get_index(), 1);
