@@ -2,16 +2,10 @@ pub mod adapter;
 pub mod command;
 mod planners;
 
-use crate::{
-    database_statement_variant, get_context_statement_variant,
-    parser::Statement,
-    planner::{
-        adapter::PlannerCommand, command::FrontendCommand,
-        planners::DatabasePlanner,
-    },
-    preprocessor::{Preprocessor, PreprocessorError},
-    quit_statement_variant, schema_statement_variant,
-};
+use crate::{database_statement_variant, get_context_statement_variant, parser::Statement, planner::{
+    adapter::PlannerCommand, command::FrontendCommand,
+    planners::DatabasePlanner,
+}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, schema_statement_variant, use_schema_statement_variant};
 
 use crate::planner::planners::SchemaPlanner;
 use derive_more::From;
@@ -46,6 +40,9 @@ impl Planner {
             };
             match &node.statement {
                 database_statement_variant!(_) => {
+                    Some(DatabasePlanner::new(node).parse_command())
+                }
+                use_schema_statement_variant!(_) => {
                     Some(DatabasePlanner::new(node).parse_command())
                 }
                 schema_statement_variant!(_) => {
@@ -88,10 +85,9 @@ mod tests {
     use backend_api::api::command::{
         backend_api::{
             CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase,
+            UseSchema,
         },
-        database::{
-            CreateSchema, DropSchema, RenameSchema, SchemaCommand, UseSchema,
-        },
+        database::{CreateSchema, DropSchema, RenameSchema, SchemaCommand},
         r#enum::BackendCommand,
     };
 
@@ -179,8 +175,8 @@ mod tests {
 
         assert_eq!(
             command,
-            PlannerCommand::Backend(BackendCommand::Schema(
-                SchemaCommand::Use(UseSchema {
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::UseSchema(UseSchema {
                     database_name: None,
                     name: "test".into()
                 })
@@ -202,8 +198,8 @@ mod tests {
 
         assert_eq!(
             command,
-            PlannerCommand::Backend(BackendCommand::Schema(
-                SchemaCommand::Use(UseSchema {
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::UseSchema(UseSchema {
                     database_name: Some("xd".into()),
                     name: "test".into()
                 })

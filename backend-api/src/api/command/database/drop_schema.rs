@@ -1,43 +1,49 @@
-use backend::schema;
+use std::convert::Infallible;
+use backend::{controller, schema, schema::database};
 use common::structs::hash_table::MutHashTable;
 
-use crate::api::{command::Command, facade::BackendFacade};
+use crate::{
+    api::{
+        command::{Command, ContextReceiver, OptionalRef},
+        facade::BackendFacade,
+    },
+    Context,
+};
 
 /// [`Command`] to drop a schema from a database.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DropSchema {
     /// The name of the database to drop the schema from.
-    pub database_name: Option<schema::database::Name>,
+    pub database_name: Option<database::Name>,
 
     /// The name of the schema to drop.
     pub name: schema::Name,
 }
 
-impl AsRef<()> for DropSchema {
-    fn as_ref(&self) -> &() {
-        &()
+impl OptionalRef<database::Name> for DropSchema {
+    fn as_ref(&self) -> Option<&database::Name> {
+        self.database_name.as_ref()
     }
 }
 
-impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropSchema {
+impl ContextReceiver for DropSchema {
+    fn receive(&mut self, context: &Context) {
+        if self.database_name.is_none() {
+            self.database_name = context.current_db().cloned();
+        }
+    }
+}
+
+impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
+    for DropSchema
+{
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
         self,
-        backend: &mut BackendFacade<NODE_SIZE>,
+        db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        let database_name = self
-            .database_name
-            .as_ref()
-            .or(backend.context.current_db())
-            .ok_or(ExecutionError::DatabaseNotProvided)?;
-
-        let db_controller = backend
-            .database_controllers
-            .get_mut_value(database_name)
-            .ok_or(ExecutionError::DatabaseNotExists(database_name.clone()))?;
-
         if !db_controller.has_schema(&self.name) {
             return Ok(());
         }
@@ -48,14 +54,7 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropSchema {
 }
 
 /// Errors that can occur during the execution of [`DropSchema`].
-#[derive(Debug)]
-pub enum ExecutionError {
-    /// The database was not provided.
-    DatabaseNotProvided,
-
-    /// Provided database does not exist.
-    DatabaseNotExists(schema::database::Name),
-}
+pub type ExecutionError = Infallible;
 
 #[cfg(test)]
 mod tests {
@@ -66,6 +65,7 @@ mod tests {
         gateway::{test::TestBackendFacade, GatewayError},
         Gateway as _,
     };
+    use crate::api::command::extract::DatabaseExtractionError;
 
     use super::{DropSchema, ExecutionError};
 
@@ -129,10 +129,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(
-                ExecutionError::DatabaseNotProvided,
-            )) => {}
-            _ => panic!("Expected `DatabaseNotProvided` found {:?}", result),
+            Err(GatewayError::ByNotProvided) => {}
+            _ => panic!("Expected `ByNotProvided` found {:?}", result),
         }
     }
 
@@ -166,8 +164,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(
-                ExecutionError::DatabaseNotExists(name),
+            Err(GatewayError::ExtractionError(
+                DatabaseExtractionError::DatabaseNotFound(name),
             )) => {
                 assert_eq!(name, database_name);
             }

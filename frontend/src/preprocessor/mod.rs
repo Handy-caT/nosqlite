@@ -128,17 +128,20 @@ pub enum PreprocessorError {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::{
-        ast,
-        statement::{
-            common::RenameTo,
-            dml::{
-                AlterSchema, CreateDatabase, CreateSchema, DropDatabase,
-                DropSchema, UseDatabase, UseSchema,
+    use crate::{
+        lexer::token::DataType,
+        parser::{
+            ast,
+            statement::{
+                common::{Column, RenameTo},
+                dml::{
+                    AlterSchema, CreateDatabase, CreateSchema, CreateTable,
+                    DropDatabase, DropSchema, UseDatabase, UseSchema,
+                },
+                shortcut::{GetContext, Quit},
             },
-            shortcut::{GetContext, Quit},
+            Statement,
         },
-        Statement,
     };
 
     use super::{Preprocessor, PreprocessorError};
@@ -296,6 +299,64 @@ mod tests {
                     "test".to_string().into()
                 ),
                 next: None
+            }))
+        );
+    }
+
+    #[test]
+    fn test_create_table() {
+        let input = "CREATE TABLE test(id INTEGER PRIMARY KEY);";
+
+        let mut preprocessor = Preprocessor::new(input);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: CreateTable::new_statement(
+                    "test".to_string().into()
+                ),
+                next: Some(Box::new(ast::Node {
+                    statement: Column::new_statement(Column {
+                        identifier: "id".to_string().into(),
+                        data_type: DataType::Integer,
+                        is_primary_key: true,
+                    }),
+                    next: None,
+                }))
+            }))
+        );
+    }
+
+    #[test]
+    fn test_create_table_many_columns() {
+        let input = "CREATE TABLE test(id INTEGER PRIMARY KEY,\
+                                            name VARCHAR10,);";
+
+        let mut preprocessor = Preprocessor::new(input);
+        let node = preprocessor.preprocess();
+
+        assert_eq!(
+            node,
+            Some(Ok(ast::Node {
+                statement: CreateTable::new_statement(
+                    "test".to_string().into()
+                ),
+                next: Some(Box::new(ast::Node {
+                    statement: Column::new_statement(Column {
+                        identifier: "id".to_string().into(),
+                        data_type: DataType::Integer,
+                        is_primary_key: true,
+                    }),
+                    next: Some(Box::new(ast::Node {
+                        statement: Column::new_statement(Column {
+                            identifier: "name".to_string().into(),
+                            data_type: DataType::VarChar(10),
+                            is_primary_key: false,
+                        }),
+                        next: None,
+                    }))
+                }))
             }))
         );
     }

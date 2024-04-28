@@ -1,7 +1,10 @@
 use backend::{controller, schema::database};
 use common::structs::hash_table::HashTable;
 
-use crate::api::{command::Command, facade::BackendFacade};
+use crate::api::{
+    command::{Command, ContextReceiver},
+    facade::BackendFacade,
+};
 
 /// Command to create a new database.
 #[derive(Debug, Clone, PartialEq)]
@@ -10,11 +13,7 @@ pub struct CreateDatabase {
     pub name: database::Name,
 }
 
-impl AsRef<()> for CreateDatabase {
-    fn as_ref(&self) -> &() {
-        &()
-    }
-}
+impl ContextReceiver for CreateDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for CreateDatabase {
     type Ok = ();

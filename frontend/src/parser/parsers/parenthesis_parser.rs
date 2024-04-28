@@ -87,7 +87,7 @@ impl<'a> ParenthesisParser<'a> {
         } else {
             self.lexer.next().ok_or(ParseError::NotEnoughTokens)?
         };
-            
+
         let datatype_token =
             self.lexer.next().ok_or(ParseError::NotEnoughTokens)?;
 

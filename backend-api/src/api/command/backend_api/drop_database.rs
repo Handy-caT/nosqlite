@@ -3,7 +3,10 @@ use std::convert::Infallible;
 use backend::schema::database;
 use common::structs::hash_table::HashTable;
 
-use crate::api::{command::Command, facade::BackendFacade};
+use crate::api::{
+    command::{Command, ContextReceiver},
+    facade::BackendFacade,
+};
 
 /// Command to drop a database.
 #[derive(Debug, Clone, PartialEq)]
@@ -12,11 +15,7 @@ pub struct DropDatabase {
     pub name: database::Name,
 }
 
-impl AsRef<()> for DropDatabase {
-    fn as_ref(&self) -> &() {
-        &()
-    }
-}
+impl ContextReceiver for DropDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropDatabase {
     type Ok = ();

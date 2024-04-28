@@ -1,12 +1,8 @@
-use crate::{
-    create_database_statement_variant, drop_database_statement_variant,
-    parser::ast,
-    planner::{adapter::PlannerCommand, PlannerError},
-    use_database_statement_variant,
-};
+use crate::{create_database_statement_variant, drop_database_statement_variant, parser::ast, planner::{adapter::PlannerCommand, PlannerError}, use_database_statement_variant, use_schema_statement_variant};
 use backend_api::api::command::{
     backend_api::DatabaseCommand, r#enum::BackendCommand,
 };
+use backend_api::api::command::database::SchemaCommand;
 
 /// DatabasePlanner is a planner for database operations.
 #[derive(Debug, PartialEq)]
@@ -46,6 +42,10 @@ impl DatabasePlanner {
                 DatabaseCommand::Use(node.try_into().expect("is use database")),
             )
             .into()),
+            use_schema_statement_variant!(_) => Ok(BackendCommand::Database(
+                DatabaseCommand::UseSchema(node.try_into().expect("is use schema")),
+            )
+                .into()),
             _ => Err(PlannerError::UnexpectedStatement(node.statement)),
         }
     }

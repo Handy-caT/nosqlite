@@ -39,6 +39,7 @@ impl Node for Column {
 
         match other {
             column_statement_variant!(_) => true,
+            Statement::Semicolon => true,
             _ => false,
         }
     }

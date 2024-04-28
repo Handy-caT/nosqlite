@@ -44,10 +44,6 @@ impl SchemaPlanner {
                 SchemaCommand::Drop(node.try_into().expect("is drop schema")),
             )
             .into()),
-            use_schema_statement_variant!(_) => Ok(BackendCommand::Schema(
-                SchemaCommand::Use(node.try_into().expect("is drop schema")),
-            )
-            .into()),
             alter_schema_statement_variant!(_) => {
                 let child = &node.next;
                 if let Some(child) = child {
@@ -63,9 +59,9 @@ impl SchemaPlanner {
                         )),
                     }
                 } else {
-                    return Err(PlannerError::UnexpectedStatement(
+                    Err(PlannerError::UnexpectedStatement(
                         node.statement,
-                    ));
+                    ))
                 }
             }
             _ => Err(PlannerError::UnexpectedStatement(node.statement)),

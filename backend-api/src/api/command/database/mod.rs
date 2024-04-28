@@ -1,14 +1,15 @@
 mod create_schema;
 mod drop_schema;
 mod rename_schema;
-pub mod use_schema;
 
 use crate::api::{command::Command, facade::BackendFacade};
+use backend::{controller, schema};
 
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
 pub use rename_schema::RenameSchema;
-pub use use_schema::UseSchema;
+use crate::api::command::{ContextReceiver, OptionalRef};
+use crate::Context;
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]
@@ -21,37 +22,48 @@ pub enum SchemaCommand {
 
     /// Command to rename a schema.
     Rename(RenameSchema),
-
-    /// Command to use a schema.
-    Use(UseSchema),
 }
 
-impl AsRef<()> for SchemaCommand {
-    fn as_ref(&self) -> &() {
-        &()
+impl OptionalRef<schema::database::Name> for SchemaCommand {
+    fn as_ref(&self) -> Option<&schema::database::Name> {
+        match self {
+            SchemaCommand::Create(command) => command.as_ref(),
+            SchemaCommand::Drop(command) => command.as_ref(),
+            SchemaCommand::Rename(command) => command.as_ref(),
+        }
     }
 }
 
-impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for SchemaCommand {
+impl ContextReceiver for SchemaCommand {
+    fn receive(&mut self, context: &Context) {
+        match self {
+            SchemaCommand::Create(command) => command.receive(context),
+            SchemaCommand::Drop(command) => command.receive(context),
+            SchemaCommand::Rename(command) => command.receive(context),
+        }
+    }
+
+}
+
+impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
+    for SchemaCommand
+{
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
         self,
-        facade: &mut BackendFacade<NODE_SIZE>,
+        db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
         match self {
             SchemaCommand::Create(command) => command
-                .execute(facade)
+                .execute(db_controller)
                 .map_err(ExecutionError::CreateSchema),
-            SchemaCommand::Use(command) => {
-                command.execute(facade).map_err(ExecutionError::UseSchema)
-            }
-            SchemaCommand::Drop(command) => {
-                command.execute(facade).map_err(ExecutionError::DropSchema)
-            }
+            SchemaCommand::Drop(command) => command
+                .execute(db_controller)
+                .map_err(ExecutionError::DropSchema),
             SchemaCommand::Rename(command) => command
-                .execute(facade)
+                .execute(db_controller)
                 .map_err(ExecutionError::RenameSchema),
         }
     }
@@ -68,7 +80,4 @@ pub enum ExecutionError {
 
     /// Rename schema error.
     RenameSchema(rename_schema::ExecutionError),
-
-    /// Use schema error.
-    UseSchema(use_schema::ExecutionError),
 }

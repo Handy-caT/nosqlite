@@ -1,14 +1,14 @@
 use std::fmt::Debug;
 
 use crate::api::{
-    command::{Command, Gateway, TryExtractBy},
+    command::{Command, ContextReceiver, Gateway, OptionalRef, TryExtractBy},
     facade::BackendFacade,
 };
 
 impl<Cmd, Ctx, By, const NODE_SIZE: u8> Gateway<Cmd, Ctx>
     for BackendFacade<NODE_SIZE>
 where
-    Cmd: Command<Ctx> + AsRef<By>,
+    Cmd: Command<Ctx> + OptionalRef<By> + ContextReceiver,
     <Cmd as Command<Ctx>>::Err: Debug,
     Self: TryExtractBy<Ctx, By = By>,
     <Self as TryExtractBy<Ctx>>::Err: Debug,
@@ -22,13 +22,17 @@ where
     #[rustfmt::skip]
     fn send(
         &mut self,
-        cmd: Cmd,
+        mut cmd: Cmd,
     ) -> Result<
         <Self as Gateway<Cmd, Ctx>>::Ok,
         <Self as Gateway<Cmd, Ctx>>::Err,
     > {
+        cmd.receive(&self.context);
+
+        let by = cmd.as_ref().ok_or(GatewayError::ByNotProvided)?;
+
         let ctx = self
-            .try_extract(cmd.as_ref())
+            .try_extract(by)
             .map_err(GatewayError::ExtractionError)?;
         <Cmd as Command<Ctx>>::execute(cmd, ctx)
             .map_err(GatewayError::CommandError)
@@ -38,8 +42,15 @@ where
 /// Represents an error that occurred during the execution of a command.
 #[derive(Debug)]
 pub enum GatewayError<CmdErr, ExtractErr> {
+    /// An error occurred during the execution of the command.
     CommandError(CmdErr),
+
+    /// An error occurred during the extraction of the context.
     ExtractionError(ExtractErr),
+
+    /// Can't extract the context because the command doesn't provide the
+    /// necessary information.
+    ByNotProvided,
 }
 
 #[cfg(test)]

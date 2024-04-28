@@ -5,6 +5,7 @@ mod extract;
 mod gateway;
 pub mod schema;
 
+use crate::Context;
 use std::convert::Infallible;
 
 /// Trait for commands.
@@ -16,6 +17,23 @@ pub trait Command<Ctx> {
         self,
         ctx: &mut Ctx,
     ) -> Result<<Self as Command<Ctx>>::Ok, <Self as Command<Ctx>>::Err>;
+}
+
+/// Trait for objects that can be optionally referenced.
+pub trait OptionalRef<T> {
+    fn as_ref(&self) -> Option<&T>;
+}
+
+impl<T> OptionalRef<()> for T {
+    fn as_ref(&self) -> Option<&()> {
+        Some(&())
+    }
+}
+
+/// Trait for schema commands.
+pub trait ContextReceiver {
+    /// Receives the context from API.
+    fn receive(&mut self, _: &Context) {}
 }
 
 pub trait Extract<Ctx> {

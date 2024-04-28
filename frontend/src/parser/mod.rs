@@ -478,27 +478,27 @@ mod test {
     fn parse_create_table_statement_many_columns() {
         let input = "CREATE TABLE test (id INTEGER PRIMARY KEY,\
                                              name VARCHAR10)";
-    
+
         let mut parser = Parser::new(input);
         let statement = parser.next();
-    
+
         assert!(statement.is_some());
         let statement = statement.unwrap();
         assert!(statement.is_ok());
         let statement = statement.unwrap();
-    
+
         assert_eq!(
             statement,
             CreateTable::new_statement("test".to_string().into())
         );
-    
+
         let statement = parser.next();
-    
+
         assert!(statement.is_some());
         let statement = statement.unwrap();
         assert!(statement.is_ok());
         let statement = statement.unwrap();
-    
+
         assert_eq!(
             statement,
             Column::new_statement(Column {
@@ -507,14 +507,14 @@ mod test {
                 is_primary_key: true,
             })
         );
-    
+
         let statement = parser.next();
-    
+
         assert!(statement.is_some());
         let statement = statement.unwrap();
         assert!(statement.is_ok());
         let statement = statement.unwrap();
-    
+
         assert_eq!(
             statement,
             Column::new_statement(Column {
@@ -523,7 +523,7 @@ mod test {
                 is_primary_key: false,
             })
         );
-    
+
         let statement = parser.next();
         assert!(statement.is_none());
     }

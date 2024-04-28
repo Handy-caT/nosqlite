@@ -1,43 +1,44 @@
-use backend::{controller, schema};
-use common::structs::hash_table::MutHashTable;
+use backend::{controller, schema, schema::database};
 
-use crate::api::{command::Command, facade::BackendFacade};
+use crate::{
+    api::command::{Command, ContextReceiver, OptionalRef},
+    Context,
+};
 
 /// [`Command`] to create a new schema in a database.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CreateSchema {
     /// The name of the database where the schema will be created.
-    pub database_name: Option<schema::database::Name>,
+    pub database_name: Option<database::Name>,
 
     /// The name of the schema to create.
     pub name: schema::Name,
 }
 
-impl AsRef<()> for CreateSchema {
-    fn as_ref(&self) -> &() {
-        &()
+impl OptionalRef<database::Name> for CreateSchema {
+    fn as_ref(&self) -> Option<&database::Name> {
+        self.database_name.as_ref()
     }
 }
 
-impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for CreateSchema {
+impl ContextReceiver for CreateSchema {
+    fn receive(&mut self, context: &Context) {
+        if self.database_name.is_none() {
+            self.database_name = context.current_db().cloned();
+        }
+    }
+}
+
+impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
+    for CreateSchema
+{
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
         self,
-        backend: &mut BackendFacade<NODE_SIZE>,
+        db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        let database_name = self
-            .database_name
-            .as_ref()
-            .or(backend.context.current_db())
-            .ok_or(ExecutionError::DatabaseNotProvided)?;
-
-        let db_controller = backend
-            .database_controllers
-            .get_mut_value(database_name)
-            .ok_or(ExecutionError::DatabaseNotExists(database_name.clone()))?;
-
         if db_controller.has_schema(&self.name) {
             return Err(ExecutionError::SchemaAlreadyExists(self.name));
         }
@@ -54,12 +55,6 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for CreateSchema {
 /// Errors that can occur during the execution of [`CreateSchema`].
 #[derive(Debug)]
 pub enum ExecutionError {
-    /// The database was not provided.
-    DatabaseNotProvided,
-
-    /// Provided database does not exist.
-    DatabaseNotExists(schema::database::Name),
-
     /// The schema already exists in the database.
     SchemaAlreadyExists(schema::Name),
 }
@@ -133,10 +128,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(
-                ExecutionError::DatabaseNotProvided,
-            )) => {}
-            _ => panic!("Expected `DatabaseNotProvided` found {:?}", result),
+            Err(GatewayError::ByNotProvided) => {}
+            _ => panic!("Expected `ByNotProvided` found {:?}", result),
         }
     }
 
@@ -180,12 +173,12 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(
-                ExecutionError::DatabaseNotExists(name),
+            Err(GatewayError::ExtractionError(
+                DatabaseExtractionError::DatabaseNotFound(name),
             )) => {
                 assert_eq!(name, database_name);
             }
-            _ => panic!("Expected `DatabaseNotExists` found {:?}", result),
+            _ => panic!("Expected `DatabaseNotFound` found {:?}", result),
         }
     }
 }

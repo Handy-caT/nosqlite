@@ -1,14 +1,21 @@
-use backend::{controller, schema};
+use backend::{controller, schema, schema::database};
 use common::structs::hash_table::MutHashTable;
-use derive_more::AsRef;
 
-use crate::api::{command::Command, facade::BackendFacade};
+use crate::{
+    api::{
+        command::{
+            database::DropSchema, Command, ContextReceiver, OptionalRef,
+        },
+        facade::BackendFacade,
+    },
+    Context,
+};
 
 /// [`Command`] which is used to rename a [`controller::Schema`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct RenameSchema {
     /// The name of the database where the schema is located.
-    pub database_name: Option<schema::database::Name>,
+    pub database_name: Option<database::Name>,
 
     /// The old name of the schema.
     pub old_name: schema::Name,
@@ -17,31 +24,30 @@ pub struct RenameSchema {
     pub new_name: schema::Name,
 }
 
-impl AsRef<()> for RenameSchema {
-    fn as_ref(&self) -> &() {
-        &()
+impl OptionalRef<database::Name> for RenameSchema {
+    fn as_ref(&self) -> Option<&database::Name> {
+        self.database_name.as_ref()
     }
 }
 
-impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for RenameSchema {
+impl ContextReceiver for RenameSchema {
+    fn receive(&mut self, context: &Context) {
+        if self.database_name.is_none() {
+            self.database_name = context.current_db().cloned();
+        }
+    }
+}
+
+impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
+    for RenameSchema
+{
     type Ok = ();
     type Err = ExecutionError;
 
     fn execute(
         self,
-        backend: &mut BackendFacade<NODE_SIZE>,
+        db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
-        let database_name = self
-            .database_name
-            .as_ref()
-            .or(backend.context.current_db())
-            .ok_or(ExecutionError::DatabaseNotProvided)?;
-
-        let db_controller = backend
-            .database_controllers
-            .get_mut_value(database_name)
-            .ok_or(ExecutionError::DatabaseNotExists(database_name.clone()))?;
-
         if !db_controller.has_schema(&self.old_name) {
             return Err(ExecutionError::SchemaNotFound(self.old_name));
         }
@@ -88,6 +94,7 @@ mod tests {
         gateway::{test::TestBackendFacade, GatewayError},
         Gateway as _,
     };
+    use crate::api::command::extract::DatabaseExtractionError;
 
     #[test]
     fn renames_schema_when_exists() {
@@ -168,10 +175,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(
-                ExecutionError::DatabaseNotProvided,
-            )) => {}
-            _ => panic!("Expected `DatabaseNotProvided` found {:?}", result),
+            Err(GatewayError::ByNotProvided) => {}
+            _ => panic!("Expected `ByNotProvided` found {:?}", result),
         }
     }
 
@@ -247,8 +252,8 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::CommandError(
-                ExecutionError::DatabaseNotExists(name),
+            Err(GatewayError::ExtractionError(
+                DatabaseExtractionError::DatabaseNotFound(name),
             )) => {
                 assert_eq!(name, database_name);
             }

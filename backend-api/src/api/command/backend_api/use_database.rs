@@ -1,7 +1,10 @@
 use backend::schema::database;
 use common::structs::hash_table::HashTable;
 
-use crate::api::{command::Command, facade::BackendFacade};
+use crate::api::{
+    command::{Command, ContextReceiver},
+    facade::BackendFacade,
+};
 
 /// Command to use a database.
 #[derive(Debug, Clone, PartialEq)]
@@ -10,11 +13,7 @@ pub struct UseDatabase {
     pub name: database::Name,
 }
 
-impl AsRef<()> for UseDatabase {
-    fn as_ref(&self) -> &() {
-        &()
-    }
-}
+impl ContextReceiver for UseDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseDatabase {
     type Ok = ();
