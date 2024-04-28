@@ -41,7 +41,7 @@ impl PrimaryKey {
 
     /// Returns the column names that make up the primary key.
     /// # Returns
-    /// * `&Vec<String>` - The column names that make up the primary key.
+    /// * `&column::Name` - The column names that make up the primary key.
     pub fn get_column(&self) -> &column::Name {
         &self.columns
     }

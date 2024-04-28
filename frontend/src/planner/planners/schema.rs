@@ -29,7 +29,7 @@ impl SchemaPlanner {
 
     /// Parses the command.
     /// # Errors
-    /// Returns an error if the statement is not a database statement.
+    /// Returns an error if the statement is not a schema statement.
     pub fn parse_command(self) -> Result<PlannerCommand, PlannerError> {
         let node = self.node;
 
@@ -44,24 +44,10 @@ impl SchemaPlanner {
                 SchemaCommand::Drop(node.try_into().expect("is drop schema")),
             )
             .into()),
-            alter_schema_statement_variant!(_) => {
-                let child = &node.next;
-                if let Some(child) = child {
-                    match child.statement {
-                        rename_to_statement_variant!(_) => {
-                            Ok(BackendCommand::Schema(SchemaCommand::Rename(
-                                node.try_into().expect("is drop schema"),
-                            ))
-                            .into())
-                        }
-                        _ => Err(PlannerError::UnexpectedStatement(
-                            child.statement.clone(),
-                        )),
-                    }
-                } else {
-                    Err(PlannerError::UnexpectedStatement(node.statement))
-                }
-            }
+            alter_schema_statement_variant!(_) => Ok(BackendCommand::Schema(
+                SchemaCommand::Rename(node.try_into().expect("is drop schema")),
+            )
+            .into()),
             _ => Err(PlannerError::UnexpectedStatement(node.statement)),
         }
     }

@@ -63,7 +63,7 @@ mod tests {
         Gateway as _,
     };
 
-    use super::{DropSchema, ExecutionError};
+    use super::DropSchema;
 
     #[test]
     fn drops_schema_when_exists() {

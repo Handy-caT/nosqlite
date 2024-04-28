@@ -8,6 +8,7 @@ use crate::{
     },
     rename_to_statement_variant,
 };
+use backend::schema;
 use backend_api::api::command::database::{
     CreateSchema, DropSchema, RenameSchema,
 };
@@ -17,24 +18,20 @@ impl TryFrom<ast::Node> for CreateSchema {
 
     fn try_from(node: ast::Node) -> Result<Self, Self::Error> {
         if let create_schema_statement_variant!(statement) = node.statement {
-            let names = parse_identifier(statement.identifier.clone());
+            let mut names =
+                parse_identifier(statement.identifier.clone()).into_iter();
             let name = names
-                .first()
+                .next()
                 .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
                     got: statement.identifier,
                     expected_type: "`schema_name`",
                 }))?
-                .to_string();
-            let (schema_name, db_name) = if let Some(schema_name) = names.get(1)
-            {
-                (schema_name.clone(), Some(name.into()))
-            } else {
-                (name.clone(), None)
-            };
+                .into();
+            let db_name = names.next().map(|name| name.into());
 
             Ok(CreateSchema {
                 database_name: db_name,
-                name: schema_name.into(),
+                name,
             })
         } else {
             Err(ParseError::UnexpectedStatement)
@@ -47,24 +44,20 @@ impl TryFrom<ast::Node> for DropSchema {
 
     fn try_from(node: ast::Node) -> Result<Self, Self::Error> {
         if let drop_schema_statement_variant!(statement) = node.statement {
-            let names = parse_identifier(statement.identifier.clone());
+            let mut names =
+                parse_identifier(statement.identifier.clone()).into_iter();
             let name = names
-                .first()
+                .next()
                 .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
                     got: statement.identifier,
                     expected_type: "`schema_name`",
                 }))?
-                .to_string();
-            let (schema_name, db_name) = if let Some(schema_name) = names.get(1)
-            {
-                (schema_name.clone(), Some(name.into()))
-            } else {
-                (name.clone(), None)
-            };
+                .into();
+            let db_name = names.next().map(|name| name.into());
 
             Ok(DropSchema {
                 database_name: db_name,
-                name: schema_name.into(),
+                name,
             })
         } else {
             Err(ParseError::UnexpectedStatement)
@@ -79,19 +72,18 @@ impl TryFrom<ast::Node> for RenameSchema {
         let (schema_name_from, db_name) =
             if let alter_schema_statement_variant!(statement) = &node.statement
             {
-                let names = parse_identifier(statement.identifier.clone());
-                let name = names
-                    .first()
+                let mut names =
+                    parse_identifier(statement.identifier.clone()).into_iter();
+                let name: schema::Name = names
+                    .next()
                     .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
                         got: statement.identifier.clone(),
                         expected_type: "`schema_name`",
                     }))?
-                    .to_string();
-                if let Some(schema_name) = names.get(1) {
-                    (schema_name.clone(), Some(name))
-                } else {
-                    (name.clone(), None)
-                }
+                    .into();
+                let db_name = names.next().map(|name| name.into());
+
+                (name, db_name)
             } else {
                 return Err(ParseError::UnexpectedStatement);
             };
@@ -99,19 +91,18 @@ impl TryFrom<ast::Node> for RenameSchema {
         let child = &node.next.expect("is rename to statement and exist");
         let (schema_name_to, db_name_to) =
             if let rename_to_statement_variant!(statement) = &child.statement {
-                let names = parse_identifier(statement.identifier.clone());
-                let name = names
-                    .first()
+                let mut names =
+                    parse_identifier(statement.identifier.clone()).into_iter();
+                let name: schema::Name = names
+                    .next()
                     .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
                         got: statement.identifier.clone(),
                         expected_type: "`schema_name`",
                     }))?
-                    .to_string();
-                if let Some(schema_name) = names.get(1) {
-                    (schema_name.clone(), Some(name))
-                } else {
-                    (name.clone(), None)
-                }
+                    .into();
+                let db_name = names.next().map(|name| name.into());
+
+                (name, db_name)
             } else {
                 return Err(ParseError::UnexpectedStatement);
             };

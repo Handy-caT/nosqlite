@@ -5,6 +5,7 @@ mod drop;
 
 pub use create::CreateTable;
 pub use drop::DropTable;
+use crate::parser::statement::dml::SchemaNode;
 
 /// Represents an AST node for a table operation.
 #[derive(Debug, PartialEq, Clone)]
@@ -23,4 +24,16 @@ impl Node for TableNode {
             TableNode::Drop(stmnt) => stmnt.can_be_followed(next),
         }
     }
+}
+
+/// Shortcut for a [`TableNode`] variant of [`Statement`].
+#[macro_export]
+macro_rules! table_statement_variant {
+    ($($arg:tt)*) => {
+        $crate::parser::Statement::Dml(
+            $crate::parser::statement::DML::Table(
+                    $($arg)*
+            )
+        )
+    };
 }

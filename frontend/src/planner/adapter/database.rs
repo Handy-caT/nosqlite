@@ -83,24 +83,20 @@ impl TryFrom<ast::Node> for UseSchema {
 
     fn try_from(node: ast::Node) -> Result<Self, Self::Error> {
         if let use_schema_statement_variant!(statement) = node.statement {
-            let names = parse_identifier(statement.identifier.clone());
+            let mut names =
+                parse_identifier(statement.identifier.clone()).into_iter();
             let name = names
-                .first()
+                .next()
                 .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
                     got: statement.identifier,
                     expected_type: "`schema_name`",
                 }))?
-                .to_string();
-            let (schema_name, db_name) = if let Some(schema_name) = names.get(1)
-            {
-                (schema_name.clone(), Some(name.into()))
-            } else {
-                (name.clone(), None)
-            };
+                .into();
+            let db_name = names.next().map(|name| name.into());
 
             Ok(UseSchema {
                 database_name: db_name,
-                name: schema_name.into(),
+                name,
             })
         } else {
             Err(ParseError::UnexpectedStatement)

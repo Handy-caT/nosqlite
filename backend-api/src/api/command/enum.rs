@@ -1,5 +1,5 @@
 use crate::api::command::{
-    backend_api::DatabaseCommand, database::SchemaCommand,
+    backend_api::DatabaseCommand, database::SchemaCommand, schema::TableCommand,
 };
 
 /// Commands that can be executed on the whole backend.
@@ -10,4 +10,7 @@ pub enum BackendCommand {
 
     /// Command to operate on a schema.
     Schema(SchemaCommand),
+
+    /// Command to operate on a table.
+    Table(TableCommand),
 }

@@ -3,8 +3,10 @@ use backend::schema::database as db;
 use backend_api::api::command::r#enum::BackendCommand;
 use derive_more::From;
 
+mod data_type;
 mod database;
 mod schema;
+mod table;
 
 /// Parses an identifier into a vector of names.
 /// # Arguments
@@ -12,7 +14,7 @@ mod schema;
 /// # Returns
 /// A vector of names.
 pub fn parse_identifier(identifier: token::Identifier) -> Vec<String> {
-    identifier.0.split('.').map(String::from).collect()
+    identifier.0.split('.').map(String::from).rev().collect()
 }
 
 /// Represents a planner command.

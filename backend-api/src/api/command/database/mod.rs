@@ -2,13 +2,13 @@ mod create_schema;
 mod drop_schema;
 mod rename_schema;
 
-use crate::api::{command::Command, facade::BackendFacade};
 use backend::{controller, schema};
 
 use crate::{
-    api::command::{ContextReceiver, OptionalBy},
+    api::command::{Command, ContextReceiver, OptionalBy},
     Context,
 };
+
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
 pub use rename_schema::RenameSchema;

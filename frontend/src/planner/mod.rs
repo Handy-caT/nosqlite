@@ -2,19 +2,12 @@ pub mod adapter;
 pub mod command;
 mod planners;
 
-use crate::{
-    database_statement_variant, get_context_statement_variant,
-    parser::Statement,
-    planner::{
-        adapter::PlannerCommand, command::FrontendCommand,
-        planners::DatabasePlanner,
-    },
-    preprocessor::{Preprocessor, PreprocessorError},
-    quit_statement_variant, schema_statement_variant,
-    use_schema_statement_variant,
-};
+use crate::{database_statement_variant, get_context_statement_variant, parser::Statement, planner::{
+    adapter::PlannerCommand, command::FrontendCommand,
+    planners::DatabasePlanner,
+}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, schema_statement_variant, table_statement_variant, use_schema_statement_variant};
 
-use crate::planner::planners::SchemaPlanner;
+use crate::planner::planners::{SchemaPlanner, TablePlanner};
 use derive_more::From;
 
 /// Represents a query planner.
@@ -55,6 +48,9 @@ impl Planner {
                 schema_statement_variant!(_) => {
                     Some(SchemaPlanner::new(node).parse_command())
                 }
+                table_statement_variant!(_) => {
+                    Some(TablePlanner::new(node).parse_command())
+                }
                 quit_statement_variant!(_) => {
                     Some(Ok(FrontendCommand::Quit.into()))
                 }
@@ -89,6 +85,9 @@ pub enum PlannerError {
 
 #[cfg(test)]
 mod tests {
+    use backend::schema::Column;
+    use backend::schema::column::primary_key::PrimaryKey;
+    use backend::schema::r#type::r#enum::StorageDataType;
     use backend_api::api::command::{
         backend_api::{
             CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase,
@@ -97,6 +96,7 @@ mod tests {
         database::{CreateSchema, DropSchema, RenameSchema, SchemaCommand},
         r#enum::BackendCommand,
     };
+    use backend_api::api::command::schema::{CreateTable, DropTable, TableCommand};
 
     use crate::planner::{
         adapter::PlannerCommand, command::FrontendCommand, Planner,
@@ -373,6 +373,83 @@ mod tests {
                     database_name: Some("xd".into()),
                     new_name: "test1".into(),
                     old_name: "test".into()
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_create_table_with_db_from() {
+        let query = "CREATE TABLE xd.test.tbl (id LONG PRIMARY KEY);";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Table(
+                TableCommand::Create(CreateTable {
+                    database_name: Some("xd".into()),
+                    schema_name: Some("test".into()),
+                    name: "tbl".into(),
+                    columns: vec![("id".into(), Column::new(StorageDataType::Long))],
+                    primary_key: PrimaryKey::new("pk".into(), "id".into())
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_create_table_with_many_columns() {
+        let query = "CREATE TABLE xd.test.tbl (id LONG PRIMARY KEY,\
+                                                    name VARCHAR10,);";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Table(
+                TableCommand::Create(CreateTable {
+                    database_name: Some("xd".into()),
+                    schema_name: Some("test".into()),
+                    name: "tbl".into(),
+                    columns: vec![("id".into(), Column::new(StorageDataType::Long)), ("name".into(), Column::new(StorageDataType::VarChar(10)))],
+                    primary_key: PrimaryKey::new("pk".into(), "id".into())
+                })
+            ))
+        );
+    }
+
+    #[test]
+    fn test_drop_table_with_db_from() {
+        let query = "DROP TABLE xd.test.tbl;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Table(
+                TableCommand::Drop(DropTable {
+                    database_name: Some("xd".into()),
+                    schema_name: Some("test".into()),
+                    name: "tbl".into(),
                 })
             ))
         );
