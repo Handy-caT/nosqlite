@@ -34,7 +34,7 @@ impl Default for DataAllocator {
     fn default() -> Self {
         Self {
             empty_link_registry:
-            BestFitEmptyLinkRegistryFactory::create_empty_link_registry(),
+                BestFitEmptyLinkRegistryFactory::create_empty_link_registry(),
             tail_link: PageLink::new(0, 0, PAGE_SIZE),
         }
     }

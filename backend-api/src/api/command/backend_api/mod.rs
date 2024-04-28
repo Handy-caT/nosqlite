@@ -5,8 +5,10 @@ pub mod use_schema;
 
 use std::fmt::Debug;
 
-use crate::api::{command::Command, facade::BackendFacade};
-use crate::api::command::ContextReceiver;
+use crate::api::{
+    command::{Command, ContextReceiver},
+    facade::BackendFacade,
+};
 
 pub use create_database::CreateDatabase;
 pub use drop_database::DropDatabase;

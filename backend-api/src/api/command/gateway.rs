@@ -61,6 +61,7 @@ pub mod test {
         controller, data::id, page::page_controller::PageController, schema,
         schema::database,
     };
+    use backend::schema::table;
     use common::structs::hash_table::{HashTable, MutHashTable};
 
     use crate::api::facade::BackendFacade;
@@ -100,10 +101,38 @@ pub mod test {
             database.add_schema(schema);
             self
         }
+        
+        /// Adds a table to the `BackendFacade`.
+        pub fn with_table(
+            mut self,
+            database_name: database::Name,
+            schema_name: schema::Name,
+            table_name: table::Name,
+        ) -> Self {
+            let database = self
+                .0
+                .database_controllers
+                .get_mut_value(&database_name)
+                .expect("database exists");
+            let schema = database
+                .get_mut_schema(&schema_name)
+                .expect("schema exists");
+            let table = controller::Table::new(table_name);
+            schema.add_table(table);
+            self
+        }
 
         /// Sets the current database in the `BackendFacade`'s context.
         pub fn with_db_in_context(mut self, name: database::Name) -> Self {
             self.0.context.set_current_db(name);
+            self
+        }
+        
+        /// Sets the current schema in the `BackendFacade`'s context.
+        pub fn with_schema_in_context(
+            mut self, name: schema::Name
+        ) -> Self {
+            self.0.context.set_current_schema(name);
             self
         }
 

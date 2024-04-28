@@ -205,13 +205,11 @@ mod tests {
 
         let data_storage = DataStorage::default();
 
-        
-            assert_eq!(data_storage.page_controller.get_page_count(), 1);
-        
+        assert_eq!(data_storage.page_controller.get_page_count(), 1);
+
         assert_eq!(data_storage.data_allocator.allocated_size(), 0);
 
-            assert_eq!(data_storage.id_registry.get_id_count(), 0);
-        
+        assert_eq!(data_storage.id_registry.get_id_count(), 0);
     }
 
     #[test]
@@ -315,7 +313,7 @@ mod tests {
 
         assert_eq!(data_storage.page_controller.get_page_count(), 1);
         assert_eq!(data_storage.data_allocator.allocated_size(), 4);
-        assert_eq!(data_storage.id_registry.get_id_count(), 0); 
+        assert_eq!(data_storage.id_registry.get_id_count(), 0);
         assert!(res.is_err());
     }
 
@@ -367,7 +365,7 @@ mod tests {
         let res =
             data_storage.update_data(id, DataRow(vec![updated_data.into()]));
 
-        assert_eq!( data_storage.page_controller.get_page_count(), 1);
+        assert_eq!(data_storage.page_controller.get_page_count(), 1);
         assert_eq!(data_storage.data_allocator.allocated_size(), 4);
         assert_eq!(data_storage.id_registry.get_id_count(), 1);
         assert!(res.is_ok());

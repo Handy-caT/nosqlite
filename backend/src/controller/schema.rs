@@ -52,9 +52,19 @@ impl<const NODE_SIZE: u8> Schema<NODE_SIZE> {
     /// Adds a table to the schema.
     /// # Arguments
     /// * `controller` - The table controller to add.
-    pub fn add_table(&mut self, controller: controller::Table<NODE_SIZE>) {
-        self.tables
-            .insert(controller.get_name().clone(), controller);
+    /// # Returns
+    /// * `bool` - Whether the table was added.
+    pub fn add_table(
+        &mut self,
+        controller: controller::Table<NODE_SIZE>,
+    ) -> bool {
+        if self.tables.contains_key(controller.get_name()) {
+            false
+        } else {
+            self.tables
+                .insert(controller.get_name().clone(), controller);
+            true
+        }
     }
 
     /// Removes a table from the schema.
@@ -128,8 +138,7 @@ mod tests {
     fn test_schema_add_table() {
         let mut schema = Schema::<4>::new("test".into());
 
-        let data_storage =  DataStorage::default();
-        let table = controller::Table::<4>::new("table".into(), data_storage);
+        let table = controller::Table::<4>::new("table".into());
         schema.add_table(table);
         assert_eq!(schema.tables.len(), 1);
     }
@@ -138,8 +147,7 @@ mod tests {
     fn test_schema_get_table_names() {
         let mut schema = Schema::<4>::new("test".into());
 
-        let data_storage =  DataStorage::default();
-        let table = controller::Table::<4>::new("table".into(), data_storage);
+        let table = controller::Table::<4>::new("table".into());
         schema.add_table(table);
 
         let table_names = schema.get_table_names();
@@ -151,8 +159,7 @@ mod tests {
     fn test_schema_get_mut_table() {
         let mut schema = Schema::<4>::new("test".into());
 
-        let data_storage =  DataStorage::default();
-        let table = controller::Table::<4>::new("table".into(), data_storage);
+        let table = controller::Table::<4>::new("table".into());
         schema.add_table(table);
 
         let table = schema.get_mut_table(&"table".into());

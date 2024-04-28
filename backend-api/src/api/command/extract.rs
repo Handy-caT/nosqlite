@@ -5,10 +5,7 @@ use crate::{
     },
     Context,
 };
-use backend::{
-    controller, schema,
-    schema::database,
-};
+use backend::{controller, schema, schema::database};
 use common::structs::hash_table::MutHashTable;
 use derive_more::Display;
 
