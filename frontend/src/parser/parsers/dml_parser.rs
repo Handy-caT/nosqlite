@@ -1,7 +1,8 @@
 use crate::{
     alter_schema_statement_variant, create_database_statement_variant,
-    create_schema_statement_variant, drop_database_statement_variant,
-    drop_schema_statement_variant,
+    create_schema_statement_variant, create_table_statement_variant,
+    drop_database_statement_variant, drop_schema_statement_variant,
+    drop_table_statement_variant,
     lexer::{
         token::{
             DBObject, DMLOperator, Identifier, Keyword, Preposition, Token,
@@ -94,7 +95,11 @@ impl<'a> DmlParser<'a> {
                         self.state.push(which_object);
                         self.state.push(identifier?.into());
 
-                        todo!("Add create table support")
+                        Ok(create_table_statement_variant!(self
+                            .state
+                            .as_slice()
+                            .try_into()
+                            .expect("valid tokens")))
                     }
                     DBObject::Column => Err(ParseError::WrongTokenProvided {
                         got: which_object,
@@ -144,7 +149,11 @@ impl<'a> DmlParser<'a> {
                         self.state.push(which_object);
                         self.state.push(identifier?.into());
 
-                        todo!("Add drop table support")
+                        Ok(drop_table_statement_variant!(self
+                            .state
+                            .as_slice()
+                            .try_into()
+                            .expect("valid tokens")))
                     }
                     DBObject::Column => Err(ParseError::WrongTokenProvided {
                         got: which_object,
@@ -301,7 +310,8 @@ mod test {
             Lexer,
         },
         parser::statement::dml::{
-            AlterSchema, CreateDatabase, CreateSchema, DropDatabase, DropSchema,
+            AlterSchema, CreateDatabase, CreateSchema, CreateTable,
+            DropDatabase, DropSchema, DropTable,
         },
     };
 
@@ -351,6 +361,20 @@ mod test {
     }
 
     #[test]
+    fn test_create_table_statement() {
+        let mut lexer = Lexer::new("CREATE TABLE test");
+        let mut state = vec![lexer.next().unwrap()];
+        let mut parser = DmlParser::new(&mut lexer, &mut state);
+
+        let statement = parser.parse();
+
+        assert_eq!(
+            statement,
+            Ok(CreateTable::new_statement(Identifier("test".to_string())))
+        );
+    }
+
+    #[test]
     fn test_create_schema_statement() {
         let mut lexer = Lexer::new("CREATE SCHEMA test");
         let mut state = vec![lexer.next().unwrap()];
@@ -389,6 +413,20 @@ mod test {
         assert_eq!(
             statement,
             Ok(DropSchema::new_statement(Identifier("test".to_string())))
+        );
+    }
+
+    #[test]
+    fn test_drop_table_statement() {
+        let mut lexer = Lexer::new("DROP TABLE test");
+        let mut state = vec![lexer.next().unwrap()];
+        let mut parser = DmlParser::new(&mut lexer, &mut state);
+
+        let statement = parser.parse();
+
+        assert_eq!(
+            statement,
+            Ok(DropTable::new_statement(Identifier("test".to_string())))
         );
     }
 

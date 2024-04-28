@@ -1,8 +1,12 @@
-use crate::{column_statement_variant, lexer::{
-    token,
-    token::{DBObject, Keyword, Token},
-}, parser::{statement::dml::CreateSchema, Statement}};
-use crate::preprocessor::Node;
+use crate::{
+    column_statement_variant,
+    lexer::{
+        token,
+        token::{DBObject, Keyword, Token},
+    },
+    parser::{statement::dml::CreateSchema, Statement},
+    preprocessor::Node,
+};
 
 /// Represents the `CREATE TABLE ...` statement.
 #[derive(Debug, PartialEq, Clone)]

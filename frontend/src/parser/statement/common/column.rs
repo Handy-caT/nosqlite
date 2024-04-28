@@ -3,7 +3,7 @@ use crate::{
         token,
         token::{Key, Keyword, Token},
     },
-    parser::{Statement},
+    parser::Statement,
     preprocessor::Node,
 };
 
@@ -26,9 +26,7 @@ impl Column {
     /// * `column` - The column.
     /// # Returns
     /// * New instance of `Column` [`Statement`].
-    pub fn new_statement(
-        column: Column,
-    ) -> Statement {
+    pub fn new_statement(column: Column) -> Statement {
         use crate::column_statement_variant;
 
         column_statement_variant!(column)
@@ -66,13 +64,13 @@ impl TryFrom<&[Token]> for Column {
             _ => return Err(()),
         };
 
-        let is_primary_key = match (key_type, key) {
+        let is_primary_key = matches!(
+            (key_type, key),
             (
                 Some(Token::Keyword(Keyword::Key(Key::Primary))),
                 Some(Token::Keyword(Keyword::Key(Key::Key))),
-            ) => true,
-            _ => false,
-        };
+            )
+        );
 
         Ok(Self {
             identifier,
@@ -155,7 +153,7 @@ mod rename_to_tests {
             data_type: token::DataType::Integer,
             is_primary_key: false,
         };
-        
+
         let another_column = Column {
             identifier: token::Identifier("test".to_string()),
             data_type: token::DataType::UInteger,
@@ -167,8 +165,6 @@ mod rename_to_tests {
         assert!(!column.can_be_followed(&CreateDatabase::new_statement(
             identifier.clone()
         )));
-        assert!(
-            column.can_be_followed(&Column::new_statement(another_column))
-        );
+        assert!(column.can_be_followed(&Column::new_statement(another_column)));
     }
 }

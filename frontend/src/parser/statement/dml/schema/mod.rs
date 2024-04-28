@@ -5,7 +5,6 @@ mod r#use;
 
 use crate::{parser::Statement, preprocessor::Node};
 
-use crate::parser::statement::dml::DatabaseNode;
 pub use alter::AlterSchema;
 pub use create::CreateSchema;
 pub use drop::DropSchema;

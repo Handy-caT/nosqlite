@@ -3,14 +3,17 @@ use crate::{parser::Statement, preprocessor::Node};
 mod create;
 mod drop;
 
+pub use create::CreateTable;
+pub use drop::DropTable;
+
 /// Represents an AST node for a table operation.
 #[derive(Debug, PartialEq, Clone)]
 pub enum TableNode {
     /// Represents a `CREATE TABLE ...` statement.
-    Create(create::CreateTable),
+    Create(CreateTable),
 
     /// Represents a `DROP TABLE ...` statement.
-    Drop(drop::DropTable),
+    Drop(DropTable),
 }
 
 impl Node for TableNode {
