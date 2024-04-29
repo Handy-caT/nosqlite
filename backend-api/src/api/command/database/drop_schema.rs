@@ -2,7 +2,10 @@ use backend::{controller, schema, schema::database};
 use std::convert::Infallible;
 
 use crate::{
-    api::command::{Command, ContextReceiver, OptionalBy},
+    api::{
+        command::{Command, ContextReceiver, OptionalBy},
+        CommandResultString,
+    },
     Context,
 };
 
@@ -33,7 +36,7 @@ impl ContextReceiver for DropSchema {
 impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
     for DropSchema
 {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -41,11 +44,18 @@ impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
         db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
         if !db_controller.has_schema(&self.name) {
-            return Ok(());
+            return Ok(CommandResultString::default());
         }
 
         let _ = db_controller.remove_schema(&self.name);
-        Ok(())
+
+        Ok(CommandResultString {
+            result: format!(
+                "Schema `{}`.`{}` dropped",
+                self.database_name.expect("exists"),
+                self.name
+            ),
+        })
     }
 }
 

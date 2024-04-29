@@ -1,5 +1,8 @@
 use crate::{
-    api::command::{Command, ContextReceiver, OptionalBy},
+    api::{
+        command::{Command, ContextReceiver, OptionalBy},
+        CommandResultString,
+    },
     Context,
 };
 use backend::{
@@ -10,6 +13,7 @@ use backend::{
         column, column::primary_key::PrimaryKey, database, table, Column,
     },
 };
+use derive_more::Display;
 
 /// [`Command`] to create a new table in a database.
 #[derive(Debug, Clone, PartialEq)]
@@ -54,7 +58,7 @@ impl ContextReceiver for CreateTable {
 impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>>
     for CreateTable
 {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -62,7 +66,11 @@ impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>>
         schema_controller: &mut controller::Schema<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
         if schema_controller.has_table(&self.name) {
-            return Err(ExecutionError::TableAlreadyExists(self.name));
+            return Err(ExecutionError::TableAlreadyExists(
+                self.database_name.expect("exists"),
+                self.schema_name.expect("exists"),
+                self.name,
+            ));
         }
 
         let mut table = controller::Table::new(self.name.clone());
@@ -74,20 +82,33 @@ impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>>
             .map_err(ExecutionError::TableControllerError)?;
 
         if schema_controller.add_table(table) {
-            Ok(())
+            Ok(CommandResultString {
+                result: format!(
+                    "Table `{}`.`{}`.`{}` created",
+                    self.database_name.expect("exists"),
+                    self.schema_name.expect("exists"),
+                    self.name
+                ),
+            })
         } else {
-            Err(ExecutionError::TableAlreadyExists(self.name))
+            Err(ExecutionError::TableAlreadyExists(
+                self.database_name.expect("exists"),
+                self.schema_name.expect("exists"),
+                self.name,
+            ))
         }
     }
 }
 
 /// Errors that can occur during the execution of [`CreateTable`].
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// The schema already exists in the database.
-    TableAlreadyExists(table::Name),
+    #[display(fmt = "Table `{}`.`{}`.`{}` already exists", _0, _1, _2)]
+    TableAlreadyExists(database::Name, schema::Name, table::Name),
 
     /// The table controller error.
+    #[display(fmt = "{:?}", _0)]
     TableControllerError(TableControllerError),
 }
 
@@ -236,8 +257,10 @@ mod tests {
 
         match result {
             Err(GatewayError::CommandError(
-                ExecutionError::TableAlreadyExists(name),
+                ExecutionError::TableAlreadyExists(db_name, schema_name, name),
             )) => {
+                assert_eq!(db_name, database_name);
+                assert_eq!(schema_name, schema_name);
                 assert_eq!(name, table_name);
             }
             _ => panic!("Expected `TableAlreadyExists` found {:?}", result),

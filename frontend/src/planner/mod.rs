@@ -2,10 +2,17 @@ pub mod adapter;
 pub mod command;
 mod planners;
 
-use crate::{database_statement_variant, get_context_statement_variant, parser::Statement, planner::{
-    adapter::PlannerCommand, command::FrontendCommand,
-    planners::DatabasePlanner,
-}, preprocessor::{Preprocessor, PreprocessorError}, quit_statement_variant, schema_statement_variant, table_statement_variant, use_schema_statement_variant};
+use crate::{
+    database_statement_variant, get_context_statement_variant,
+    parser::Statement,
+    planner::{
+        adapter::PlannerCommand, command::FrontendCommand,
+        planners::DatabasePlanner,
+    },
+    preprocessor::{Preprocessor, PreprocessorError},
+    quit_statement_variant, schema_statement_variant, table_statement_variant,
+    use_schema_statement_variant,
+};
 
 use crate::planner::planners::{SchemaPlanner, TablePlanner};
 use derive_more::From;
@@ -85,9 +92,10 @@ pub enum PlannerError {
 
 #[cfg(test)]
 mod tests {
-    use backend::schema::Column;
-    use backend::schema::column::primary_key::PrimaryKey;
-    use backend::schema::r#type::r#enum::StorageDataType;
+    use backend::schema::{
+        column::primary_key::PrimaryKey, r#type::r#enum::StorageDataType,
+        Column,
+    };
     use backend_api::api::command::{
         backend_api::{
             CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase,
@@ -95,8 +103,8 @@ mod tests {
         },
         database::{CreateSchema, DropSchema, RenameSchema, SchemaCommand},
         r#enum::BackendCommand,
+        schema::{CreateTable, DropTable, TableCommand},
     };
-    use backend_api::api::command::schema::{CreateTable, DropTable, TableCommand};
 
     use crate::planner::{
         adapter::PlannerCommand, command::FrontendCommand, Planner,
@@ -397,7 +405,10 @@ mod tests {
                     database_name: Some("xd".into()),
                     schema_name: Some("test".into()),
                     name: "tbl".into(),
-                    columns: vec![("id".into(), Column::new(StorageDataType::Long))],
+                    columns: vec![(
+                        "id".into(),
+                        Column::new(StorageDataType::Long)
+                    )],
                     primary_key: PrimaryKey::new("pk".into(), "id".into())
                 })
             ))
@@ -424,7 +435,13 @@ mod tests {
                     database_name: Some("xd".into()),
                     schema_name: Some("test".into()),
                     name: "tbl".into(),
-                    columns: vec![("id".into(), Column::new(StorageDataType::Long)), ("name".into(), Column::new(StorageDataType::VarChar(10)))],
+                    columns: vec![
+                        ("id".into(), Column::new(StorageDataType::Long)),
+                        (
+                            "name".into(),
+                            Column::new(StorageDataType::VarChar(10))
+                        )
+                    ],
                     primary_key: PrimaryKey::new("pk".into(), "id".into())
                 })
             ))
@@ -445,13 +462,13 @@ mod tests {
 
         assert_eq!(
             command,
-            PlannerCommand::Backend(BackendCommand::Table(
-                TableCommand::Drop(DropTable {
+            PlannerCommand::Backend(BackendCommand::Table(TableCommand::Drop(
+                DropTable {
                     database_name: Some("xd".into()),
                     schema_name: Some("test".into()),
                     name: "tbl".into(),
-                })
-            ))
+                }
+            )))
         );
     }
 

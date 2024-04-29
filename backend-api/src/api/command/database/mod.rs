@@ -2,6 +2,7 @@ mod create_schema;
 mod drop_schema;
 mod rename_schema;
 
+use derive_more::Display;
 use backend::{controller, schema};
 
 use crate::{
@@ -9,6 +10,7 @@ use crate::{
     Context,
 };
 
+use crate::api::CommandResultString;
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
 pub use rename_schema::RenameSchema;
@@ -49,7 +51,7 @@ impl ContextReceiver for SchemaCommand {
 impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
     for SchemaCommand
 {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -71,7 +73,7 @@ impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
 }
 
 /// Errors that can occur during the execution of [`SchemaCommand`].
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// Create schema error.
     CreateSchema(create_schema::ExecutionError),

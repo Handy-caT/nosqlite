@@ -6,6 +6,7 @@ use common::structs::hash_table::HashTable;
 use crate::api::{
     command::{Command, ContextReceiver},
     facade::BackendFacade,
+    CommandResultString,
 };
 
 /// Command to drop a database.
@@ -18,7 +19,7 @@ pub struct DropDatabase {
 impl ContextReceiver for DropDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropDatabase {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -26,10 +27,12 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropDatabase {
         backend: &mut BackendFacade<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
         if !backend.database_controllers.contains_key(&self.name) {
-            return Ok(());
+            return Ok(CommandResultString::default());
         }
         backend.database_controllers.remove(&self.name);
-        Ok(())
+        Ok(CommandResultString {
+            result: format!("Database `{}` dropped", self.name),
+        })
     }
 }
 

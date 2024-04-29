@@ -6,7 +6,10 @@ use backend::{
 };
 
 use crate::{
-    api::command::{Command, ContextReceiver, OptionalBy},
+    api::{
+        command::{Command, ContextReceiver, OptionalBy},
+        CommandResultString,
+    },
     Context,
 };
 
@@ -45,7 +48,7 @@ impl ContextReceiver for DropTable {
 }
 
 impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>> for DropTable {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -53,11 +56,18 @@ impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>> for DropTable {
         schema_controller: &mut controller::Schema<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
         if !schema_controller.has_table(&self.name) {
-            return Ok(());
+            return Ok(CommandResultString::default());
         }
 
         let _ = schema_controller.remove_table(&self.name);
-        Ok(())
+        Ok(CommandResultString {
+            result: format!(
+                "Table `{}`.`{}`.`{}` dropped",
+                self.database_name.expect("exists"),
+                self.schema_name.expect("exists"),
+                self.name
+            ),
+        })
     }
 }
 

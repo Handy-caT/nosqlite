@@ -1,4 +1,5 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
+use derive_more::Display;
 
 use crate::api::{
     command::{Command, ContextReceiver, Gateway, OptionalBy, TryExtract},
@@ -9,7 +10,7 @@ impl<Cmd, Ctx, By, const NODE_SIZE: u8> Gateway<Cmd, Ctx>
     for BackendFacade<NODE_SIZE>
 where
     Cmd: Command<Ctx> + OptionalBy<By> + ContextReceiver,
-    <Cmd as Command<Ctx>>::Err: Debug,
+    <Cmd as Command<Ctx>>::Err: Display,
     Self: TryExtract<Ctx, By = By>,
     <Self as TryExtract<Ctx>>::Err: Debug,
 {
@@ -40,12 +41,18 @@ where
 }
 
 /// Represents an error that occurred during the execution of a command.
-#[derive(Debug)]
-pub enum GatewayError<CmdErr, ExtractErr> {
+#[derive(Debug, Display)]
+pub enum GatewayError<CmdErr, ExtractErr> 
+where
+    CmdErr: Display,
+    ExtractErr: Debug,
+{
     /// An error occurred during the execution of the command.
+    #[display(fmt = "{}", _0)]
     CommandError(CmdErr),
 
     /// An error occurred during the extraction of the context.
+    #[display(fmt = "{:?}", _0)]
     ExtractionError(ExtractErr),
 
     /// Can't extract the context because the command doesn't provide the

@@ -1,7 +1,11 @@
 use backend::{controller, schema, schema::database};
+use derive_more::Display;
 
 use crate::{
-    api::command::{Command, ContextReceiver, OptionalBy},
+    api::{
+        command::{Command, ContextReceiver, OptionalBy},
+        CommandResultString,
+    },
     Context,
 };
 
@@ -32,31 +36,48 @@ impl ContextReceiver for CreateSchema {
 impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
     for CreateSchema
 {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
         self,
         db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
+        let database_name = self
+            .database_name
+            .clone()
+            .expect("database_name is provided");
+
         if db_controller.has_schema(&self.name) {
-            return Err(ExecutionError::SchemaAlreadyExists(self.name));
+            return Err(ExecutionError::SchemaAlreadyExists(
+                database_name,
+                self.name,
+            ));
         }
 
         let schema = controller::Schema::new(self.name.clone());
         if db_controller.add_schema(schema) {
-            Ok(())
+            Ok(CommandResultString {
+                result: format!(
+                    "Schema `{}`.`{}` created",
+                    database_name, self.name
+                ),
+            })
         } else {
-            Err(ExecutionError::SchemaAlreadyExists(self.name))
+            Err(ExecutionError::SchemaAlreadyExists(
+                database_name,
+                self.name,
+            ))
         }
     }
 }
 
 /// Errors that can occur during the execution of [`CreateSchema`].
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// The schema already exists in the database.
-    SchemaAlreadyExists(schema::Name),
+    #[display(fmt = "Schema `{}`.`{}` already exists", _0, _1)]
+    SchemaAlreadyExists(database::Name, schema::Name),
 }
 
 #[cfg(test)]
@@ -151,8 +172,9 @@ mod tests {
 
         match result {
             Err(GatewayError::CommandError(
-                ExecutionError::SchemaAlreadyExists(name),
+                ExecutionError::SchemaAlreadyExists(db_name, name),
             )) => {
+                assert_eq!(db_name, database_name);
                 assert_eq!(name, schema_name);
             }
             _ => panic!("Expected `SchemaAlreadyExists` found {:?}", result),

@@ -3,9 +3,9 @@ use crate::{parser::Statement, preprocessor::Node};
 mod create;
 mod drop;
 
+use crate::parser::statement::dml::SchemaNode;
 pub use create::CreateTable;
 pub use drop::DropTable;
-use crate::parser::statement::dml::SchemaNode;
 
 /// Represents an AST node for a table operation.
 #[derive(Debug, PartialEq, Clone)]

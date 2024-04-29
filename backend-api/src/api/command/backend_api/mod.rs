@@ -4,10 +4,12 @@ mod use_database;
 pub mod use_schema;
 
 use std::fmt::Debug;
+use derive_more::Display;
 
 use crate::api::{
     command::{Command, ContextReceiver},
     facade::BackendFacade,
+    CommandResultString,
 };
 
 pub use create_database::CreateDatabase;
@@ -45,7 +47,7 @@ impl ContextReceiver for DatabaseCommand {
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
     for DatabaseCommand
 {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -70,17 +72,21 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
 }
 
 /// Errors that can occur when executing the [`DatabaseCommand`].
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// Create database error.
+    #[display(fmt = "{}", _0)]
     CreateDatabase(create_database::ExecutionError),
 
     /// Drop database error.
+    #[display(fmt = "{}", _0)]
     DropDatabase(drop_database::ExecutionError),
 
     /// Use database error.
+    #[display(fmt = "{}", _0)]
     UseDatabase(use_database::ExecutionError),
 
     /// Use schema error.
+    #[display(fmt = "{}", _0)]
     UseSchema(use_schema::ExecutionError),
 }

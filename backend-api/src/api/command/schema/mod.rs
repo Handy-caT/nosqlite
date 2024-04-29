@@ -1,6 +1,7 @@
 mod create_table;
 mod drop_table;
 
+use derive_more::Display;
 use backend::{controller, schema, schema::database};
 
 use crate::{
@@ -8,6 +9,7 @@ use crate::{
     Context,
 };
 
+use crate::api::CommandResultString;
 pub use create_table::CreateTable;
 pub use drop_table::DropTable;
 
@@ -42,7 +44,7 @@ impl ContextReceiver for TableCommand {
 impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>>
     for TableCommand
 {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -61,7 +63,7 @@ impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>>
 }
 
 /// Errors that can occur during the execution of [`SchemaCommand`].
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// Create table error.
     CreateTable(create_table::ExecutionError),

@@ -1,9 +1,11 @@
 use backend::{schema, schema::database};
 use common::structs::hash_table::{HashTable, MutHashTable};
+use derive_more::Display;
 
 use crate::api::{
     command::{Command, ContextReceiver},
     facade::BackendFacade,
+    CommandResultString,
 };
 
 /// [`Command`] to use a schema in a database.
@@ -19,7 +21,7 @@ pub struct UseSchema {
 impl ContextReceiver for UseSchema {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseSchema {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -43,26 +45,41 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseSchema {
             .get_mut_value(database_name)
             .expect("exist because of the check above");
         if !db_controller.has_schema(&self.name) {
-            return Err(ExecutionError::SchemaNotExists(self.name));
+            return Err(ExecutionError::SchemaNotExists(
+                database_name.clone(),
+                self.name,
+            ));
         }
+
+        let result = CommandResultString {
+            result: format!(
+                "Schema `{}` with `{}` database selected",
+                self.name.clone(),
+                database_name.clone()
+            ),
+        };
 
         backend.context.set_current_db(database_name.clone());
         backend.context.set_current_schema(self.name);
-        Ok(())
+
+        Ok(result)
     }
 }
 
 /// Errors that can occur during the execution of [`UseSchema`].
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// The database was not provided.
+    #[display(fmt = "Database not provided in the `Context`")]
     DatabaseNotProvided,
 
     /// The schema not exists in the database.
+    #[display(fmt = "Database `{}` not exists", _0)]
     DatabaseNotExists(database::Name),
 
     /// The schema not exists in the database.
-    SchemaNotExists(schema::Name),
+    #[display(fmt = "Schema `{}`.`{}` not exists", _0, _1)]
+    SchemaNotExists(database::Name, schema::Name),
 }
 
 #[cfg(test)]
@@ -181,8 +198,9 @@ mod tests {
 
         match result {
             Err(GatewayError::CommandError(
-                ExecutionError::SchemaNotExists(name),
+                ExecutionError::SchemaNotExists(db_name, name),
             )) => {
+                assert_eq!(db_name, database_name);
                 assert_eq!(name, schema_name);
             }
             _ => panic!("Expected `SchemaNotExists` found {:?}", result),

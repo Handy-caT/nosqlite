@@ -1,9 +1,11 @@
 use backend::{controller, schema::database};
 use common::structs::hash_table::HashTable;
+use derive_more::Display;
 
 use crate::api::{
     command::{Command, ContextReceiver},
     facade::BackendFacade,
+    CommandResultString,
 };
 
 /// Command to create a new database.
@@ -16,7 +18,7 @@ pub struct CreateDatabase {
 impl ContextReceiver for CreateDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for CreateDatabase {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -27,15 +29,19 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for CreateDatabase {
             return Err(ExecutionError::DatabaseAlreadyExists(self.name));
         }
         let db = controller::Database::new(self.name.clone());
-        backend.database_controllers.insert(self.name, db);
-        Ok(())
+        backend.database_controllers.insert(self.name.clone(), db);
+
+        Ok(CommandResultString {
+            result: format!("Database `{}` created", self.name),
+        })
     }
 }
 
 /// Errors that can occur when executing the [`CreateDatabase`] command.
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// The database already exists.
+    #[display(fmt = "Database `{}` already exists", _0)]
     DatabaseAlreadyExists(database::Name),
 }
 

@@ -32,24 +32,30 @@ fn repl<const NODE_SIZE: u8>(mut api: Api<NODE_SIZE>) -> io::Result<()> {
                     match command {
                         PlannerCommand::Backend(command) => match command {
                             BackendCommand::Database(command) => {
-                                if let Err(error) =
-                                    api.backend_api.send(command)
-                                {
-                                    println!("{:?}", error);
+                                match api.backend_api.send(command) {
+                                    Ok(res) => {
+                                        println!("{}", res);
+                                    }
+                                    Err(error) => {
+                                        println!("{}", error);
+                                    }
                                 }
                             }
                             BackendCommand::Schema(command) => {
-                                if let Err(error) =
-                                    api.backend_api.send(command)
-                                {
-                                    println!("{:?}", error);
+                                match api.backend_api.send(command) {
+                                    Ok(res) => {
+                                        println!("{}", res);
+                                    }
+                                    Err(error) => {
+                                        println!("{}", error);
+                                    }
                                 }
                             }
                             BackendCommand::Table(command) => {
                                 if let Err(error) =
                                     api.backend_api.send(command)
                                 {
-                                    println!("{:?}", error);
+                                    println!("{}", error);
                                 }
                             }
                         },

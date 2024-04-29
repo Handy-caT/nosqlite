@@ -1,7 +1,11 @@
 use backend::{controller, schema, schema::database};
+use derive_more::Display;
 
 use crate::{
-    api::command::{Command, ContextReceiver, OptionalBy},
+    api::{
+        command::{Command, ContextReceiver, OptionalBy},
+        CommandResultString,
+    },
     Context,
 };
 
@@ -35,47 +39,60 @@ impl ContextReceiver for RenameSchema {
 impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
     for RenameSchema
 {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
         self,
         db_controller: &mut controller::Database<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
+        let database_name =
+            self.database_name.clone().expect("database_name is set");
+
         if !db_controller.has_schema(&self.old_name) {
-            return Err(ExecutionError::SchemaNotFound(self.old_name));
+            return Err(ExecutionError::SchemaNotFound(
+                database_name,
+                self.old_name,
+            ));
         }
         if db_controller.has_schema(&self.new_name) {
-            return Err(ExecutionError::SchemaAlreadyExists(self.new_name));
+            return Err(ExecutionError::SchemaAlreadyExists(
+                database_name,
+                self.new_name,
+            ));
         }
 
         let schema = db_controller.remove_schema(&self.old_name);
         if let Some(mut schema) = schema {
             let info = schema.get_mut_info();
-            info.name = self.new_name;
+            info.name = self.new_name.clone();
             db_controller.add_schema(schema);
 
-            Ok(())
+            Ok(CommandResultString {
+                result: format!(
+                    "Schema `{}`.`{}` renamed to `{}`.`{}`",
+                    database_name.clone(),
+                    self.old_name,
+                    database_name,
+                    self.new_name.clone()
+                ),
+            })
         } else {
-            Err(ExecutionError::SchemaNotFound(self.old_name))
+            Err(ExecutionError::SchemaNotFound(database_name, self.old_name))
         }
     }
 }
 
 /// Errors that can occur during the execution of the [`RenameSchema`] command.
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
-    /// The database was not provided.
-    DatabaseNotProvided,
-
-    /// Provided database does not exist.
-    DatabaseNotExists(database::Name),
-
     /// The schema with the old name was not found.
-    SchemaNotFound(schema::Name),
+    #[display(fmt = "Schema `{}`.`{}` not found", _0, _1)]
+    SchemaNotFound(database::Name, schema::Name),
 
     /// The schema with the new name already exists.
-    SchemaAlreadyExists(schema::Name),
+    #[display(fmt = "Schema `{}`.`{}` already exists", _0, _1)]
+    SchemaAlreadyExists(database::Name, schema::Name),
 }
 
 #[cfg(test)]
@@ -195,8 +212,9 @@ mod tests {
 
         match result {
             Err(GatewayError::CommandError(
-                ExecutionError::SchemaAlreadyExists(name),
+                ExecutionError::SchemaAlreadyExists(db_name, name),
             )) => {
+                assert_eq!(db_name, database_name);
                 assert_eq!(name, new_schema_name);
             }
             _ => panic!("Expected `SchemaAlreadyExists` found {:?}", result),
@@ -222,8 +240,9 @@ mod tests {
 
         match result {
             Err(GatewayError::CommandError(
-                ExecutionError::SchemaNotFound(name),
+                ExecutionError::SchemaNotFound(db_name, name),
             )) => {
+                assert_eq!(db_name, database_name);
                 assert_eq!(name, schema_name);
             }
             _ => panic!("Expected `SchemaNotFound` found {:?}", result),

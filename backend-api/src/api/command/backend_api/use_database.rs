@@ -1,9 +1,11 @@
 use backend::schema::database;
 use common::structs::hash_table::HashTable;
+use derive_more::Display;
 
 use crate::api::{
     command::{Command, ContextReceiver},
     facade::BackendFacade,
+    CommandResultString,
 };
 
 /// Command to use a database.
@@ -16,7 +18,7 @@ pub struct UseDatabase {
 impl ContextReceiver for UseDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseDatabase {
-    type Ok = ();
+    type Ok = CommandResultString;
     type Err = ExecutionError;
 
     fn execute(
@@ -26,15 +28,19 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseDatabase {
         if !backend.database_controllers.contains_key(&self.name) {
             return Err(ExecutionError::DatabaseNotExists(self.name));
         }
-        backend.context.set_current_db(self.name);
-        Ok(())
+        backend.context.set_current_db(self.name.clone());
+
+        Ok(CommandResultString {
+            result: format!("Database `{}` selected", self.name),
+        })
     }
 }
 
 /// Errors that can occur when executing the [`UseDatabase`] command.
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum ExecutionError {
     /// The database not exists.
+    #[display(fmt = "Database `{}` not exists", _0)]
     DatabaseNotExists(database::Name),
 }
 
