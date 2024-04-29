@@ -21,12 +21,16 @@ pub trait Command<Ctx> {
 
 /// Trait for objects that can be optionally referenced.
 pub trait OptionalBy<T> {
-    fn by(&self) -> Option<T>;
+    type Err;
+
+    fn by(&self) -> Result<T, Self::Err>;
 }
 
 impl<T> OptionalBy<()> for T {
-    fn by(&self) -> Option<()> {
-        Some(())
+    type Err = Infallible;
+
+    fn by(&self) -> Result<(), Self::Err> {
+        Ok(())
     }
 }
 

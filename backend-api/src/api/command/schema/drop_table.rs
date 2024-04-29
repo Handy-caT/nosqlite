@@ -7,7 +7,10 @@ use backend::{
 
 use crate::{
     api::{
-        command::{Command, ContextReceiver, OptionalBy},
+        command::{
+            schema::{CreateTable, ProvideError},
+            Command, ContextReceiver, OptionalBy,
+        },
         CommandResultString,
     },
     Context,
@@ -27,12 +30,19 @@ pub struct DropTable {
 }
 
 impl OptionalBy<(database::Name, schema::Name)> for DropTable {
-    fn by(&self) -> Option<(database::Name, schema::Name)> {
-        self.database_name.as_ref().and_then(|db_name| {
-            self.schema_name
-                .as_ref()
-                .map(|schema_name| (db_name.clone(), schema_name.clone()))
-        })
+    type Err = ProvideError;
+
+    fn by(&self) -> Result<(database::Name, schema::Name), Self::Err> {
+        let db_name = self
+            .database_name
+            .clone()
+            .ok_or(ProvideError::DatabaseNotProvided)?;
+        let schema_name = self
+            .schema_name
+            .clone()
+            .ok_or(ProvideError::SchemaNotProvided)?;
+
+        Ok((db_name, schema_name))
     }
 }
 

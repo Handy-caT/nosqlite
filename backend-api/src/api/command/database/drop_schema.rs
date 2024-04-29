@@ -3,7 +3,10 @@ use std::convert::Infallible;
 
 use crate::{
     api::{
-        command::{Command, ContextReceiver, OptionalBy},
+        command::{
+            database::{CreateSchema, ProvideError},
+            Command, ContextReceiver, OptionalBy,
+        },
         CommandResultString,
     },
     Context,
@@ -20,8 +23,12 @@ pub struct DropSchema {
 }
 
 impl OptionalBy<database::Name> for DropSchema {
-    fn by(&self) -> Option<database::Name> {
-        self.database_name.clone()
+    type Err = ProvideError;
+
+    fn by(&self) -> Result<database::Name, Self::Err> {
+        self.database_name
+            .clone()
+            .ok_or(ProvideError::DatabaseNotProvided)
     }
 }
 

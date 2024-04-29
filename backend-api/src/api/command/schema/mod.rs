@@ -1,8 +1,8 @@
 mod create_table;
 mod drop_table;
 
-use derive_more::Display;
 use backend::{controller, schema, schema::database};
+use derive_more::Display;
 
 use crate::{
     api::command::{Command, ContextReceiver, OptionalBy},
@@ -24,7 +24,9 @@ pub enum TableCommand {
 }
 
 impl OptionalBy<(database::Name, schema::Name)> for TableCommand {
-    fn by(&self) -> Option<(database::Name, schema::Name)> {
+    type Err = ProvideError;
+
+    fn by(&self) -> Result<(database::Name, schema::Name), Self::Err> {
         match self {
             TableCommand::Create(command) => command.by(),
             TableCommand::Drop(command) => command.by(),
@@ -70,4 +72,22 @@ pub enum ExecutionError {
 
     /// Drop table error.
     DropTable(drop_table::ExecutionError),
+}
+
+/// Errors that can occur when executing the [`SchemaCommand`].
+#[derive(Debug, Display)]
+pub enum ProvideError {
+    /// The database was not provided.
+    #[display(fmt = "Database not provided in the `Context`.\n\
+                     Use the `USE DATABASE` command to set the current \
+                     database or use `db_name`.`schema_name`.`table_name` to \
+                     specify the database and schema names.")]
+    DatabaseNotProvided,
+
+    /// The schema was not provided.
+    #[display(fmt = "Schema not provided in the `Context`\n\
+                     Use the `USE SCHEMA` command to set the current schema \
+                     or use `schema_name`.`table_name` to specify the schema \
+                     name.")]
+    SchemaNotProvided,
 }

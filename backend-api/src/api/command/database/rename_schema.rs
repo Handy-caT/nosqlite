@@ -3,7 +3,10 @@ use derive_more::Display;
 
 use crate::{
     api::{
-        command::{Command, ContextReceiver, OptionalBy},
+        command::{
+            database::{CreateSchema, ProvideError},
+            Command, ContextReceiver, OptionalBy,
+        },
         CommandResultString,
     },
     Context,
@@ -23,8 +26,12 @@ pub struct RenameSchema {
 }
 
 impl OptionalBy<database::Name> for RenameSchema {
-    fn by(&self) -> Option<database::Name> {
-        self.database_name.clone()
+    type Err = ProvideError;
+
+    fn by(&self) -> Result<database::Name, Self::Err> {
+        self.database_name
+            .clone()
+            .ok_or(ProvideError::DatabaseNotProvided)
     }
 }
 

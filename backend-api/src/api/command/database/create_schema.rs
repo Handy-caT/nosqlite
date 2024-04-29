@@ -3,7 +3,9 @@ use derive_more::Display;
 
 use crate::{
     api::{
-        command::{Command, ContextReceiver, OptionalBy},
+        command::{
+            database::ProvideError, Command, ContextReceiver, OptionalBy,
+        },
         CommandResultString,
     },
     Context,
@@ -20,8 +22,12 @@ pub struct CreateSchema {
 }
 
 impl OptionalBy<database::Name> for CreateSchema {
-    fn by(&self) -> Option<database::Name> {
-        self.database_name.clone()
+    type Err = ProvideError;
+
+    fn by(&self) -> Result<database::Name, Self::Err> {
+        self.database_name
+            .clone()
+            .ok_or(ProvideError::DatabaseNotProvided)
     }
 }
 

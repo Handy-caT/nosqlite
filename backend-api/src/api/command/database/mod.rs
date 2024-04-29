@@ -2,8 +2,8 @@ mod create_schema;
 mod drop_schema;
 mod rename_schema;
 
-use derive_more::Display;
 use backend::{controller, schema};
+use derive_more::Display;
 
 use crate::{
     api::command::{Command, ContextReceiver, OptionalBy},
@@ -29,7 +29,9 @@ pub enum SchemaCommand {
 }
 
 impl OptionalBy<schema::database::Name> for SchemaCommand {
-    fn by(&self) -> Option<schema::database::Name> {
+    type Err = ProvideError;
+
+    fn by(&self) -> Result<schema::database::Name, Self::Err> {
         match self {
             SchemaCommand::Create(command) => command.by(),
             SchemaCommand::Drop(command) => command.by(),
@@ -83,4 +85,14 @@ pub enum ExecutionError {
 
     /// Rename schema error.
     RenameSchema(rename_schema::ExecutionError),
+}
+
+/// Errors that can occur when executing the [`SchemaCommand`].
+#[derive(Debug, Display)]
+pub enum ProvideError {
+    /// Database not provided.
+    #[display(fmt = "Database not provided in the `Context`.\n\
+                     Use the `USE DATABASE` command to set the database \
+                     or use `db_name`.`schema_name` to specify the database.")]
+    DatabaseNotProvided,
 }

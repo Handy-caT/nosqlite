@@ -1,5 +1,5 @@
-use std::fmt::{Debug, Display};
 use derive_more::Display;
+use std::fmt::{Debug, Display};
 
 use crate::api::{
     command::{Command, ContextReceiver, Gateway, OptionalBy, TryExtract},
@@ -11,6 +11,7 @@ impl<Cmd, Ctx, By, const NODE_SIZE: u8> Gateway<Cmd, Ctx>
 where
     Cmd: Command<Ctx> + OptionalBy<By> + ContextReceiver,
     <Cmd as Command<Ctx>>::Err: Display,
+    <Cmd as OptionalBy<By>>::Err: Display,
     Self: TryExtract<Ctx, By = By>,
     <Self as TryExtract<Ctx>>::Err: Debug,
 {
@@ -18,6 +19,7 @@ where
     type Err = GatewayError<
         <Cmd as Command<Ctx>>::Err,
         <Self as TryExtract<Ctx>>::Err,
+        <Cmd as OptionalBy<By>>::Err,
     >;
 
     #[rustfmt::skip]
@@ -30,7 +32,7 @@ where
     > {
         cmd.receive(&self.context);
 
-        let by = cmd.by().ok_or(GatewayError::ByNotProvided)?;
+        let by = cmd.by().map_err(GatewayError::ByNotProvided)?;
 
         let ctx = self
             .try_extract_mut(by)
@@ -42,10 +44,11 @@ where
 
 /// Represents an error that occurred during the execution of a command.
 #[derive(Debug, Display)]
-pub enum GatewayError<CmdErr, ExtractErr> 
+pub enum GatewayError<CmdErr, ExtractErr, ByError>
 where
     CmdErr: Display,
     ExtractErr: Debug,
+    ByError: Display,
 {
     /// An error occurred during the execution of the command.
     #[display(fmt = "{}", _0)]
@@ -57,7 +60,8 @@ where
 
     /// Can't extract the context because the command doesn't provide the
     /// necessary information.
-    ByNotProvided,
+    #[display(fmt = "{}", _0)]
+    ByNotProvided(ByError),
 }
 
 #[cfg(test)]

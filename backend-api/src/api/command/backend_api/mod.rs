@@ -3,8 +3,8 @@ mod drop_database;
 mod use_database;
 pub mod use_schema;
 
-use std::fmt::Debug;
 use derive_more::Display;
+use std::fmt::Debug;
 
 use crate::api::{
     command::{Command, ContextReceiver},
