@@ -1,11 +1,11 @@
-use backend::schema::{column, column::primary_key::PrimaryKey, table, Column};
+use backend::schema::{self, column, column::primary_key::PrimaryKey, table};
 use backend_api::api::command::schema::{CreateTable, DropTable};
 
 use crate::{
     column_statement_variant, create_table_statement_variant,
     drop_table_statement_variant,
     lexer::token::{Key, Keyword, Token},
-    parser::ast,
+    parser::{ast, statement, statement::common::Column},
     planner::adapter::{parse_identifier, ParseError, WrongIdentifierError},
 };
 
@@ -69,6 +69,12 @@ impl TryFrom<ast::Node> for CreateTable {
             let mut columns = vec![];
             let mut primary_key = None;
 
+            if next.is_none() {
+                return Err(ParseError::ExpectedStatement(
+                    Column::new_statement(Column::default()),
+                ));
+            }
+
             while next.is_some() {
                 let node = next.unwrap();
                 if let column_statement_variant!(statement) =
@@ -77,7 +83,7 @@ impl TryFrom<ast::Node> for CreateTable {
                     let column_name: column::Name =
                         statement.identifier.0.into();
                     let data_type = statement.data_type.into();
-                    let column = Column::new(data_type);
+                    let column = schema::Column::new(data_type);
 
                     if statement.is_primary_key {
                         if primary_key.is_some() {

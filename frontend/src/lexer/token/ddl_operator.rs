@@ -2,19 +2,25 @@
 
 use std::str::FromStr;
 
+use derive_more::Display;
+
 /// DDL operator token.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Display, Clone, Copy, PartialEq)]
 pub enum DDLOperator {
     /// Token for `SELECT` statement.
+    #[display(fmt = "SELECT")]
     Select,
 
     /// Token for `INSERT` statement.
+    #[display(fmt = "INSERT")]
     Insert,
 
     /// Token for `UPDATE` statement.
+    #[display(fmt = "UPDATE")]
     Update,
 
     /// Token for `DELETE` statement.
+    #[display(fmt = "DELETE")]
     Delete,
 }
 

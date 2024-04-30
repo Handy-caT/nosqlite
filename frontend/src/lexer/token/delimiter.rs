@@ -1,20 +1,25 @@
 //! Delimiter token module of the lexer.
 
+use derive_more::Display;
 use std::str::FromStr;
 
 /// Delimiter is a token that represents a delimiter in the source code.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum Delimiter {
     /// Token for `,` delimiter.
+    #[display(fmt = ",")]
     Comma,
 
     /// Token for `;` delimiter.
+    #[display(fmt = ";")]
     Semicolon,
 
     /// Token for `(` delimiter.
+    #[display(fmt = "(")]
     LeftParenthesis,
 
     /// Token for `)` delimiter.
+    #[display(fmt = ")")]
     RightParenthesis,
 }
 

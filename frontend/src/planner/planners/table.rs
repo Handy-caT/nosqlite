@@ -27,14 +27,18 @@ impl TablePlanner {
         let node = self.node;
 
         match &node.statement {
-            create_table_statement_variant!(_) => Ok(BackendCommand::Table(
-                TableCommand::Create(node.try_into().expect("is create table")),
-            )
-            .into()),
-            drop_table_statement_variant!(_) => Ok(BackendCommand::Table(
-                TableCommand::Drop(node.try_into().expect("is drop table")),
-            )
-            .into()),
+            create_table_statement_variant!(_) => {
+                Ok(BackendCommand::Table(TableCommand::Create(
+                    node.try_into().map_err(PlannerError::ParseError)?,
+                ))
+                .into())
+            }
+            drop_table_statement_variant!(_) => {
+                Ok(BackendCommand::Table(TableCommand::Drop(
+                    node.try_into().map_err(PlannerError::ParseError)?,
+                ))
+                .into())
+            }
             _ => Err(PlannerError::UnexpectedStatement(node.statement)),
         }
     }

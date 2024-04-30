@@ -1,18 +1,24 @@
 use std::str::FromStr;
 
+use derive_more::Display;
+
 /// Represents a shortcut for frontend commands.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum Shortcut {
     /// Token for `Help` command.
+    #[display(fmt = "\\help|\\h")]
     Help,
 
     /// Token for `Quit` command.
+    #[display(fmt = "\\quit|\\q")]
     Quit,
 
     /// Token for `Clear` command.
+    #[display(fmt = "\\clear|\\c")]
     Clear,
 
     /// Token for `GetContext` command.
+    #[display(fmt = "\\get_context|\\gc")]
     GetContext,
 }
 

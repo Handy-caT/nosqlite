@@ -69,7 +69,7 @@ fn repl<const NODE_SIZE: u8>(mut api: Api<NODE_SIZE>) -> io::Result<()> {
                     }
                 }
                 Err(error) => {
-                    println!("{:?}", error);
+                    println!("{}", error);
                 }
             }
         }

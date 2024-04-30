@@ -2,8 +2,10 @@
 
 use std::str::FromStr;
 
+use derive_more::Display;
+
 /// Keyword token.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum Keyword {
     /// Token for [`DBObject`].
     DbObject(DBObject),
@@ -65,18 +67,22 @@ mod keyword_tests {
 }
 
 /// Represents a keyword in the SQL language for the database objects.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum DBObject {
     /// Token for `DATABASE` object.
+    #[display(fmt = "DATABASE")]
     Database,
 
     /// Token for `SCHEMA` object.
+    #[display(fmt = "SCHEMA")]
     Schema,
 
     /// Token for `TABLE` object.
+    #[display(fmt = "TABLE")]
     Table,
 
     /// Token for `COLUMN` object.
+    #[display(fmt = "COLUMN")]
     Column,
 }
 
@@ -118,12 +124,14 @@ mod dbobject_tests {
 }
 
 /// Represents a keyword in the SQL language for the prepositions.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum Preposition {
     /// Token for `IN` preposition.
+    #[display(fmt = "IN")]
     In,
 
     /// Token for `TO` preposition.
+    #[display(fmt = "TO")]
     To,
 }
 
@@ -160,15 +168,18 @@ mod preposition_tests {
 }
 
 /// Represents a keyword in the SQL language for the keys.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum Key {
     /// Token for `PRIMARY` key.
+    #[display(fmt = "PRIMARY")]
     Primary,
 
     /// Token for `FOREIGN` key.
+    #[display(fmt = "FOREIGN")]
     Foreign,
 
     /// Token for `Key`.
+    #[display(fmt = "KEY")]
     Key,
 }
 

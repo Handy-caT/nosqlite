@@ -2,22 +2,29 @@
 
 use std::str::FromStr;
 
+use derive_more::Display;
+
 /// DML operator token.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum DMLOperator {
     /// Token for `CREATE` statement.
+    #[display(fmt = "CREATE")]
     Create,
 
     /// Token for `ALTER` statement.
+    #[display(fmt = "ALTER")]
     Alter,
 
     /// Token for `RENAME` statement.
+    #[display(fmt = "RENAME")]
     Rename,
 
     /// Token for `DROP` statement.
+    #[display(fmt = "DROP")]
     Drop,
 
     /// Token for `USE` statement.
+    #[display(fmt = "USE")]
     Use,
 }
 

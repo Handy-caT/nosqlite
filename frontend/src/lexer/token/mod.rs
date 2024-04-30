@@ -25,7 +25,7 @@ impl Default for Identifier {
 }
 
 /// Token is a part of lexer that represents a single unit of the source code.
-#[derive(Debug, Clone, PartialEq, From)]
+#[derive(Debug, Display, Clone, PartialEq, From)]
 pub enum Token {
     /// Token for [`DDLOperator`].
     DDL(DDLOperator),

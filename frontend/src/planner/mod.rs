@@ -18,7 +18,7 @@ use crate::planner::{
     adapter::ParseError,
     planners::{SchemaPlanner, TablePlanner},
 };
-use derive_more::From;
+use derive_more::{Display, From};
 
 /// Represents a query planner.
 #[derive(Debug, Clone, PartialEq)]
@@ -84,11 +84,13 @@ impl Iterator for Planner {
 }
 
 /// Represents a query planner error.
-#[derive(Debug, Clone, From, PartialEq)]
+#[derive(Debug, Display, Clone, From, PartialEq)]
 pub enum PlannerError {
     /// Represents a preprocessor error.
+    #[display(fmt = "{:?}", _0)]
     PreprocessorError(PreprocessorError),
 
+    /// Represents a parse error.
     ParseError(ParseError),
 
     /// Represents an unexpected statement.

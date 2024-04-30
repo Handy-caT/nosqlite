@@ -61,11 +61,12 @@ impl<T: Default + PartialOrd + Clone> BinHeap<T> {
     /// If there is no root item, it returns None
     /// # Returns
     /// * `Option<T>` - Value of the root item
+    /// # Panics
+    /// Safe because checked for emptiness.
     pub fn peek_max(&mut self) -> Option<T> {
         if self.data.is_empty() {
             None
         } else {
-            // # Panics: Safe because we checked for emptiness.
             Some(self.data.get(0).expect("Is not empty").value)
         }
     }

@@ -23,11 +23,19 @@ impl TryFrom<ast::Node> for CreateSchema {
             let name = names
                 .next()
                 .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
-                    got: statement.identifier,
-                    expected_type: "`schema_name`",
+                    got: statement.identifier.clone(),
+                    expected_type: "schema_name",
                 }))?
                 .into();
             let db_name = names.next().map(|name| name.into());
+            if names.next().is_some() {
+                return Err(ParseError::WrongIdentifier(
+                    WrongIdentifierError {
+                        got: statement.identifier,
+                        expected_type: "db_name.schema_name",
+                    },
+                ));
+            }
 
             Ok(CreateSchema {
                 database_name: db_name,
@@ -49,11 +57,19 @@ impl TryFrom<ast::Node> for DropSchema {
             let name = names
                 .next()
                 .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
-                    got: statement.identifier,
+                    got: statement.identifier.clone(),
                     expected_type: "`schema_name`",
                 }))?
                 .into();
             let db_name = names.next().map(|name| name.into());
+            if names.next().is_some() {
+                return Err(ParseError::WrongIdentifier(
+                    WrongIdentifierError {
+                        got: statement.identifier,
+                        expected_type: "db_name.schema_name",
+                    },
+                ));
+            }
 
             Ok(DropSchema {
                 database_name: db_name,
@@ -82,6 +98,14 @@ impl TryFrom<ast::Node> for RenameSchema {
                     }))?
                     .into();
                 let db_name = names.next();
+                if names.next().is_some() {
+                    return Err(ParseError::WrongIdentifier(
+                        WrongIdentifierError {
+                            got: statement.identifier.clone(),
+                            expected_type: "db_name.schema_name",
+                        },
+                    ));
+                }
 
                 (name, db_name)
             } else {
@@ -101,6 +125,14 @@ impl TryFrom<ast::Node> for RenameSchema {
                     }))?
                     .into();
                 let db_name = names.next();
+                if names.next().is_some() {
+                    return Err(ParseError::WrongIdentifier(
+                        WrongIdentifierError {
+                            got: statement.identifier.clone(),
+                            expected_type: "db_name.schema_name",
+                        },
+                    ));
+                }
 
                 (name, db_name)
             } else {

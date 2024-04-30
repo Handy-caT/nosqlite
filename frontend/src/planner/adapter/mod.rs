@@ -33,7 +33,7 @@ pub enum PlannerCommand {
 }
 
 /// Error that can occur during parsing.
-#[derive(Debug, Clone, Display, From, PartialEq)]
+#[derive(Debug, Clone, From, PartialEq)]
 pub enum ParseError {
     /// Error of wrong identifier type.
     WrongIdentifier(WrongIdentifierError),
@@ -42,11 +42,36 @@ pub enum ParseError {
     IdentifierMismatch(IdentifierMismatchError),
 
     /// Error of expected [`Token`]s.
-    #[display(fmt = "{:?}", _0)]
     ExpectedTokens(Vec<Token>),
+
+    /// Error of expected statement.
+    #[from(ignore)]
+    ExpectedStatement(Statement),
 
     /// Error of unexpected statement.
     UnexpectedStatement(Statement),
+}
+
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParseError::WrongIdentifier(error) => write!(f, "{}", error),
+            ParseError::IdentifierMismatch(error) => write!(f, "{}", error),
+            ParseError::ExpectedTokens(tokens) => {
+                write!(f, "Expected the following tokens: ")?;
+                for token in tokens {
+                    write!(f, "{} ", token)?;
+                }
+                Ok(())
+            }
+            ParseError::UnexpectedStatement(statement) => {
+                write!(f, "Unexpected statement: `{}`", statement)
+            }
+            ParseError::ExpectedStatement(statement) => {
+                write!(f, "Expected statement: `{}`", statement)
+            }
+        }
+    }
 }
 
 /// Error of wrong identifier type.
@@ -73,10 +98,10 @@ impl Display for WrongIdentifierError {
 #[derive(Debug, Clone, PartialEq)]
 pub struct IdentifierMismatchError {
     /// Provided identifier.
-    got: String,
+    pub got: String,
 
     /// Expected identifier.
-    expected: String,
+    pub expected: String,
 }
 
 impl Display for IdentifierMismatchError {

@@ -50,7 +50,7 @@ where
                 todo!()
             } else {
                 let index = node.get_position_by_value(&value);
-                node.add_value(value, index);
+                node.add_value(value, index).expect("ok");
                 let result = node.index.index;
                 self.data.update_node(root, node);
                 result
