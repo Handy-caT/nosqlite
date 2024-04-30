@@ -1,5 +1,6 @@
 mod create;
 mod drop;
+mod show;
 mod r#use;
 
 use derive_more::Display;
@@ -21,6 +22,9 @@ pub enum DatabaseNode {
 
     /// Represents a `USE DATABASE ...` statement.
     Use(UseDatabase),
+
+    /// Represents a `SHOW DATABASE ...` statement.
+    Show(show::ShowDatabase),
 }
 
 impl Node for DatabaseNode {
@@ -29,6 +33,7 @@ impl Node for DatabaseNode {
             DatabaseNode::Drop(stmnt) => stmnt.can_be_followed(next),
             DatabaseNode::Create(stmnt) => stmnt.can_be_followed(next),
             DatabaseNode::Use(stmnt) => stmnt.can_be_followed(next),
+            DatabaseNode::Show(stmnt) => stmnt.can_be_followed(next),
         }
     }
 }

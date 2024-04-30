@@ -293,6 +293,23 @@ mod lexer_tests {
     }
 
     #[test]
+    fn test_lexer_show() {
+        let lexer = Lexer::new("SHOW SCHEMAS FROM db");
+        let expected = vec![
+            Token::DML(token::DMLOperator::Show),
+            Token::Keyword(token::Keyword::DbObjectMany(
+                token::DBObjectMany::Schemas,
+            )),
+            Token::Keyword(token::Keyword::Preposition(Preposition::From)),
+            Token::Identifier(token::Identifier("db".to_string())),
+        ];
+
+        let actual: Vec<Token> = lexer.collect();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
     fn test_lexer_next_token_key_datatype() {
         let lexer = Lexer::new(
             "CREATE TABLE users(id INT4 PRIMARY \

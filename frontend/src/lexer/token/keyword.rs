@@ -10,6 +10,9 @@ pub enum Keyword {
     /// Token for [`DBObject`].
     DbObject(DBObject),
 
+    /// Token for [`DBObjectMany`].
+    DbObjectMany(DBObjectMany),
+
     /// Token for [`Preposition`].
     Preposition(Preposition),
 
@@ -23,6 +26,10 @@ impl FromStr for Keyword {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok(db_object) = s.parse::<DBObject>() {
             return Ok(Keyword::DbObject(db_object));
+        }
+
+        if let Ok(db_object_many) = s.parse::<DBObjectMany>() {
+            return Ok(Keyword::DbObjectMany(db_object_many));
         }
 
         if let Ok(preposition) = s.parse::<Preposition>() {
@@ -123,6 +130,63 @@ mod dbobject_tests {
     }
 }
 
+/// Represents a keyword in the SQL language for the database objects.
+#[derive(Debug, Display, PartialEq, Clone, Copy)]
+pub enum DBObjectMany {
+    /// Token for `DATABASE` object.
+    #[display(fmt = "DATABASES")]
+    Databases,
+
+    /// Token for `SCHEMA` object.
+    #[display(fmt = "SCHEMAS")]
+    Schemas,
+
+    /// Token for `TABLE` object.
+    #[display(fmt = "TABLES")]
+    Tables,
+
+    /// Token for `COLUMN` object.
+    #[display(fmt = "COLUMNS")]
+    Columns,
+}
+
+impl FromStr for DBObjectMany {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "databases" => Ok(DBObjectMany::Databases),
+            "schemas" => Ok(DBObjectMany::Schemas),
+            "tables" => Ok(DBObjectMany::Tables),
+            "columns" => Ok(DBObjectMany::Columns),
+            _ => Err(()),
+        }
+    }
+}
+
+#[cfg(test)]
+mod dbobject_many_tests {
+    use crate::lexer::token::keyword::DBObjectMany;
+
+    #[test]
+    fn test_db_object_from_str() {
+        assert_eq!("databases".parse(), Ok(DBObjectMany::Databases));
+        assert_eq!("schemas".parse(), Ok(DBObjectMany::Schemas));
+        assert_eq!("tables".parse(), Ok(DBObjectMany::Tables));
+        assert_eq!("columns".parse(), Ok(DBObjectMany::Columns));
+        assert_eq!("".parse::<DBObjectMany>(), Err(()));
+        assert_eq!("invalid".parse::<DBObjectMany>(), Err(()));
+    }
+
+    #[test]
+    fn test_db_object_from_str_case_insensitive() {
+        assert_eq!("DATabaSES".parse(), Ok(DBObjectMany::Databases));
+        assert_eq!("SChEMaS".parse(), Ok(DBObjectMany::Schemas));
+        assert_eq!("taBLES".parse(), Ok(DBObjectMany::Tables));
+        assert_eq!("COluMNS".parse(), Ok(DBObjectMany::Columns));
+    }
+}
+
 /// Represents a keyword in the SQL language for the prepositions.
 #[derive(Debug, Display, PartialEq, Clone, Copy)]
 pub enum Preposition {
@@ -133,6 +197,10 @@ pub enum Preposition {
     /// Token for `TO` preposition.
     #[display(fmt = "TO")]
     To,
+
+    /// Token for `FROM` preposition.
+    #[display(fmt = "FROM")]
+    From,
 }
 
 impl FromStr for Preposition {
@@ -142,6 +210,7 @@ impl FromStr for Preposition {
         match s.to_lowercase().as_str() {
             "in" => Ok(Preposition::In),
             "to" => Ok(Preposition::To),
+            "from" => Ok(Preposition::From),
             _ => Err(()),
         }
     }
@@ -155,6 +224,7 @@ mod preposition_tests {
     fn test_preposition_from_str() {
         assert_eq!("in".parse(), Ok(Preposition::In));
         assert_eq!("to".parse(), Ok(Preposition::To));
+        assert_eq!("from".parse(), Ok(Preposition::From));
 
         assert_eq!("".parse::<Preposition>(), Err(()));
         assert_eq!("invalid".parse::<Preposition>(), Err(()));
@@ -164,6 +234,7 @@ mod preposition_tests {
     fn test_preposition_from_str_case_insensitive() {
         assert_eq!("iN".parse(), Ok(Preposition::In));
         assert_eq!("tO".parse(), Ok(Preposition::To));
+        assert_eq!("fRoM".parse(), Ok(Preposition::From));
     }
 }
 

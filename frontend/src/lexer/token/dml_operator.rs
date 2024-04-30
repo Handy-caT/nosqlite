@@ -26,6 +26,10 @@ pub enum DMLOperator {
     /// Token for `USE` statement.
     #[display(fmt = "USE")]
     Use,
+
+    /// Token for `SHOW` statement.
+    #[display(fmt = "SHOW")]
+    Show,
 }
 
 impl FromStr for DMLOperator {
@@ -38,6 +42,7 @@ impl FromStr for DMLOperator {
             "rename" => Ok(DMLOperator::Rename),
             "drop" => Ok(DMLOperator::Drop),
             "use" => Ok(DMLOperator::Use),
+            "show" => Ok(DMLOperator::Show),
             _ => Err(()),
         }
     }
@@ -54,6 +59,7 @@ mod dml_operator_tests {
         assert_eq!("RENAME".parse(), Ok(DMLOperator::Rename));
         assert_eq!("DROP".parse(), Ok(DMLOperator::Drop));
         assert_eq!("USE".parse(), Ok(DMLOperator::Use));
+        assert_eq!("SHOW".parse(), Ok(DMLOperator::Show));
 
         assert_eq!("".parse::<DMLOperator>(), Err(()));
         assert_eq!("invalid".parse::<DMLOperator>(), Err(()));
@@ -66,5 +72,6 @@ mod dml_operator_tests {
         assert_eq!("rEnAmE".parse(), Ok(DMLOperator::Rename));
         assert_eq!("dRoP".parse(), Ok(DMLOperator::Drop));
         assert_eq!("uSe".parse(), Ok(DMLOperator::Use));
+        assert_eq!("sHoW".parse(), Ok(DMLOperator::Show));
     }
 }

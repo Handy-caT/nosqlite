@@ -11,7 +11,7 @@ pub use data_type::DataType;
 pub use ddl_operator::DDLOperator;
 pub use delimiter::Delimiter;
 pub use dml_operator::DMLOperator;
-pub use keyword::{DBObject, Key, Keyword, Preposition};
+pub use keyword::{DBObject, DBObjectMany, Key, Keyword, Preposition};
 pub use shortcut::Shortcut;
 
 /// Identifier is a token that represents an identifier in the source code.

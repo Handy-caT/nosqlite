@@ -43,6 +43,7 @@ impl<'a> DmlParser<'a> {
                 DMLOperator::Rename => self.parse_rename_statement(),
                 DMLOperator::Drop => self.parse_drop_statement(),
                 DMLOperator::Use => self.parse_use_statement(),
+                DMLOperator::Show => todo!("Add show support"),
             }
         } else {
             panic!("Wrong token provided to the DML parser")
