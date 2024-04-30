@@ -3,6 +3,8 @@ mod create;
 mod drop;
 mod r#use;
 
+use derive_more::Display;
+
 use crate::{parser::Statement, preprocessor::Node};
 
 pub use alter::AlterSchema;
@@ -11,7 +13,7 @@ pub use drop::DropSchema;
 pub use r#use::UseSchema;
 
 /// Represents an AST node for a schema operation.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum SchemaNode {
     /// Represents a `DROP SCHEMA ...` statement.
     Drop(DropSchema),

@@ -193,7 +193,7 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(GatewayError::ByNotProvided) => {}
+            Err(GatewayError::ByNotProvided(_)) => {}
             _ => panic!("Expected `ByNotProvided` found {:?}", result),
         }
     }

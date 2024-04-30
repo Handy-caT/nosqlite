@@ -19,7 +19,7 @@ impl TryFrom<ast::Node> for CreateDatabase {
                 return Err(ParseError::WrongIdentifier(
                     WrongIdentifierError {
                         got: statement.identifier,
-                        expected_type: "`db_name`",
+                        expected_type: "db_name",
                     },
                 ));
             }
@@ -27,7 +27,7 @@ impl TryFrom<ast::Node> for CreateDatabase {
 
             Ok(CreateDatabase { name: name.into() })
         } else {
-            Err(ParseError::UnexpectedStatement)
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }
@@ -42,7 +42,7 @@ impl TryFrom<ast::Node> for DropDatabase {
                 return Err(ParseError::WrongIdentifier(
                     WrongIdentifierError {
                         got: statement.identifier,
-                        expected_type: "`db_name`",
+                        expected_type: "db_name",
                     },
                 ));
             }
@@ -50,7 +50,7 @@ impl TryFrom<ast::Node> for DropDatabase {
 
             Ok(DropDatabase { name: name.into() })
         } else {
-            Err(ParseError::UnexpectedStatement)
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }
@@ -65,7 +65,7 @@ impl TryFrom<ast::Node> for UseDatabase {
                 return Err(ParseError::WrongIdentifier(
                     WrongIdentifierError {
                         got: statement.identifier,
-                        expected_type: "`db_name`",
+                        expected_type: "db_name",
                     },
                 ));
             }
@@ -73,7 +73,7 @@ impl TryFrom<ast::Node> for UseDatabase {
 
             Ok(UseDatabase { name: name.into() })
         } else {
-            Err(ParseError::UnexpectedStatement)
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }
@@ -88,18 +88,26 @@ impl TryFrom<ast::Node> for UseSchema {
             let name = names
                 .next()
                 .ok_or(ParseError::WrongIdentifier(WrongIdentifierError {
-                    got: statement.identifier,
-                    expected_type: "`schema_name`",
+                    got: statement.identifier.clone(),
+                    expected_type: "schema_name",
                 }))?
                 .into();
             let db_name = names.next().map(|name| name.into());
+            if names.next().is_some() {
+                return Err(ParseError::WrongIdentifier(
+                    WrongIdentifierError {
+                        got: statement.identifier,
+                        expected_type: "db_name.schema_name",
+                    },
+                ));
+            }
 
             Ok(UseSchema {
                 database_name: db_name,
                 name,
             })
         } else {
-            Err(ParseError::UnexpectedStatement)
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }

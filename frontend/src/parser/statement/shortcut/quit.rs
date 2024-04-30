@@ -11,7 +11,7 @@ pub struct Quit;
 
 impl Display for Quit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "\\quit")
+        write!(f, "\\quit|\\q")
     }
 }
 

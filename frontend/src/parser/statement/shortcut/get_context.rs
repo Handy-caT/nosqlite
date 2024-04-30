@@ -11,7 +11,7 @@ pub struct GetContext;
 
 impl Display for GetContext {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "\\get_context")
+        write!(f, "\\get_context|\\gc")
     }
 }
 

@@ -2,6 +2,8 @@ mod database;
 mod schema;
 mod table;
 
+use derive_more::Display;
+
 use crate::{parser::Statement, preprocessor::Node};
 
 pub use database::*;
@@ -9,7 +11,7 @@ pub use schema::*;
 pub use table::*;
 
 /// Represents an AST node for a DML operation.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum DML {
     /// Represents a database operation.
     Database(DatabaseNode),

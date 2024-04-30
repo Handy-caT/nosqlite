@@ -6,12 +6,19 @@ use crate::{
     parser::Statement,
     preprocessor::LeafNode,
 };
+use std::fmt::Display;
 
 /// Describes `CREATE DATABASE` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CreateDatabase {
     /// Name of the database.
     pub identifier: token::Identifier,
+}
+
+impl Display for CreateDatabase {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "CREATE DATABASE {}", self.identifier)
+    }
 }
 
 impl CreateDatabase {

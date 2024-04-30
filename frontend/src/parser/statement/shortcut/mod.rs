@@ -1,13 +1,15 @@
 mod get_context;
 mod quit;
 
+use derive_more::Display;
+
 use crate::{parser::Statement, preprocessor::Node};
 
 pub use get_context::GetContext;
 pub use quit::Quit;
 
 /// Represents an AST node for a DML operation.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum Shortcut {
     /// Represents a `quit` operation.
     Quit(Quit),

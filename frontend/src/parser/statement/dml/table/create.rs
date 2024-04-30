@@ -1,10 +1,12 @@
+use std::fmt::Display;
+
 use crate::{
     column_statement_variant,
     lexer::{
         token,
         token::{DBObject, Keyword, Token},
     },
-    parser::{statement::dml::CreateSchema, Statement},
+    parser::Statement,
     preprocessor::Node,
 };
 
@@ -13,6 +15,12 @@ use crate::{
 pub struct CreateTable {
     /// Name of the table.
     pub identifier: token::Identifier,
+}
+
+impl Display for CreateTable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "CREATE TABLE {}", self.identifier)
+    }
 }
 
 impl CreateTable {

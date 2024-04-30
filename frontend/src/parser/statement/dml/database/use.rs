@@ -6,12 +6,19 @@ use crate::{
     parser::Statement,
     preprocessor::LeafNode,
 };
+use std::fmt::Display;
 
 /// Describes `USE DATABASE` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
 pub struct UseDatabase {
     /// Name of the database.
     pub identifier: token::Identifier,
+}
+
+impl Display for UseDatabase {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "USE DATABASE {}", self.identifier)
+    }
 }
 
 impl UseDatabase {

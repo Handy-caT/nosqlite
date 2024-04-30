@@ -2,6 +2,8 @@ pub mod common;
 pub mod dml;
 pub mod shortcut;
 
+use derive_more::Display;
+
 use crate::preprocessor::Node;
 
 pub use common::Common;
@@ -9,7 +11,7 @@ pub use dml::DML;
 pub use shortcut::Shortcut;
 
 /// Represents an AST node for a statement.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum Statement {
     /// Represents a DML operation.
     Dml(DML),
@@ -21,6 +23,7 @@ pub enum Statement {
     Shortcut(Shortcut),
 
     /// Represents a semicolon to separate statements.
+    #[display(fmt = ";")]
     Semicolon,
 }
 

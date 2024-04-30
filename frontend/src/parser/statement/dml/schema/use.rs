@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     lexer::{
         token,
@@ -12,6 +14,12 @@ use crate::{
 pub struct UseSchema {
     /// Name of the schema and optionally database.
     pub identifier: token::Identifier,
+}
+
+impl Display for UseSchema {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "USE SCHEMA {}", self.identifier)
+    }
 }
 
 impl UseSchema {

@@ -1,7 +1,8 @@
+use derive_more::Display;
 use std::str::FromStr;
 
 /// Represents a data type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Display, Clone, PartialEq)]
 pub enum DataType {
     /// Represents a boolean.
     Bool,
@@ -13,6 +14,7 @@ pub enum DataType {
     Short,
 
     /// Represents an integer.
+    #[default]
     Integer,
 
     /// Represents a long.

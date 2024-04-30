@@ -4,6 +4,7 @@ use backend_api::api::command::schema::{CreateTable, DropTable};
 use crate::{
     column_statement_variant, create_table_statement_variant,
     drop_table_statement_variant,
+    lexer::token::{Key, Keyword, Token},
     parser::ast,
     planner::adapter::{parse_identifier, ParseError, WrongIdentifierError},
 };
@@ -31,7 +32,7 @@ impl TryFrom<ast::Node> for DropTable {
                 name,
             })
         } else {
-            Err(ParseError::UnexpectedStatement)
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }
@@ -60,7 +61,7 @@ impl TryFrom<ast::Node> for CreateTable {
 
             (name, schema_name, db_name)
         } else {
-            return Err(ParseError::UnexpectedStatement);
+            return Err(ParseError::UnexpectedStatement(node.statement));
         };
 
         let (columns, primary_key) = {
@@ -70,7 +71,9 @@ impl TryFrom<ast::Node> for CreateTable {
 
             while next.is_some() {
                 let node = next.unwrap();
-                if let column_statement_variant!(statement) = node.statement {
+                if let column_statement_variant!(statement) =
+                    node.statement.clone()
+                {
                     let column_name: column::Name =
                         statement.identifier.0.into();
                     let data_type = statement.data_type.into();
@@ -78,14 +81,18 @@ impl TryFrom<ast::Node> for CreateTable {
 
                     if statement.is_primary_key {
                         if primary_key.is_some() {
-                            return Err(ParseError::UnexpectedStatement);
+                            return Err(ParseError::UnexpectedStatement(
+                                node.statement,
+                            ));
                         }
                         primary_key = Some(column_name.clone());
                     }
 
                     columns.push((column_name, column));
                 } else {
-                    return Err(ParseError::UnexpectedStatement);
+                    return Err(ParseError::UnexpectedStatement(
+                        node.statement,
+                    ));
                 }
 
                 next = node.next;
@@ -94,7 +101,10 @@ impl TryFrom<ast::Node> for CreateTable {
             let primary_key = if let Some(primary_key) = primary_key {
                 PrimaryKey::new("pk".into(), primary_key)
             } else {
-                return Err(ParseError::UnexpectedStatement);
+                return Err(ParseError::ExpectedTokens(vec![
+                    Token::Keyword(Keyword::Key(Key::Primary)),
+                    Token::Keyword(Keyword::Key(Key::Key)),
+                ]));
             };
 
             (columns, primary_key)

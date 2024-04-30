@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     lexer::{
         token,
@@ -12,6 +14,12 @@ use crate::{
 pub struct DropTable {
     /// Name of the table.
     pub identifier: token::Identifier,
+}
+
+impl Display for DropTable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "DROP TABLE {}", self.identifier)
+    }
 }
 
 impl DropTable {

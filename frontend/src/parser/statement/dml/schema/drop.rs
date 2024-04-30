@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     lexer::{
         token,
@@ -12,6 +14,12 @@ use crate::{
 pub struct DropSchema {
     /// Name of the schema.
     pub identifier: token::Identifier,
+}
+
+impl Display for DropSchema {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "DROP SCHEMA {}", self.identifier)
+    }
 }
 
 impl DropSchema {

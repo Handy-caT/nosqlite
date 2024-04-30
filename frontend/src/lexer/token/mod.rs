@@ -5,7 +5,7 @@ mod dml_operator;
 mod keyword;
 mod shortcut;
 
-use derive_more::From;
+use derive_more::{Display, From};
 
 pub use data_type::DataType;
 pub use ddl_operator::DDLOperator;
@@ -15,7 +15,7 @@ pub use keyword::{DBObject, Key, Keyword, Preposition};
 pub use shortcut::Shortcut;
 
 /// Identifier is a token that represents an identifier in the source code.
-#[derive(Debug, PartialEq, Clone, From)]
+#[derive(Debug, Display, PartialEq, Clone, From)]
 pub struct Identifier(pub String);
 
 impl Default for Identifier {

@@ -2,12 +2,13 @@ mod column;
 mod rename_to;
 
 use crate::{parser::Statement, preprocessor::Node};
+use derive_more::Display;
 
 pub use column::Column;
 pub use rename_to::RenameTo;
 
 /// Represents an AST node for a common operation.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum Common {
     /// Represents a `RENAME TO ...` statement.
     RenameTo(RenameTo),

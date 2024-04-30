@@ -1,14 +1,14 @@
 use crate::{parser::Statement, preprocessor::Node};
+use derive_more::Display;
 
 mod create;
 mod drop;
 
-use crate::parser::statement::dml::SchemaNode;
 pub use create::CreateTable;
 pub use drop::DropTable;
 
 /// Represents an AST node for a table operation.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum TableNode {
     /// Represents a `CREATE TABLE ...` statement.
     Create(CreateTable),

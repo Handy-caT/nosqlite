@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     lexer::{
         token,
@@ -12,6 +14,12 @@ use crate::{
 pub struct CreateSchema {
     /// Name of the schema.
     pub identifier: token::Identifier,
+}
+
+impl Display for CreateSchema {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "CREATE SCHEMA {}", self.identifier)
+    }
 }
 
 impl CreateSchema {

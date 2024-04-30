@@ -6,12 +6,19 @@ use crate::{
     parser::Statement,
     preprocessor::LeafNode,
 };
+use std::fmt::Display;
 
 /// Describes `DROP DATABASE ...` statement for AST.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DropDatabase {
     /// Name of the database.
     pub identifier: token::Identifier,
+}
+
+impl Display for DropDatabase {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "DROP DATABASE {}", self.identifier)
+    }
 }
 
 impl DropDatabase {

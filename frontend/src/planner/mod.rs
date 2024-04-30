@@ -14,7 +14,10 @@ use crate::{
     use_schema_statement_variant,
 };
 
-use crate::planner::planners::{SchemaPlanner, TablePlanner};
+use crate::planner::{
+    adapter::ParseError,
+    planners::{SchemaPlanner, TablePlanner},
+};
 use derive_more::From;
 
 /// Represents a query planner.
@@ -85,6 +88,8 @@ impl Iterator for Planner {
 pub enum PlannerError {
     /// Represents a preprocessor error.
     PreprocessorError(PreprocessorError),
+
+    ParseError(ParseError),
 
     /// Represents an unexpected statement.
     UnexpectedStatement(Statement),

@@ -2,6 +2,8 @@ mod create;
 mod drop;
 mod r#use;
 
+use derive_more::Display;
+
 use crate::{parser::Statement, preprocessor::Node};
 
 pub use create::CreateDatabase;
@@ -9,7 +11,7 @@ pub use drop::DropDatabase;
 pub use r#use::UseDatabase;
 
 /// Represents an AST node for a database operation.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum DatabaseNode {
     /// Represents a `DROP DATABASE ...` statement.
     Drop(DropDatabase),

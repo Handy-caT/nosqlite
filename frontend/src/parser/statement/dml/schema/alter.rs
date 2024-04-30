@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     lexer::{
         token,
@@ -13,6 +15,12 @@ use crate::{
 pub struct AlterSchema {
     /// Name of the schema.
     pub identifier: token::Identifier,
+}
+
+impl Display for AlterSchema {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ALTER SCHEMA {}", self.identifier)
+    }
 }
 
 impl AlterSchema {

@@ -3,7 +3,7 @@ use crate::{
     drop_schema_statement_variant,
     parser::ast,
     planner::adapter::{
-        parse_identifier, ParseError, ParseError::IdentifierMismatch,
+        parse_identifier, IdentifierMismatchError, ParseError,
         WrongIdentifierError,
     },
     rename_to_statement_variant,
@@ -34,7 +34,7 @@ impl TryFrom<ast::Node> for CreateSchema {
                 name,
             })
         } else {
-            Err(ParseError::UnexpectedStatement)
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }
@@ -60,7 +60,7 @@ impl TryFrom<ast::Node> for DropSchema {
                 name,
             })
         } else {
-            Err(ParseError::UnexpectedStatement)
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }
@@ -81,11 +81,11 @@ impl TryFrom<ast::Node> for RenameSchema {
                         expected_type: "`schema_name`",
                     }))?
                     .into();
-                let db_name = names.next().map(|name| name.into());
+                let db_name = names.next();
 
                 (name, db_name)
             } else {
-                return Err(ParseError::UnexpectedStatement);
+                return Err(ParseError::UnexpectedStatement(node.statement));
             };
 
         let child = &node.next.expect("is rename to statement and exist");
@@ -100,39 +100,41 @@ impl TryFrom<ast::Node> for RenameSchema {
                         expected_type: "`schema_name`",
                     }))?
                     .into();
-                let db_name = names.next().map(|name| name.into());
+                let db_name = names.next();
 
                 (name, db_name)
             } else {
-                return Err(ParseError::UnexpectedStatement);
+                return Err(ParseError::UnexpectedStatement(node.statement));
             };
 
         match (db_name, db_name_to) {
             (Some(db_name), Some(db_name_to)) => {
                 if db_name != db_name_to {
-                    Err(IdentifierMismatch {
-                        got: db_name_to,
-                        expected: db_name,
-                    })
+                    Err(ParseError::IdentifierMismatch(
+                        IdentifierMismatchError {
+                            got: db_name_to,
+                            expected: db_name,
+                        },
+                    ))
                 } else {
                     Ok(RenameSchema {
                         database_name: Some(db_name.into()),
-                        old_name: schema_name_from.into(),
-                        new_name: schema_name_to.into(),
+                        old_name: schema_name_from,
+                        new_name: schema_name_to,
                     })
                 }
             }
             (Some(db_name), None) => Ok(RenameSchema {
                 database_name: Some(db_name.into()),
-                old_name: schema_name_from.into(),
-                new_name: schema_name_to.into(),
+                old_name: schema_name_from,
+                new_name: schema_name_to,
             }),
             (None, None) => Ok(RenameSchema {
                 database_name: None,
-                old_name: schema_name_from.into(),
-                new_name: schema_name_to.into(),
+                old_name: schema_name_from,
+                new_name: schema_name_to,
             }),
-            _ => Err(ParseError::UnexpectedStatement),
+            _ => Err(ParseError::UnexpectedStatement(node.statement)),
         }
     }
 }

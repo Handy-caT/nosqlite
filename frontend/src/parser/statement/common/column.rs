@@ -6,9 +6,11 @@ use crate::{
     parser::Statement,
     preprocessor::Node,
 };
+use derive_more::Display;
+use std::fmt::Display;
 
 /// Represents a column in a table.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct Column {
     /// Name of the column.
     pub identifier: token::Identifier,
@@ -18,6 +20,22 @@ pub struct Column {
 
     /// Whether the column is a primary key.
     pub is_primary_key: bool,
+}
+
+impl Display for Column {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {}{}",
+            self.identifier,
+            self.data_type,
+            if self.is_primary_key {
+                " PRIMARY KEY"
+            } else {
+                ""
+            }
+        )
+    }
 }
 
 impl Column {

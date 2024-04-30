@@ -1,7 +1,12 @@
-use crate::{lexer::token, planner::command::FrontendCommand};
+use crate::{
+    lexer::{token, token::Token},
+    parser::Statement,
+    planner::command::FrontendCommand,
+};
 use backend::schema::database as db;
 use backend_api::api::command::r#enum::BackendCommand;
-use derive_more::From;
+use derive_more::{Display, From};
+use std::fmt::Display;
 
 mod data_type;
 mod database;
@@ -28,16 +33,20 @@ pub enum PlannerCommand {
 }
 
 /// Error that can occur during parsing.
-#[derive(Debug, Clone, From, PartialEq)]
+#[derive(Debug, Clone, Display, From, PartialEq)]
 pub enum ParseError {
     /// Error of wrong identifier type.
     WrongIdentifier(WrongIdentifierError),
 
     /// Error of identifier mismatch.
-    IdentifierMismatch { got: String, expected: String },
+    IdentifierMismatch(IdentifierMismatchError),
+
+    /// Error of expected [`Token`]s.
+    #[display(fmt = "{:?}", _0)]
+    ExpectedTokens(Vec<Token>),
 
     /// Error of unexpected statement.
-    UnexpectedStatement,
+    UnexpectedStatement(Statement),
 }
 
 /// Error of wrong identifier type.
@@ -48,4 +57,34 @@ pub struct WrongIdentifierError {
 
     /// Expected type.
     pub expected_type: &'static str,
+}
+
+impl Display for WrongIdentifierError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Wrong identifier: Expected `{}`, but got `{}`",
+            self.expected_type, self.got
+        )
+    }
+}
+
+/// Error of identifier mismatch.
+#[derive(Debug, Clone, PartialEq)]
+pub struct IdentifierMismatchError {
+    /// Provided identifier.
+    got: String,
+
+    /// Expected identifier.
+    expected: String,
+}
+
+impl Display for IdentifierMismatchError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Identifier mismatch: Expected `{}`, but got `{}`",
+            self.expected, self.got
+        )
+    }
 }
