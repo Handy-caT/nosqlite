@@ -6,11 +6,11 @@ use crate::{
         parse_identifier, IdentifierMismatchError, ParseError,
         WrongIdentifierError,
     },
-    rename_to_statement_variant,
+    rename_to_statement_variant, show_schemas_statement_variant,
 };
 use backend::schema;
 use backend_api::api::command::database::{
-    CreateSchema, DropSchema, RenameSchema,
+    CreateSchema, DropSchema, RenameSchema, ShowSchemas,
 };
 
 impl TryFrom<ast::Node> for CreateSchema {
@@ -167,6 +167,32 @@ impl TryFrom<ast::Node> for RenameSchema {
                 new_name: schema_name_to,
             }),
             _ => Err(ParseError::UnexpectedStatement(node.statement)),
+        }
+    }
+}
+
+impl TryFrom<ast::Node> for ShowSchemas {
+    type Error = ParseError;
+
+    fn try_from(node: ast::Node) -> Result<Self, Self::Error> {
+        if let show_schemas_statement_variant!(statement) = node.statement {
+            let names =
+                parse_identifier(statement.identifier.clone()).into_iter();
+            if names.len() != 1 {
+                return Err(ParseError::WrongIdentifier(
+                    WrongIdentifierError {
+                        got: statement.identifier,
+                        expected_type: "db_name",
+                    },
+                ));
+            }
+            let name = names.into_iter().next().expect("names is not empty");
+
+            Ok(ShowSchemas {
+                database_name: name.into(),
+            })
+        } else {
+            Err(ParseError::UnexpectedStatement(node.statement))
         }
     }
 }

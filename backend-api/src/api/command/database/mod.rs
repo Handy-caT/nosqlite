@@ -1,6 +1,7 @@
 mod create_schema;
 mod drop_schema;
 mod rename_schema;
+mod show_schemas;
 
 use backend::{controller, schema};
 use derive_more::Display;
@@ -11,9 +12,11 @@ use crate::{
 };
 
 use crate::api::CommandResultString;
+
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
 pub use rename_schema::RenameSchema;
+pub use show_schemas::ShowSchemas;
 
 /// Commands that can be executed on the database.
 #[derive(Debug, Clone, PartialEq)]
@@ -26,6 +29,9 @@ pub enum SchemaCommand {
 
     /// Command to rename a schema.
     Rename(RenameSchema),
+
+    /// Command to show schemas.
+    Show(ShowSchemas),
 }
 
 impl OptionalBy<schema::database::Name> for SchemaCommand {
@@ -36,6 +42,7 @@ impl OptionalBy<schema::database::Name> for SchemaCommand {
             SchemaCommand::Create(command) => command.by(),
             SchemaCommand::Drop(command) => command.by(),
             SchemaCommand::Rename(command) => command.by(),
+            SchemaCommand::Show(command) => command.by(),
         }
     }
 }
@@ -46,6 +53,7 @@ impl ContextReceiver for SchemaCommand {
             SchemaCommand::Create(command) => command.receive(context),
             SchemaCommand::Drop(command) => command.receive(context),
             SchemaCommand::Rename(command) => command.receive(context),
+            SchemaCommand::Show(command) => command.receive(context),
         }
     }
 }
@@ -70,6 +78,9 @@ impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
             SchemaCommand::Rename(command) => command
                 .execute(db_controller)
                 .map_err(ExecutionError::RenameSchema),
+            SchemaCommand::Show(command) => command
+                .execute(db_controller)
+                .map_err(ExecutionError::ShowSchemas),
         }
     }
 }
@@ -85,6 +96,9 @@ pub enum ExecutionError {
 
     /// Rename schema error.
     RenameSchema(rename_schema::ExecutionError),
+
+    /// Show schemas error.
+    ShowSchemas(show_schemas::ExecutionError),
 }
 
 /// Errors that can occur when executing the [`SchemaCommand`].

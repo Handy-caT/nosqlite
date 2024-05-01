@@ -105,10 +105,12 @@ mod tests {
     };
     use backend_api::api::command::{
         backend_api::{
-            CreateDatabase, DatabaseCommand, DropDatabase, UseDatabase,
-            UseSchema,
+            CreateDatabase, DatabaseCommand, DropDatabase, ShowDatabases,
+            UseDatabase, UseSchema,
         },
-        database::{CreateSchema, DropSchema, RenameSchema, SchemaCommand},
+        database::{
+            CreateSchema, DropSchema, RenameSchema, SchemaCommand, ShowSchemas,
+        },
         r#enum::BackendCommand,
         schema::{CreateTable, DropTable, TableCommand},
     };
@@ -476,6 +478,48 @@ mod tests {
                     name: "tbl".into(),
                 }
             )))
+        );
+    }
+
+    #[test]
+    fn test_show_databases_with_db_from() {
+        let query = "SHOW DATABASES;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Database(
+                DatabaseCommand::ShowDatabases(ShowDatabases {})
+            ))
+        );
+    }
+
+    #[test]
+    fn test_show_schemas_with_db_from() {
+        let query = "SHOW SCHEMAS FROM db;";
+
+        let mut planner = Planner::new(query);
+        let command = planner.next_command();
+
+        assert!(command.is_some());
+        let command = command.unwrap();
+        assert!(command.is_ok());
+        let command = command.unwrap();
+
+        assert_eq!(
+            command,
+            PlannerCommand::Backend(BackendCommand::Schema(
+                SchemaCommand::Show(ShowSchemas {
+                    database_name: "db".into(),
+                })
+            ))
         );
     }
 

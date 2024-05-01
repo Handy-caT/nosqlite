@@ -1,12 +1,13 @@
 use backend_api::api::command::backend_api::{
-    CreateDatabase, DropDatabase, UseDatabase, UseSchema,
+    CreateDatabase, DropDatabase, ShowDatabases, UseDatabase, UseSchema,
 };
 
 use crate::{
     create_database_statement_variant, drop_database_statement_variant,
     parser::ast,
     planner::adapter::{parse_identifier, ParseError, WrongIdentifierError},
-    use_database_statement_variant, use_schema_statement_variant,
+    show_databases_statement_variant, use_database_statement_variant,
+    use_schema_statement_variant,
 };
 
 impl TryFrom<ast::Node> for CreateDatabase {
@@ -106,6 +107,18 @@ impl TryFrom<ast::Node> for UseSchema {
                 database_name: db_name,
                 name,
             })
+        } else {
+            Err(ParseError::UnexpectedStatement(node.statement))
+        }
+    }
+}
+
+impl TryFrom<ast::Node> for ShowDatabases {
+    type Error = ParseError;
+
+    fn try_from(node: ast::Node) -> Result<Self, Self::Error> {
+        if let show_databases_statement_variant!(_) = node.statement {
+            Ok(ShowDatabases {})
         } else {
             Err(ParseError::UnexpectedStatement(node.statement))
         }

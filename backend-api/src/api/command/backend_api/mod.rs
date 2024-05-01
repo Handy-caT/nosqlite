@@ -1,5 +1,6 @@
 mod create_database;
 mod drop_database;
+mod show_databases;
 mod use_database;
 pub mod use_schema;
 
@@ -14,6 +15,7 @@ use crate::api::{
 
 pub use create_database::CreateDatabase;
 pub use drop_database::DropDatabase;
+pub use show_databases::ShowDatabases;
 pub use use_database::UseDatabase;
 pub use use_schema::UseSchema;
 
@@ -31,6 +33,9 @@ pub enum DatabaseCommand {
 
     // Command to use a schema in a database.
     UseSchema(UseSchema),
+
+    /// Command to show databases.
+    ShowDatabases(ShowDatabases),
 }
 
 impl ContextReceiver for DatabaseCommand {
@@ -40,6 +45,7 @@ impl ContextReceiver for DatabaseCommand {
             DatabaseCommand::Drop(command) => command.receive(context),
             DatabaseCommand::Use(command) => command.receive(context),
             DatabaseCommand::UseSchema(command) => command.receive(context),
+            DatabaseCommand::ShowDatabases(command) => command.receive(context),
         }
     }
 }
@@ -67,6 +73,9 @@ impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>
             DatabaseCommand::UseSchema(command) => {
                 command.execute(facade).map_err(ExecutionError::UseSchema)
             }
+            DatabaseCommand::ShowDatabases(command) => command
+                .execute(facade)
+                .map_err(ExecutionError::ShowDatabases),
         }
     }
 }
@@ -89,4 +98,8 @@ pub enum ExecutionError {
     /// Use schema error.
     #[display(fmt = "{}", _0)]
     UseSchema(use_schema::ExecutionError),
+
+    /// Show databases error.
+    #[display(fmt = "{}", _0)]
+    ShowDatabases(show_databases::ExecutionError),
 }

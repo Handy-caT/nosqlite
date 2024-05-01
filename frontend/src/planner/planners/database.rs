@@ -2,7 +2,8 @@ use crate::{
     create_database_statement_variant, drop_database_statement_variant,
     parser::ast,
     planner::{adapter::PlannerCommand, PlannerError},
-    use_database_statement_variant, use_schema_statement_variant,
+    show_databases_statement_variant, use_database_statement_variant,
+    use_schema_statement_variant,
 };
 use backend_api::api::command::{
     backend_api::DatabaseCommand, database::SchemaCommand,
@@ -51,6 +52,12 @@ impl DatabasePlanner {
             }
             use_schema_statement_variant!(_) => {
                 Ok(BackendCommand::Database(DatabaseCommand::UseSchema(
+                    node.try_into().map_err(PlannerError::ParseError)?,
+                ))
+                .into())
+            }
+            show_databases_statement_variant!(_) => {
+                Ok(BackendCommand::Database(DatabaseCommand::ShowDatabases(
                     node.try_into().map_err(PlannerError::ParseError)?,
                 ))
                 .into())

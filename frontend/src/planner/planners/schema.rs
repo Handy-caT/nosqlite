@@ -1,6 +1,6 @@
 use crate::{
     alter_schema_statement_variant, create_schema_statement_variant,
-    drop_schema_statement_variant,
+    drop_schema_statement_variant, show_schemas_statement_variant,
 };
 use backend_api::api::command::{
     database::SchemaCommand, r#enum::BackendCommand,
@@ -47,6 +47,12 @@ impl SchemaPlanner {
             }
             alter_schema_statement_variant!(_) => {
                 Ok(BackendCommand::Schema(SchemaCommand::Rename(
+                    node.try_into().map_err(PlannerError::ParseError)?,
+                ))
+                .into())
+            }
+            show_schemas_statement_variant!(_) => {
+                Ok(BackendCommand::Schema(SchemaCommand::Show(
                     node.try_into().map_err(PlannerError::ParseError)?,
                 ))
                 .into())

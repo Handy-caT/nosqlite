@@ -13,12 +13,12 @@ use crate::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct ShowSchemas {
     /// Name of the database to show schemas
-    from: Identifier,
+    pub identifier: Identifier,
 }
 
 impl Display for ShowSchemas {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "SHOW SCHEMAS FROM {}", self.from)
+        write!(f, "SHOW SCHEMAS FROM {}", self.identifier)
     }
 }
 
@@ -31,7 +31,9 @@ impl ShowSchemas {
     pub fn new_statement(identifier: Identifier) -> Statement {
         use crate::show_schemas_statement_variant;
 
-        show_schemas_statement_variant!(Self { from: identifier })
+        show_schemas_statement_variant!(Self {
+            identifier: identifier
+        })
     }
 }
 
@@ -63,7 +65,7 @@ impl TryFrom<&[Token]> for ShowSchemas {
 
         match identifier {
             Token::Identifier(identifier) => Ok(Self {
-                from: identifier.clone(),
+                identifier: identifier.clone(),
             }),
             _ => Err(()),
         }
@@ -101,13 +103,15 @@ mod show_schemas_tests {
             Token::Keyword(token::Keyword::DbObjectMany(
                 token::DBObjectMany::Schemas,
             )),
-            Token::Keyword(token::Keyword::Preposition(token::Preposition::From)),
+            Token::Keyword(token::Keyword::Preposition(
+                token::Preposition::From,
+            )),
             Token::Identifier(token::Identifier("test".to_string())),
         ];
 
         let actual = ShowSchemas::try_from(tokens.as_slice());
         let expected = Ok(ShowSchemas {
-            from: token::Identifier("test".to_string()),
+            identifier: token::Identifier("test".to_string()),
         });
 
         assert_eq!(actual, expected);
@@ -141,11 +145,13 @@ mod show_schemas_tests {
     fn test_show_schemas_cant_be_followed_by_nothing() {
         let identifier = token::Identifier("test".to_string());
         let show_schemas = ShowSchemas {
-            from: identifier.clone(),
+            identifier: identifier.clone(),
         };
 
-        assert!(!show_schemas.can_be_followed(
-            &CreateDatabase::new_statement(identifier.clone())
-        ));
+        assert!(
+            !show_schemas.can_be_followed(&CreateDatabase::new_statement(
+                identifier.clone()
+            ))
+        );
     }
 }

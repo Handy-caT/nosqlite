@@ -1,10 +1,20 @@
-use crate::{alter_schema_statement_variant, create_database_statement_variant, create_schema_statement_variant, create_table_statement_variant, drop_database_statement_variant, drop_schema_statement_variant, drop_table_statement_variant, lexer::{
-    token::{
-        DBObject, DMLOperator, Identifier, Keyword, Preposition, Token,
+use crate::{
+    alter_schema_statement_variant, create_database_statement_variant,
+    create_schema_statement_variant, create_table_statement_variant,
+    drop_database_statement_variant, drop_schema_statement_variant,
+    drop_table_statement_variant,
+    lexer::{
+        token::{
+            DBObject, DBObjectMany, DMLOperator, Identifier, Keyword,
+            Preposition, Token,
+        },
+        Lexer,
     },
-    Lexer,
-}, parser::Statement, rename_to_statement_variant, show_databases_statement_variant, show_schemas_statement_variant, use_database_statement_variant, use_schema_statement_variant};
-use crate::lexer::token::DBObjectMany;
+    parser::Statement,
+    rename_to_statement_variant, show_databases_statement_variant,
+    show_schemas_statement_variant, use_database_statement_variant,
+    use_schema_statement_variant,
+};
 
 /// Represents a DML parser.
 #[derive(Debug, PartialEq)]
@@ -299,7 +309,11 @@ impl<'a> DmlParser<'a> {
                     DBObjectMany::Schemas => {
                         self.state.push(which_object);
                         let from = self.lexer.next();
-                        if let Some(Token::Keyword(Keyword::Preposition(Preposition::From))) = from {} else {
+                        if let Some(Token::Keyword(Keyword::Preposition(
+                            Preposition::From,
+                        ))) = from
+                        {
+                        } else {
                             return Err(ParseError::WrongTokenProvided {
                                 got: from.unwrap(),
                                 expected: "FROM".to_string(),
@@ -315,14 +329,18 @@ impl<'a> DmlParser<'a> {
                             .try_into()
                             .expect("valid tokens")))
                     }
-                    DBObjectMany::Tables => Err(ParseError::WrongTokenProvided {
-                        got: which_object,
-                        expected: "DATABASES|SCHEMAS".to_string(),
-                    }),
-                    DBObjectMany::Columns => Err(ParseError::WrongTokenProvided {
-                        got: which_object,
-                        expected: "DATABASES|SCHEMAS".to_string(),
-                    }),
+                    DBObjectMany::Tables => {
+                        Err(ParseError::WrongTokenProvided {
+                            got: which_object,
+                            expected: "DATABASES|SCHEMAS".to_string(),
+                        })
+                    }
+                    DBObjectMany::Columns => {
+                        Err(ParseError::WrongTokenProvided {
+                            got: which_object,
+                            expected: "DATABASES|SCHEMAS".to_string(),
+                        })
+                    }
                 }
             } else {
                 Err(ParseError::WrongTokenProvided {
@@ -358,10 +376,9 @@ mod test {
         },
         parser::statement::dml::{
             AlterSchema, CreateDatabase, CreateSchema, CreateTable,
-            DropDatabase, DropSchema, DropTable,
+            DropDatabase, DropSchema, DropTable, ShowDatabases, ShowSchemas,
         },
     };
-    use crate::parser::statement::dml::{ShowDatabases, ShowSchemas};
 
     use super::{DmlParser, ParseError};
 
@@ -500,10 +517,7 @@ mod test {
 
         let statement = parser.parse();
 
-        assert_eq!(
-            statement,
-            Ok(ShowDatabases::new_statement())
-        );
+        assert_eq!(statement, Ok(ShowDatabases::new_statement()));
     }
 
     #[test]
