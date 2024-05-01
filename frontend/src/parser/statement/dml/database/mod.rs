@@ -10,6 +10,7 @@ use crate::{parser::Statement, preprocessor::Node};
 pub use create::CreateDatabase;
 pub use drop::DropDatabase;
 pub use r#use::UseDatabase;
+pub use show::ShowDatabases;
 
 /// Represents an AST node for a database operation.
 #[derive(Debug, Display, PartialEq, Clone)]
@@ -23,8 +24,8 @@ pub enum DatabaseNode {
     /// Represents a `USE DATABASE ...` statement.
     Use(UseDatabase),
 
-    /// Represents a `SHOW DATABASE ...` statement.
-    Show(show::ShowDatabase),
+    /// Represents a `SHOW DATABASES ...` statement.
+    Show(ShowDatabases),
 }
 
 impl Node for DatabaseNode {

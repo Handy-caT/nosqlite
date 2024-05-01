@@ -1,18 +1,10 @@
-use crate::{
-    alter_schema_statement_variant, create_database_statement_variant,
-    create_schema_statement_variant, create_table_statement_variant,
-    drop_database_statement_variant, drop_schema_statement_variant,
-    drop_table_statement_variant,
-    lexer::{
-        token::{
-            DBObject, DMLOperator, Identifier, Keyword, Preposition, Token,
-        },
-        Lexer,
+use crate::{alter_schema_statement_variant, create_database_statement_variant, create_schema_statement_variant, create_table_statement_variant, drop_database_statement_variant, drop_schema_statement_variant, drop_table_statement_variant, lexer::{
+    token::{
+        DBObject, DMLOperator, Identifier, Keyword, Preposition, Token,
     },
-    parser::Statement,
-    rename_to_statement_variant, use_database_statement_variant,
-    use_schema_statement_variant,
-};
+    Lexer,
+}, parser::Statement, rename_to_statement_variant, show_databases_statement_variant, show_schemas_statement_variant, use_database_statement_variant, use_schema_statement_variant};
+use crate::lexer::token::DBObjectMany;
 
 /// Represents a DML parser.
 #[derive(Debug, PartialEq)]
@@ -43,7 +35,7 @@ impl<'a> DmlParser<'a> {
                 DMLOperator::Rename => self.parse_rename_statement(),
                 DMLOperator::Drop => self.parse_drop_statement(),
                 DMLOperator::Use => self.parse_use_statement(),
-                DMLOperator::Show => todo!("Add show support"),
+                DMLOperator::Show => self.parse_show_statement(),
             }
         } else {
             panic!("Wrong token provided to the DML parser")
@@ -288,6 +280,60 @@ impl<'a> DmlParser<'a> {
             Err(ParseError::NotEnoughTokens)
         }
     }
+
+    /// Parse `SHOW ...` statement.
+    fn parse_show_statement(&mut self) -> Result<Statement, ParseError> {
+        let which_object = self.lexer.next();
+        if let Some(which_object) = which_object {
+            if let Token::Keyword(Keyword::DbObjectMany(obj)) = which_object {
+                match obj {
+                    DBObjectMany::Databases => {
+                        self.state.push(which_object);
+
+                        Ok(show_databases_statement_variant!(self
+                            .state
+                            .as_slice()
+                            .try_into()
+                            .expect("valid tokens")))
+                    }
+                    DBObjectMany::Schemas => {
+                        self.state.push(which_object);
+                        let from = self.lexer.next();
+                        if let Some(Token::Keyword(Keyword::Preposition(Preposition::From))) = from {} else {
+                            return Err(ParseError::WrongTokenProvided {
+                                got: from.unwrap(),
+                                expected: "FROM".to_string(),
+                            });
+                        }
+                        self.state.push(from.expect("exist because checked"));
+                        let identifier = self.parse_identifier();
+                        self.state.push(identifier?.into());
+
+                        Ok(show_schemas_statement_variant!(self
+                            .state
+                            .as_slice()
+                            .try_into()
+                            .expect("valid tokens")))
+                    }
+                    DBObjectMany::Tables => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "DATABASES|SCHEMAS".to_string(),
+                    }),
+                    DBObjectMany::Columns => Err(ParseError::WrongTokenProvided {
+                        got: which_object,
+                        expected: "DATABASES|SCHEMAS".to_string(),
+                    }),
+                }
+            } else {
+                Err(ParseError::WrongTokenProvided {
+                    got: which_object,
+                    expected: "DATABASES|SCHEMAS".to_string(),
+                })
+            }
+        } else {
+            Err(ParseError::NotEnoughTokens)
+        }
+    }
 }
 
 /// Error of [`DmlParser`] execution.
@@ -315,6 +361,7 @@ mod test {
             DropDatabase, DropSchema, DropTable,
         },
     };
+    use crate::parser::statement::dml::{ShowDatabases, ShowSchemas};
 
     use super::{DmlParser, ParseError};
 
@@ -442,6 +489,34 @@ mod test {
         assert_eq!(
             statement,
             Ok(AlterSchema::new_statement(Identifier("test".to_string())))
+        );
+    }
+
+    #[test]
+    fn test_show_databases_statement() {
+        let mut lexer = Lexer::new("SHOW DATABASES");
+        let mut state = vec![lexer.next().unwrap()];
+        let mut parser = DmlParser::new(&mut lexer, &mut state);
+
+        let statement = parser.parse();
+
+        assert_eq!(
+            statement,
+            Ok(ShowDatabases::new_statement())
+        );
+    }
+
+    #[test]
+    fn test_show_schemas_statement() {
+        let mut lexer = Lexer::new("SHOW SCHEMAS FROM test");
+        let mut state = vec![lexer.next().unwrap()];
+        let mut parser = DmlParser::new(&mut lexer, &mut state);
+
+        let statement = parser.parse();
+
+        assert_eq!(
+            statement,
+            Ok(ShowSchemas::new_statement("test".to_string().into()))
         );
     }
 }

@@ -1,6 +1,7 @@
 mod alter;
 mod create;
 mod drop;
+mod show;
 mod r#use;
 
 use derive_more::Display;
@@ -11,6 +12,7 @@ pub use alter::AlterSchema;
 pub use create::CreateSchema;
 pub use drop::DropSchema;
 pub use r#use::UseSchema;
+pub use show::ShowSchemas;
 
 /// Represents an AST node for a schema operation.
 #[derive(Debug, Display, PartialEq, Clone)]
@@ -26,6 +28,9 @@ pub enum SchemaNode {
 
     /// Represents a `USE SCHEMA ...` statement.
     Use(UseSchema),
+
+    /// Represents a `SHOW SCHEMAS FROM ...` statement.
+    Show(ShowSchemas),
 }
 
 impl Node for SchemaNode {
@@ -35,6 +40,7 @@ impl Node for SchemaNode {
             SchemaNode::Create(stmnt) => stmnt.can_be_followed(next),
             SchemaNode::Alter(stmnt) => stmnt.can_be_followed(next),
             SchemaNode::Use(stmnt) => stmnt.can_be_followed(next),
+            SchemaNode::Show(stmnt) => stmnt.can_be_followed(next),
         }
     }
 }
