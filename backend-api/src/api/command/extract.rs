@@ -5,7 +5,10 @@ use crate::{
     },
     Context,
 };
-use backend::{controller, schema, schema::database};
+use backend::{
+    controller, schema,
+    schema::{database, table},
+};
 use common::structs::hash_table::MutHashTable;
 use derive_more::Display;
 
@@ -76,4 +79,57 @@ pub enum SchemaExtractionError {
     /// The schema was not found.
     #[display(fmt = "Schema with {} name not found in {} db", _0, _1)]
     SchemaNotFound(schema::Name, database::Name),
+}
+
+impl<const NODE_SIZE: u8> TryExtract<controller::Table<NODE_SIZE>>
+    for BackendFacade<NODE_SIZE>
+{
+    type Err = TableExtractionError;
+    type By = (database::Name, schema::Name, table::Name);
+
+    fn try_extract_mut(
+        &mut self,
+        (db_name, schema_name, table_name): (
+            database::Name,
+            schema::Name,
+            table::Name,
+        ),
+    ) -> Result<&mut controller::Table<NODE_SIZE>, Self::Err> {
+        let db_controller =
+            self.database_controllers
+                .get_mut_value(&db_name)
+                .ok_or(TableExtractionError::Database(db_name.clone()))?;
+
+        let schema_controller = db_controller
+            .get_mut_schema(&schema_name)
+            .ok_or(TableExtractionError::Schema(
+                schema_name.clone(),
+                db_name.clone(),
+            ))?;
+
+        schema_controller.get_mut_table(&table_name).ok_or(
+            TableExtractionError::Table(table_name, schema_name, db_name),
+        )
+    }
+}
+
+/// Represents an error that occurred during the extraction of a table.
+#[derive(Debug, Display, PartialEq, Clone)]
+pub enum TableExtractionError {
+    /// The database was not found.
+    #[display(fmt = "Database with {} name not found", _0)]
+    Database(database::Name),
+
+    /// The schema was not found.
+    #[display(fmt = "Schema with {} name not found in {} db", _0, _1)]
+    Schema(schema::Name, database::Name),
+
+    /// The table was not found.
+    #[display(
+        fmt = "Table with {} name not found in {} schema in {} db",
+        _0,
+        _1,
+        _2
+    )]
+    Table(table::Name, schema::Name, database::Name),
 }

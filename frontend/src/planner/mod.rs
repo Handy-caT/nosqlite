@@ -517,7 +517,7 @@ mod tests {
             command,
             PlannerCommand::Backend(BackendCommand::Schema(
                 SchemaCommand::Show(ShowSchemas {
-                    database_name: "db".into(),
+                    database_name: Some("db".into()),
                 })
             ))
         );

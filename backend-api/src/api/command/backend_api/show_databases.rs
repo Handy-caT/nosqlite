@@ -4,16 +4,12 @@ use common::structs::hash_table::VecFunctions;
 use prettytable::{format, row};
 
 use crate::api::{
-    command::{Command, ContextReceiver},
-    facade::BackendFacade,
-    CommandResultString,
+    command::Command, facade::BackendFacade, CommandResultString,
 };
 
 /// Command to show databases.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ShowDatabases {}
-
-impl ContextReceiver for ShowDatabases {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for ShowDatabases {
     type Ok = CommandResultString;

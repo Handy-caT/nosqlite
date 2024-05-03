@@ -1,4 +1,5 @@
 use crate::schema::r#type::r#enum::{StorageData, StorageDataType};
+use derive_more::From;
 use serde_storage::{
     de::{
         decoder::{single_item::SingleItemDecoder, Storable},
@@ -101,7 +102,7 @@ mod test_descriptor {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, From, Clone, PartialEq)]
 pub struct DataRow(pub Vec<StorageData>);
 
 impl Storable<Self> for DataRow {

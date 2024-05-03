@@ -8,9 +8,7 @@ use derive_more::Display;
 use std::fmt::Debug;
 
 use crate::api::{
-    command::{Command, ContextReceiver},
-    facade::BackendFacade,
-    CommandResultString,
+    command::Command, facade::BackendFacade, CommandResultString,
 };
 
 pub use create_database::CreateDatabase;
@@ -36,18 +34,6 @@ pub enum DatabaseCommand {
 
     /// Command to show databases.
     ShowDatabases(ShowDatabases),
-}
-
-impl ContextReceiver for DatabaseCommand {
-    fn receive(&mut self, context: &crate::Context) {
-        match self {
-            DatabaseCommand::Create(command) => command.receive(context),
-            DatabaseCommand::Drop(command) => command.receive(context),
-            DatabaseCommand::Use(command) => command.receive(context),
-            DatabaseCommand::UseSchema(command) => command.receive(context),
-            DatabaseCommand::ShowDatabases(command) => command.receive(context),
-        }
-    }
 }
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>>

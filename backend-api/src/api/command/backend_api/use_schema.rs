@@ -3,9 +3,7 @@ use common::structs::hash_table::{HashTable, MutHashTable};
 use derive_more::Display;
 
 use crate::api::{
-    command::{Command, ContextReceiver},
-    facade::BackendFacade,
-    CommandResultString,
+    command::Command, facade::BackendFacade, CommandResultString,
 };
 
 /// [`Command`] to use a schema in a database.
@@ -17,8 +15,6 @@ pub struct UseSchema {
     /// The name of the schema to use.
     pub name: schema::Name,
 }
-
-impl ContextReceiver for UseSchema {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseSchema {
     type Ok = CommandResultString;

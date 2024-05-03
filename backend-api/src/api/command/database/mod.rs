@@ -3,15 +3,13 @@ mod drop_schema;
 mod rename_schema;
 mod show_schemas;
 
-use backend::{controller, schema};
+use backend::{controller, schema::database};
 use derive_more::Display;
 
-use crate::{
-    api::command::{Command, ContextReceiver, OptionalBy},
-    Context,
+use crate::api::{
+    command::{Command, DatabaseCommand},
+    CommandResultString,
 };
-
-use crate::api::CommandResultString;
 
 pub use create_schema::CreateSchema;
 pub use drop_schema::DropSchema;
@@ -34,26 +32,22 @@ pub enum SchemaCommand {
     Show(ShowSchemas),
 }
 
-impl OptionalBy<schema::database::Name> for SchemaCommand {
-    type Err = ProvideError;
-
-    fn by(&self) -> Result<schema::database::Name, Self::Err> {
+impl DatabaseCommand for SchemaCommand {
+    fn get_db_name(&self) -> Option<database::Name> {
         match self {
-            SchemaCommand::Create(command) => command.by(),
-            SchemaCommand::Drop(command) => command.by(),
-            SchemaCommand::Rename(command) => command.by(),
-            SchemaCommand::Show(command) => command.by(),
+            SchemaCommand::Create(command) => command.get_db_name(),
+            SchemaCommand::Drop(command) => command.get_db_name(),
+            SchemaCommand::Rename(command) => command.get_db_name(),
+            SchemaCommand::Show(command) => command.get_db_name(),
         }
     }
-}
 
-impl ContextReceiver for SchemaCommand {
-    fn receive(&mut self, context: &Context) {
+    fn get_db_name_mut(&mut self) -> &mut Option<database::Name> {
         match self {
-            SchemaCommand::Create(command) => command.receive(context),
-            SchemaCommand::Drop(command) => command.receive(context),
-            SchemaCommand::Rename(command) => command.receive(context),
-            SchemaCommand::Show(command) => command.receive(context),
+            SchemaCommand::Create(command) => command.get_db_name_mut(),
+            SchemaCommand::Drop(command) => command.get_db_name_mut(),
+            SchemaCommand::Rename(command) => command.get_db_name_mut(),
+            SchemaCommand::Show(command) => command.get_db_name_mut(),
         }
     }
 }

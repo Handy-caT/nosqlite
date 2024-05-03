@@ -4,9 +4,7 @@ use backend::schema::database;
 use common::structs::hash_table::HashTable;
 
 use crate::api::{
-    command::{Command, ContextReceiver},
-    facade::BackendFacade,
-    CommandResultString,
+    command::Command, facade::BackendFacade, CommandResultString,
 };
 
 /// Command to drop a database.
@@ -15,8 +13,6 @@ pub struct DropDatabase {
     /// The name of the database to drop.
     pub name: database::Name,
 }
-
-impl ContextReceiver for DropDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for DropDatabase {
     type Ok = CommandResultString;

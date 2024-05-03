@@ -3,9 +3,7 @@ use common::structs::hash_table::HashTable;
 use derive_more::Display;
 
 use crate::api::{
-    command::{Command, ContextReceiver},
-    facade::BackendFacade,
-    CommandResultString,
+    command::Command, facade::BackendFacade, CommandResultString,
 };
 
 /// Command to use a database.
@@ -14,8 +12,6 @@ pub struct UseDatabase {
     /// The name of the database to use.
     pub name: database::Name,
 }
-
-impl ContextReceiver for UseDatabase {}
 
 impl<const NODE_SIZE: u8> Command<BackendFacade<NODE_SIZE>> for UseDatabase {
     type Ok = CommandResultString;

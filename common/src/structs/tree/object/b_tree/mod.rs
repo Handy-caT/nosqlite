@@ -27,6 +27,8 @@ pub struct BTree<
     root: Option<usize>,
 
     compare: fn(&T, &T) -> Ordering,
+
+    len: usize,
 }
 
 impl<T, L, M, const NODE_SIZE: u8> BTree<T, NODE_SIZE, L, M>
@@ -40,6 +42,7 @@ where
             data: BTreeVec::new(node_loader),
             root: None,
             compare: Ord::cmp,
+            len: 0,
         }
     }
 
@@ -84,7 +87,9 @@ where
 
     fn push(&mut self, value: T) -> usize {
         if let Some(root) = self.root {
-            self.add_from_root(root, value)
+            let res = self.add_from_root(root, value);
+            self.len += 1;
+            res
         } else {
             let node_index = self.data.add_node();
             self.root = Some(node_index);
@@ -95,6 +100,8 @@ where
             node.push_value(value).unwrap();
             node.push_link_index(leaf_index).unwrap();
             self.data.update_node(node_index, node);
+
+            self.len += 1;
 
             leaf_index
         }
@@ -138,7 +145,7 @@ where
     }
 
     fn len(&self) -> usize {
-        todo!()
+        self.len
     }
 }
 
@@ -187,6 +194,7 @@ mod test {
         let index = tree.push(1);
 
         assert_eq!(tree.root, Some(0));
+        assert_eq!(tree.len, 1);
         assert_eq!(index, 1);
 
         let node = tree.data.get_node(0).unwrap();
@@ -211,6 +219,7 @@ mod test {
         let index = tree.push(2);
 
         assert_eq!(tree.root, Some(0));
+        assert_eq!(tree.len, 2);
         assert_eq!(index, 2);
 
         let node = tree.data.get_node(0).unwrap();

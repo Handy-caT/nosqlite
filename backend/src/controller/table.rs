@@ -148,27 +148,31 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
             return Err(TableControllerError::PrimaryKeyDoesNotExist);
         };
 
-        let key = primary_key.get_column();
-        let Some(key) = data.get(key) else {
+        let key_name = primary_key.get_column();
+        let key_index = if let Some(index) = data.get_index(key_name) {
+            index
+        } else {
             return Err(TableControllerError::ColumnNotProvided);
         };
 
-        let values = DataRow(data.get_values());
+        for row in data.get_values() {
+            let key = row.0.get(key_index).expect("exists").clone();
 
-        let id = {
-            let mut data_storage = self.data_storage.lock().unwrap();
-            let Ok(id) = data_storage.add_data(values) else {
-                return Err(TableControllerError::DataStorageError);
+            let id = {
+                let mut data_storage = self.data_storage.lock().unwrap();
+                let Ok(id) = data_storage.add_data(row) else {
+                    return Err(TableControllerError::DataStorageError);
+                };
+                id
             };
-            id
-        };
 
-        let key_id = KeyId {
-            id,
-            key: key.try_into().unwrap(),
-        };
+            let key_id = KeyId {
+                id,
+                key: key.try_into().unwrap(),
+            };
 
-        self.index.push(key_id);
+            self.index.push(key_id);
+        }
 
         Ok(())
     }
@@ -239,12 +243,42 @@ mod tests {
             .set_primary_key(primary_key.clone())
             .expect("Failed to set primary key");
 
-        let mut data = DataUnit::new(1);
-        data.insert("id".into(), StorageData::Integer(0.into()));
+        let mut data = DataUnit::new(vec!["id".into()]);
+        data.insert(vec![StorageData::Integer(0.into())].into());
 
         let res = table.add_data(data);
 
         assert!(res.is_ok());
+        let index = &table.index;
+        assert_eq!(index.len(), 1);
+    }
+
+    #[test]
+    fn test_add_data_multiple() {
+        let name: table::Name = "table".into();
+        let mut table = Table::<16>::new(name.clone());
+        table.add_column(
+            "id".into(),
+            schema::Column::new(StorageDataType::Integer),
+        );
+
+        let primary_key =
+            primary_key::PrimaryKey::new("pk".into(), "id".into());
+        table
+            .set_primary_key(primary_key.clone())
+            .expect("Failed to set primary key");
+
+        let mut data = DataUnit::new(vec!["id".into()]);
+        data.insert(vec![StorageData::Integer(0.into())].into());
+        data.insert(vec![StorageData::Integer(1.into())].into());
+        data.insert(vec![StorageData::Integer(2.into())].into());
+
+        let res = table.add_data(data);
+
+        assert!(res.is_ok());
+
+        let index = &table.index;
+        assert_eq!(index.len(), 3);
     }
 
     #[test]

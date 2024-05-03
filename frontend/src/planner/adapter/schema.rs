@@ -189,7 +189,7 @@ impl TryFrom<ast::Node> for ShowSchemas {
             let name = names.into_iter().next().expect("names is not empty");
 
             Ok(ShowSchemas {
-                database_name: name.into(),
+                database_name: Some(name.into()),
             })
         } else {
             Err(ParseError::UnexpectedStatement(node.statement))

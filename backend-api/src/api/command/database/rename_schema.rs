@@ -1,15 +1,9 @@
 use backend::{controller, schema, schema::database};
 use derive_more::Display;
 
-use crate::{
-    api::{
-        command::{
-            database::{CreateSchema, ProvideError},
-            Command, ContextReceiver, OptionalBy,
-        },
-        CommandResultString,
-    },
-    Context,
+use crate::api::{
+    command::{Command, DatabaseCommand},
+    CommandResultString,
 };
 
 /// [`Command`] which is used to rename a [`controller::Schema`].
@@ -25,21 +19,13 @@ pub struct RenameSchema {
     pub new_name: schema::Name,
 }
 
-impl OptionalBy<database::Name> for RenameSchema {
-    type Err = ProvideError;
-
-    fn by(&self) -> Result<database::Name, Self::Err> {
-        self.database_name
-            .clone()
-            .ok_or(ProvideError::DatabaseNotProvided)
+impl DatabaseCommand for RenameSchema {
+    fn get_db_name(&self) -> Option<database::Name> {
+        self.database_name.clone()
     }
-}
 
-impl ContextReceiver for RenameSchema {
-    fn receive(&mut self, context: &Context) {
-        if self.database_name.is_none() {
-            self.database_name = context.current_db().cloned();
-        }
+    fn get_db_name_mut(&mut self) -> &mut Option<database::Name> {
+        &mut self.database_name
     }
 }
 

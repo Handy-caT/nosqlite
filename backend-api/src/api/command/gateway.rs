@@ -9,7 +9,7 @@ use crate::api::{
 impl<Cmd, Ctx, By, const NODE_SIZE: u8> Gateway<Cmd, Ctx>
     for BackendFacade<NODE_SIZE>
 where
-    Cmd: Command<Ctx> + OptionalBy<By> + ContextReceiver,
+    Cmd: Command<Ctx> + OptionalBy<By> + ContextReceiver<By>,
     <Cmd as Command<Ctx>>::Err: Display,
     <Cmd as OptionalBy<By>>::Err: Display,
     Self: TryExtract<Ctx, By = By>,

@@ -5,15 +5,9 @@ use backend::{
     schema::{database, table},
 };
 
-use crate::{
-    api::{
-        command::{
-            schema::{CreateTable, ProvideError},
-            Command, ContextReceiver, OptionalBy,
-        },
-        CommandResultString,
-    },
-    Context,
+use crate::api::{
+    command::{Command, DatabaseCommand, SchemaCommand},
+    CommandResultString,
 };
 
 /// [`Command`] to drop a new table in a database.
@@ -29,31 +23,23 @@ pub struct DropTable {
     pub name: table::Name,
 }
 
-impl OptionalBy<(database::Name, schema::Name)> for DropTable {
-    type Err = ProvideError;
+impl DatabaseCommand for DropTable {
+    fn get_db_name(&self) -> Option<database::Name> {
+        self.database_name.clone()
+    }
 
-    fn by(&self) -> Result<(database::Name, schema::Name), Self::Err> {
-        let db_name = self
-            .database_name
-            .clone()
-            .ok_or(ProvideError::DatabaseNotProvided)?;
-        let schema_name = self
-            .schema_name
-            .clone()
-            .ok_or(ProvideError::SchemaNotProvided)?;
-
-        Ok((db_name, schema_name))
+    fn get_db_name_mut(&mut self) -> &mut Option<database::Name> {
+        &mut self.database_name
     }
 }
 
-impl ContextReceiver for DropTable {
-    fn receive(&mut self, context: &Context) {
-        if self.database_name.is_none() {
-            self.database_name = context.current_db().cloned();
-        }
-        if self.schema_name.is_none() {
-            self.schema_name = context.current_schema().cloned();
-        }
+impl SchemaCommand for DropTable {
+    fn get_schema_name(&self) -> Option<schema::Name> {
+        self.schema_name.clone()
+    }
+
+    fn get_schema_name_mut(&mut self) -> &mut Option<schema::Name> {
+        &mut self.schema_name
     }
 }
 

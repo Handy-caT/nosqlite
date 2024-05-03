@@ -5,11 +5,16 @@ use backend::{controller, schema, schema::database};
 use derive_more::Display;
 
 use crate::{
-    api::command::{Command, ContextReceiver, OptionalBy},
+    api::{
+        command::{
+            Command, ContextReceiver, DatabaseCommand, OptionalBy,
+            SchemaCommand,
+        },
+        CommandResultString,
+    },
     Context,
 };
 
-use crate::api::CommandResultString;
 pub use create_table::CreateTable;
 pub use drop_table::DropTable;
 
@@ -23,22 +28,34 @@ pub enum TableCommand {
     Drop(DropTable),
 }
 
-impl OptionalBy<(database::Name, schema::Name)> for TableCommand {
-    type Err = ProvideError;
-
-    fn by(&self) -> Result<(database::Name, schema::Name), Self::Err> {
+impl DatabaseCommand for TableCommand {
+    fn get_db_name(&self) -> Option<database::Name> {
         match self {
-            TableCommand::Create(command) => command.by(),
-            TableCommand::Drop(command) => command.by(),
+            TableCommand::Create(command) => command.get_db_name(),
+            TableCommand::Drop(command) => command.get_db_name(),
+        }
+    }
+
+    fn get_db_name_mut(&mut self) -> &mut Option<database::Name> {
+        match self {
+            TableCommand::Create(command) => command.get_db_name_mut(),
+            TableCommand::Drop(command) => command.get_db_name_mut(),
         }
     }
 }
 
-impl ContextReceiver for TableCommand {
-    fn receive(&mut self, context: &Context) {
+impl SchemaCommand for TableCommand {
+    fn get_schema_name(&self) -> Option<schema::Name> {
         match self {
-            TableCommand::Create(command) => command.receive(context),
-            TableCommand::Drop(command) => command.receive(context),
+            TableCommand::Create(command) => command.get_schema_name(),
+            TableCommand::Drop(command) => command.get_schema_name(),
+        }
+    }
+
+    fn get_schema_name_mut(&mut self) -> &mut Option<schema::Name> {
+        match self {
+            TableCommand::Create(command) => command.get_schema_name_mut(),
+            TableCommand::Drop(command) => command.get_schema_name_mut(),
         }
     }
 }

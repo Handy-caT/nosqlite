@@ -1,6 +1,14 @@
+use crate::{
+    api::{
+        command::{schema::ProvideError, Command, ContextReceiver, OptionalBy},
+        CommandResultString,
+    },
+    Context,
+};
 use backend::{
     controller,
     controller::table::TableControllerError,
+    data::DataUnit,
     schema,
     schema::{
         column, column::primary_key::PrimaryKey, database, table, Column,
@@ -8,14 +16,9 @@ use backend::{
 };
 use derive_more::Display;
 
-use crate::api::{
-    command::{Command, DatabaseCommand, SchemaCommand},
-    CommandResultString,
-};
-
-/// [`Command`] to create a new table in a database.
-#[derive(Debug, Clone, PartialEq)]
-pub struct CreateTable {
+/// [`Command`] to insert data to a table in a database.
+#[derive(Debug, PartialEq)]
+pub struct Insert {
     /// The name of the database where the table will be created.
     pub database_name: Option<database::Name>,
 
@@ -25,36 +28,39 @@ pub struct CreateTable {
     /// The name of the table to create.
     pub name: table::Name,
 
-    /// The columns of the table.
-    pub columns: Vec<(column::Name, Column)>,
-
-    /// The primary key of the table.
-    pub primary_key: PrimaryKey,
+    /// The data to insert.
+    pub data: DataUnit,
 }
 
-impl DatabaseCommand for CreateTable {
-    fn get_db_name(&self) -> Option<database::Name> {
-        self.database_name.clone()
-    }
+impl OptionalBy<(database::Name, schema::Name)> for Insert {
+    type Err = ProvideError;
 
-    fn get_db_name_mut(&mut self) -> &mut Option<database::Name> {
-        &mut self.database_name
-    }
-}
+    fn by(&self) -> Result<(database::Name, schema::Name), Self::Err> {
+        let db_name = self
+            .database_name
+            .clone()
+            .ok_or(ProvideError::DatabaseNotProvided)?;
+        let schema_name = self
+            .schema_name
+            .clone()
+            .ok_or(ProvideError::SchemaNotProvided)?;
 
-impl SchemaCommand for CreateTable {
-    fn get_schema_name(&self) -> Option<schema::Name> {
-        self.schema_name.clone()
-    }
-
-    fn get_schema_name_mut(&mut self) -> &mut Option<schema::Name> {
-        &mut self.schema_name
+        Ok((db_name, schema_name))
     }
 }
 
-impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>>
-    for CreateTable
-{
+impl ContextReceiver for Insert {
+    fn receive(&mut self, context: &Context) {
+        if self.database_name.is_none() {
+            self.database_name = context.current_db().cloned();
+        }
+        if self.schema_name.is_none() {
+            self.schema_name = context.current_schema().cloned();
+        }
+    }
+}
+
+impl<const NODE_SIZE: u8> Command<controller::Schema<NODE_SIZE>> for Insert {
     type Ok = CommandResultString;
     type Err = ExecutionError;
 

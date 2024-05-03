@@ -3,7 +3,7 @@ use prettytable::{format, row};
 use std::convert::Infallible;
 
 use crate::api::{
-    command::{database::ProvideError, Command, ContextReceiver, OptionalBy},
+    command::{Command, DatabaseCommand, OptionalBy},
     CommandResultString,
 };
 
@@ -11,18 +11,18 @@ use crate::api::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct ShowSchemas {
     /// The name of the database to show the schemas from.
-    pub database_name: database::Name,
+    pub database_name: Option<database::Name>,
 }
 
-impl OptionalBy<database::Name> for ShowSchemas {
-    type Err = ProvideError;
+impl DatabaseCommand for ShowSchemas {
+    fn get_db_name(&self) -> Option<database::Name> {
+        self.database_name.clone()
+    }
 
-    fn by(&self) -> Result<database::Name, Self::Err> {
-        Ok(self.database_name.clone())
+    fn get_db_name_mut(&mut self) -> &mut Option<database::Name> {
+        &mut self.database_name
     }
 }
-
-impl ContextReceiver for ShowSchemas {}
 
 impl<const NODE_SIZE: u8> Command<controller::Database<NODE_SIZE>>
     for ShowSchemas
@@ -71,7 +71,7 @@ mod tests {
             .with_schema(database_name.clone(), schema_name.clone())
             .build();
         let cmd = ShowSchemas {
-            database_name: database_name.clone(),
+            database_name: Some(database_name.clone()),
         };
         let result = facade.send(cmd);
         assert!(result.is_ok());
