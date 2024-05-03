@@ -1,4 +1,4 @@
-//mod insert;
+mod insert;
 
 use derive_more::Display;
 

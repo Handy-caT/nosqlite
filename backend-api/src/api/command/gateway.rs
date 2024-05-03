@@ -1,5 +1,6 @@
-use derive_more::Display;
 use std::fmt::{Debug, Display};
+
+use derive_more::Display;
 
 use crate::api::{
     command::{Command, ContextReceiver, Gateway, OptionalBy, TryExtract},
@@ -75,6 +76,9 @@ pub mod test {
         schema,
         schema::{database, table},
     };
+    use backend::schema::column;
+    use backend::schema::column::primary_key::PrimaryKey;
+    use backend::schema::r#type::r#enum::StorageDataType;
     use common::structs::hash_table::{HashTable, MutHashTable};
 
     use crate::api::facade::BackendFacade;
@@ -132,6 +136,57 @@ pub mod test {
                 .expect("schema exists");
             let table = controller::Table::new(table_name);
             schema.add_table(table);
+            self
+        }
+        
+        /// Adds a column to the `BackendFacade`s table.
+        pub fn with_column(
+            mut self,
+            database_name: database::Name,
+            schema_name: schema::Name,
+            table_name: table::Name,
+            column_name: column::Name,
+            data_type: StorageDataType,
+        ) -> Self {
+            let database = self
+                .0
+                .database_controllers
+                .get_mut_value(&database_name)
+                .expect("database exists");
+            let schema = database
+                .get_mut_schema(&schema_name)
+                .expect("schema exists");
+            let table = schema
+                .get_mut_table(&table_name)
+                .expect("table exists");
+            let column = schema::Column::new(data_type);
+            table.add_column(column_name, column);
+            
+            self
+        }
+        
+        /// Adds a primary key to the `BackendFacade`s table.
+        pub fn with_primary_key(
+            mut self,
+            database_name: database::Name,
+            schema_name: schema::Name,
+            table_name: table::Name,
+            column_name: column::Name,
+        ) -> Self {
+            let database = self
+                .0
+                .database_controllers
+                .get_mut_value(&database_name)
+                .expect("database exists");
+            let schema = database
+                .get_mut_schema(&schema_name)
+                .expect("schema exists");
+            let table = schema
+                .get_mut_table(&table_name)
+                .expect("table exists");
+            let primary_key = PrimaryKey::new("pk".to_string().into(), column_name);
+            table.set_primary_key(primary_key).expect("column exists");
+            
             self
         }
 
