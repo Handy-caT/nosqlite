@@ -74,11 +74,11 @@ pub mod test {
         data::id,
         page::page_controller::PageController,
         schema,
-        schema::{database, table},
+        schema::{
+            column, column::primary_key::PrimaryKey, database,
+            r#type::r#enum::StorageDataType, table,
+        },
     };
-    use backend::schema::column;
-    use backend::schema::column::primary_key::PrimaryKey;
-    use backend::schema::r#type::r#enum::StorageDataType;
     use common::structs::hash_table::{HashTable, MutHashTable};
 
     use crate::api::facade::BackendFacade;
@@ -138,7 +138,7 @@ pub mod test {
             schema.add_table(table);
             self
         }
-        
+
         /// Adds a column to the `BackendFacade`s table.
         pub fn with_column(
             mut self,
@@ -156,15 +156,14 @@ pub mod test {
             let schema = database
                 .get_mut_schema(&schema_name)
                 .expect("schema exists");
-            let table = schema
-                .get_mut_table(&table_name)
-                .expect("table exists");
+            let table =
+                schema.get_mut_table(&table_name).expect("table exists");
             let column = schema::Column::new(data_type);
             table.add_column(column_name, column);
-            
+
             self
         }
-        
+
         /// Adds a primary key to the `BackendFacade`s table.
         pub fn with_primary_key(
             mut self,
@@ -181,12 +180,12 @@ pub mod test {
             let schema = database
                 .get_mut_schema(&schema_name)
                 .expect("schema exists");
-            let table = schema
-                .get_mut_table(&table_name)
-                .expect("table exists");
-            let primary_key = PrimaryKey::new("pk".to_string().into(), column_name);
+            let table =
+                schema.get_mut_table(&table_name).expect("table exists");
+            let primary_key =
+                PrimaryKey::new("pk".to_string().into(), column_name);
             table.set_primary_key(primary_key).expect("column exists");
-            
+
             self
         }
 

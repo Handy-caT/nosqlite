@@ -1,4 +1,6 @@
-use common::structs::hash_table::{scalable::ScalableHashTable, HashTable};
+use common::structs::hash_table::{
+    scalable::ScalableHashTable, HashTable, VecFunctions,
+};
 
 use crate::{
     gen_name,
@@ -100,6 +102,13 @@ impl Table {
     /// * `primary_key` - The primary key of the table.
     pub fn set_primary_key(&mut self, primary_key: PrimaryKey) {
         self.primary_key = Some(primary_key);
+    }
+
+    /// Returns the column names of the table.
+    /// # Returns
+    /// * `Vec<column::Name>` - The column names of the table.
+    pub fn get_column_names(&mut self) -> Vec<column::Name> {
+        self.columns.get_keys()
     }
 }
 

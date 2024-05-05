@@ -1,46 +1,21 @@
-use common::structs::tree::object::{tree::Tree as _, BTree};
+//! Defines [`controller::Table`], a controller for a single table.
+//!
+//! [`controller::Table`]: Table
+
+mod key_id;
+mod select;
+mod selector;
+
 use std::sync::{Arc, Mutex};
 
+use common::structs::tree::object::{tree::Tree as _, BTree};
+
 use crate::{
-    data::{data_storage::DataStorage, id::NumericId, DataUnit},
+    controller::table::key_id::KeyId,
+    data::{data_storage::DataStorage, DataUnit},
     schema,
-    schema::{
-        column,
-        column::{primary_key, primary_key::PrimaryKey},
-        r#type::DataRow,
-        table::Name,
-    },
+    schema::{column, column::primary_key::PrimaryKey, table::Name},
 };
-
-/// Represents a mapper from a primary key to a unique identifier.
-#[derive(Debug, Clone)]
-pub struct KeyId {
-    /// The unique identifier.
-    pub id: NumericId,
-
-    /// The primary key value.
-    pub key: primary_key::Data,
-}
-
-impl PartialEq for KeyId {
-    fn eq(&self, other: &Self) -> bool {
-        self.key == other.key
-    }
-}
-
-impl Eq for KeyId {}
-
-impl PartialOrd for KeyId {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for KeyId {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.key.cmp(&other.key)
-    }
-}
 
 /// Controller for a single table.
 /// Is used to change the table's schema and data.
@@ -49,7 +24,8 @@ pub struct Table<const NODE_SIZE: u8> {
     /// Information about the table.
     info: schema::Table,
     /// B-Tree to store primary key indexes.
-    index: BTree<KeyId, NODE_SIZE>,
+    //index: BTree<KeyId, NODE_SIZE>,
+    index: Vec<KeyId>,
     /// Vector of page indexes that store the table's data.
     table_pages: Vec<usize>,
     /// The data storage to use.
@@ -71,7 +47,8 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
     pub fn new(name: Name) -> Self {
         Table {
             info: schema::Table::new(name),
-            index: BTree::default(),
+            //index: BTree::default(),
+            index: Vec::new(),
             table_pages: Vec::new(),
             data_storage: Arc::new(Mutex::new(DataStorage::default())),
         }
@@ -135,11 +112,11 @@ impl<const NODE_SIZE: u8> Table<NODE_SIZE> {
         self.info.get_column(name)
     }
 
-    /// Adds a row identified by [`NumericId`] to the table.
+    /// Adds a [`DataUnit`] to the table.
     /// # Arguments
     /// * `data` - The data to add.
     /// # Returns
-    /// * `NumericId` - The index of the new row.
+    /// * `Result<(), TableControllerError>` - The result of the operation.
     pub fn add_data(
         &mut self,
         mut data: DataUnit,

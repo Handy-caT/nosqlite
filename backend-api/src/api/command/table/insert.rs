@@ -1,4 +1,3 @@
-
 use backend::{
     controller,
     controller::table::TableControllerError,
@@ -12,12 +11,14 @@ use derive_more::Display;
 
 use crate::{
     api::{
-        command::{schema::ProvideError, Command, ContextReceiver, OptionalBy},
+        command::{
+            schema::ProvideError, Command, ContextReceiver, DatabaseCommand,
+            OptionalBy, SchemaCommand, TableCommand,
+        },
         CommandResultString,
     },
     Context,
 };
-use crate::api::command::{DatabaseCommand, SchemaCommand, TableCommand};
 
 /// [`Command`] to insert data to a table in a database.
 #[derive(Debug, PartialEq)]
@@ -74,9 +75,11 @@ impl<const NODE_SIZE: u8> Command<controller::Table<NODE_SIZE>> for Insert {
         table_controller: &mut controller::Table<NODE_SIZE>,
     ) -> Result<Self::Ok, Self::Err> {
         let rows_affected = self.data.len();
-        
-        table_controller.add_data(self.data).map_err(ExecutionError::TableControllerError)?;
-        
+
+        table_controller
+            .add_data(self.data)
+            .map_err(ExecutionError::TableControllerError)?;
+
         Ok(CommandResultString {
             result: format!("{} rows affected", rows_affected),
         })
@@ -94,14 +97,16 @@ pub enum ExecutionError {
 #[cfg(test)]
 mod tests {
     use backend::{
+        data::DataUnit,
         schema,
         schema::{
-            column, column::primary_key, database,
-            r#type::r#enum::StorageDataType, table, Column,
+            column,
+            column::primary_key,
+            database,
+            r#type::r#enum::{StorageData, StorageDataType},
+            table, Column,
         },
     };
-    use backend::data::DataUnit;
-    use backend::schema::r#type::r#enum::StorageData;
     use common::structs::hash_table::MutHashTable;
 
     use crate::api::command::{
@@ -110,7 +115,7 @@ mod tests {
         Gateway,
     };
 
-    use super::{Insert, ExecutionError};
+    use super::{ExecutionError, Insert};
 
     #[test]
     fn create_table_when_not_exists() {
@@ -141,9 +146,9 @@ mod tests {
                 column_name.clone(),
             )
             .build();
-        
+
         let mut data = DataUnit::new(vec![column_name.clone()]);
-        
+
         data.insert(vec![StorageData::Integer(1.into())].into());
         data.insert(vec![StorageData::Integer(2.into())].into());
         data.insert(vec![StorageData::Integer(3.into())].into());
@@ -152,7 +157,7 @@ mod tests {
             database_name: Some(database_name.clone()),
             schema_name: Some(schema_name.clone()),
             name: table_name.clone(),
-            data
+            data,
         };
 
         let result = facade.send(cmd);
