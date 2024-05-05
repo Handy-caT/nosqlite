@@ -1,17 +1,18 @@
 use crate::structs::{
     hash_table::{scalable::ScalableHashTable, HashTable},
-    tree::object::{
-        b_tree::{
-            node::Node,
-            node_loader::{BaseLoader, NodeLoader},
-            node_vector::BTreeVec,
+    tree::{
+        nodes::btree::{internal::Internal, leaf::Leaf, Node},
+        object::{
+            b_tree::{
+                node_loader::{BaseLoader, NodeLoader},
+                node_vector::BTreeVec,
+            },
+            tree::Tree,
         },
-        tree::Tree,
     },
 };
 use std::cmp::Ordering;
 
-pub mod node;
 mod node_loader;
 mod node_vector;
 
@@ -30,11 +31,11 @@ pub struct BTree<
 
     len: usize,
 }
-
+//
 impl<T, L, M, const NODE_SIZE: u8> BTree<T, NODE_SIZE, L, M>
 where
     L: NodeLoader<T, NODE_SIZE>,
-    T: Ord,
+    T: Ord + Clone,
     M: HashTable<usize, Node<T, NODE_SIZE>>,
 {
     pub fn new(node_loader: L) -> BTree<T, NODE_SIZE, L, M> {
@@ -45,31 +46,118 @@ where
             len: 0,
         }
     }
+    
+    pub fn update_parent(&mut self, index: usize) {
+        let node = self.data.get_node(index).unwrap();
+        
+        if let Node::Internal(node) = node {
+            for child in node.get_children() {
+                let child_node = self.data.get_node(child).unwrap();
+                match child_node {
+                    Node::Leaf(mut child_node) => {
+                        child_node.index.parent = Some(index);
+                        self.data.update_node(child, Node::Leaf(child_node));
+                    }
+                    Node::Internal(mut child_node) => {
+                        child_node.index.parent = Some(index);
+                        self.data.update_node(child, Node::Internal(child_node));
+                    }
+                }
+            }
+            self.data.update_node(index, Node::Internal(node));
+        }
+    }
 
-    pub fn add_from_root(&mut self, root: usize, value: T) -> usize {
-        let mut node = self.data.get_node(root).unwrap();
-        if node.is_leaf() {
-            if node.is_full() {
-                todo!()
-            } else {
-                let index = node.get_position_by_value(&value);
-                node.add_value(value, index).expect("ok");
-                let result = node.index.index;
-                self.data.update_node(root, node);
-                result
+    pub fn split_node(&mut self, index: usize) -> usize {
+        let node = self.data.get_node(index).unwrap();
+        let new_index = self.data.get_next_index();
+        let (node_max, split_max, parent) = match node {
+            Node::Leaf(mut node) => {
+                let split = node.split(new_index);
+
+                let split_max = split.get_max_value().clone();
+                let node_max = node.get_max_value().clone();
+                
+                self.data.add_node(Node::Leaf(split));
+                let parent = node.index.parent;
+
+                (node_max, split_max, parent)
+            }
+            Node::Internal(mut node) => {
+                let split = node.split(new_index);
+
+                let split_max = split.get_max_value().clone();
+                let node_max = node.get_max_value().clone();
+                
+                self.data.add_node(Node::Internal(split));
+                self.update_parent(new_index);
+                let parent = node.index.parent;
+
+                (node_max, split_max, parent)
+            }
+        };
+        
+        if let Some(parent) = parent {
+            let parent_node = self.data.get_node(parent).unwrap();
+            match parent_node {
+                Node::Internal(mut parent_node) => {
+                    if parent_node.is_full() {
+                        self.split_node(parent)
+                    } else {
+                        parent_node
+                            .add_value(
+                                node_max,
+                                new_index,
+                            )
+                            .expect("not full because of check before");
+                        self.data.update_node(
+                            parent,
+                            Node::Internal(parent_node),
+                        );
+
+                        parent
+                    }
+                }
+                _ => panic!("parent is not internal"),
             }
         } else {
-            let child = node.get_index_by_value(&value);
-            if let Some(child) = child {
-                self.add_from_root(child, value)
-            } else if node.is_full() {
-                todo!()
-            } else {
-                let leaf_index = self.data.add_leaf(value);
+            // Only if root
+            let new_root_index = self.data.get_next_index();
+            let mut new_node = Internal::new(new_root_index);
 
-                node.push_link_index(leaf_index).unwrap();
-                self.data.update_node(root, node);
-                leaf_index
+            new_node
+                .add_value(node_max, index)
+                .expect("not full because first");
+            new_node
+                .add_value(split_max, new_index)
+                .expect("not full because second");
+
+            self.root = Some(new_root_index);
+            self.data.add_node(Node::Internal(new_node));
+            self.update_parent(new_root_index);
+
+            new_root_index
+        }
+    }
+
+    pub fn add_from_root(&mut self, root: usize, value: T) -> usize {
+        let node = self.data.get_node(root).unwrap();
+        match node {
+            Node::Leaf(mut node) => {
+                if node.is_full() {
+                    let index = self.split_node(root);
+                    self.add_from_root(index, value)
+                } else {
+                    node.add_value(value)
+                        .expect("not full because of check before");
+                    let result = node.index.index;
+                    self.data.update_node(root, Node::Leaf(node));
+                    result
+                }
+            }
+            Node::Internal(node) => {
+                let child = node.get_index_by_value(&value);
+                self.add_from_root(child, value)
             }
         }
     }
@@ -91,20 +179,14 @@ where
             self.len += 1;
             res
         } else {
-            let node_index = self.data.add_node();
-            self.root = Some(node_index);
-
-            let leaf_index = self.data.add_leaf(value.clone());
-
-            let mut node = self.data.get_node(node_index).unwrap();
+            let mut node = Leaf::new(0);
             node.push_value(value).expect("first value must be valid");
-            node.push_link_index(leaf_index)
-                .expect("first value must be valid");
-            self.data.update_node(node_index, node);
+            let node_index = self.data.add_node(Node::Leaf(node));
+            self.root = Some(node_index);
 
             self.len += 1;
 
-            leaf_index
+            node_index
         }
     }
 
@@ -112,19 +194,21 @@ where
         if let Some(root) = self.root {
             let mut current = root;
             loop {
-                let node = self.data.get_node(current).unwrap();
-                if node.is_leaf() {
-                    return if node.contains_value(value) {
-                        Some(current)
-                    } else {
-                        None
-                    };
-                } else {
-                    let child = node.get_index_by_value(value);
-                    if let Some(child) = child {
+                let node = self
+                    .data
+                    .get_node(current)
+                    .expect("exists because index is valid");
+                match node {
+                    Node::Leaf(node) => {
+                        return if node.contains_value(value) {
+                            Some(current)
+                        } else {
+                            None
+                        };
+                    }
+                    Node::Internal(node) => {
+                        let child = node.get_index_by_value(value);
                         current = child;
-                    } else {
-                        return None;
                     }
                 }
             }
@@ -153,7 +237,7 @@ where
 impl<T, L, M, const NODE_SIZE: u8> Default for BTree<T, NODE_SIZE, L, M>
 where
     L: NodeLoader<T, NODE_SIZE> + Default,
-    T: Ord,
+    T: Ord + Clone,
     M: HashTable<usize, Node<T, NODE_SIZE>>,
 {
     fn default() -> Self {
@@ -163,9 +247,12 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::structs::tree::object::{
-        b_tree::{node::Node, node_loader::NodeLoader, BTree},
-        tree::Tree,
+    use crate::structs::tree::{
+        nodes::btree::Node,
+        object::{
+            b_tree::{node_loader::NodeLoader, BTree},
+            tree::Tree,
+        },
     };
 
     struct MockNodeLoader {}
@@ -196,19 +283,16 @@ mod test {
 
         assert_eq!(tree.root, Some(0));
         assert_eq!(tree.len, 1);
-        assert_eq!(index, 1);
+        assert_eq!(index, 0);
 
         let node = tree.data.get_node(0).unwrap();
-        assert_eq!(node.keys.len(), 1);
-        assert_eq!(node.keys[0], 1);
-        assert_eq!(node.link_indexes.len(), 1);
-        assert_eq!(node.link_indexes[0], 1);
-        assert!(!node.is_leaf());
-
-        let leaf = tree.data.get_node(1).unwrap();
-        assert_eq!(leaf.keys.len(), 1);
-        assert_eq!(leaf.keys[0], 1);
-        assert!(leaf.is_leaf());
+        match node {
+            Node::Leaf(node) => {
+                assert_eq!(node.len(), 1);
+                assert_eq!(node.get(0), Some(&1));
+            }
+            _ => panic!("node is not leaf"),
+        }
     }
 
     #[test]
@@ -221,25 +305,17 @@ mod test {
 
         assert_eq!(tree.root, Some(0));
         assert_eq!(tree.len, 2);
-        assert_eq!(index, 2);
+        assert_eq!(index, 0);
 
         let node = tree.data.get_node(0).unwrap();
-        assert_eq!(node.keys.len(), 1);
-        assert_eq!(node.keys[0], 1);
-        assert_eq!(node.link_indexes.len(), 2);
-        assert_eq!(node.link_indexes[0], 1);
-        assert_eq!(node.link_indexes[1], 2);
-        assert!(!node.is_leaf());
-
-        let leaf = tree.data.get_node(1).unwrap();
-        assert_eq!(leaf.keys.len(), 1);
-        assert_eq!(leaf.keys[0], 1);
-        assert!(leaf.is_leaf());
-
-        let leaf = tree.data.get_node(2).unwrap();
-        assert_eq!(leaf.keys.len(), 1);
-        assert_eq!(leaf.keys[0], 2);
-        assert!(leaf.is_leaf());
+        match node {
+            Node::Leaf(node) => {
+                assert_eq!(node.len(), 2);
+                assert_eq!(node.get(0), Some(&1));
+                assert_eq!(node.get(1), Some(&2));
+            }
+            _ => panic!("node is not leaf"),
+        }
     }
 
     #[test]
@@ -251,20 +327,17 @@ mod test {
         let index = tree.push(1);
 
         assert_eq!(tree.root, Some(0));
-        assert_eq!(index, 1);
+        assert_eq!(index, 0);
 
         let node = tree.data.get_node(0).unwrap();
-        assert_eq!(node.keys.len(), 1);
-        assert_eq!(node.keys[0], 2);
-        assert_eq!(node.link_indexes.len(), 1);
-        assert_eq!(node.link_indexes[0], 1);
-        assert!(!node.is_leaf());
-
-        let leaf = tree.data.get_node(1).unwrap();
-        assert_eq!(leaf.keys.len(), 2);
-        assert_eq!(leaf.keys[0], 1);
-        assert_eq!(leaf.keys[1], 2);
-        assert!(leaf.is_leaf());
+        match node {
+            Node::Leaf(node) => {
+                assert_eq!(node.len(), 2);
+                assert_eq!(node.get(0), Some(&1));
+                assert_eq!(node.get(1), Some(&2));
+            }
+            _ => panic!("node is not leaf"),
+        }
     }
 
     #[test]
@@ -277,6 +350,20 @@ mod test {
 
         let index = tree.find(&1);
 
-        assert_eq!(index, Some(1));
+        assert_eq!(index, Some(0));
+    }
+    
+    #[test]
+    fn splits_node() {
+        let mut tree: BTree<u16, 3, MockNodeLoader> =
+            BTree::new(MockNodeLoader {});
+
+        tree.push(1);
+        tree.push(2);
+        tree.push(3);
+        let index = tree.push(4);
+        
+        assert_eq!(tree.root, Some(2));
+        assert_eq!(index, 1);
     }
 }

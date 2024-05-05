@@ -1,7 +1,5 @@
-mod leaf;
-mod node;
-
-use crate::structs::tree::object::b_tree::node::Node;
+pub mod internal;
+pub mod leaf;
 
 /// [`Node`] index of a B-Tree.
 /// It stores the index of the node, the left and right brother indexes and
@@ -38,18 +36,24 @@ impl Index {
     }
 }
 
-/// Index of B-Tree node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum IndexType {
-    /// Leaf node index.
-    Leaf(usize),
+/// Node of a B-Tree.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Node<T, const NODE_SIZE: u8> {
+    /// Leaf node.
+    Leaf(leaf::Leaf<T, NODE_SIZE>),
 
-    /// Node index.
-    Node(usize),
+    /// Internal node.
+    Internal(internal::Internal<T, NODE_SIZE>),
 }
 
-impl Default for IndexType {
-    fn default() -> Self {
-        IndexType::Leaf(0)
+impl<T, const NODE_SIZE: u8> Node<T, NODE_SIZE> {
+    /// Returns the index of the node.
+    /// # Returns
+    /// * Index - Index of the node.
+    pub fn get_index(&self) -> &Index {
+        match self {
+            Node::Leaf(leaf) => &leaf.index,
+            Node::Internal(internal) => &internal.index,
+        }
     }
 }

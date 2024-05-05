@@ -8,7 +8,7 @@ mod selector;
 
 use std::sync::{Arc, Mutex};
 
-use common::structs::tree::object::{tree::Tree as _, BTree};
+use common::structs::tree::object::tree::Tree as _;
 
 use crate::{
     controller::table::key_id::KeyId,

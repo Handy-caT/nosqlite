@@ -1,4 +1,4 @@
-use crate::structs::tree::object::b_tree::node::Node;
+use crate::structs::tree::nodes::btree::Node;
 
 pub trait NodeLoader<T, const NODE_SIZE: u8> {
     fn load_node(&self, index: usize) -> Node<T, NODE_SIZE>;

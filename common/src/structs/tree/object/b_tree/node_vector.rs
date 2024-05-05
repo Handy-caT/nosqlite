@@ -1,6 +1,6 @@
 use crate::structs::{
     hash_table::HashTable,
-    tree::object::b_tree::{node::Node, node_loader::NodeLoader},
+    tree::{nodes::btree::Node, object::b_tree::node_loader::NodeLoader},
 };
 
 #[derive(Debug, Clone)]
@@ -42,38 +42,18 @@ where
     }
 
     /// Adds a new node to the tree.
+    /// # Arguments
+    /// * `node` - Node to add.
     /// # Returns
     /// * usize - Index of the new node.
-    pub fn add_node(&mut self) -> usize {
+    pub fn add_node(&mut self, node: Node<T, NODE_SIZE>) -> usize {
         let index = if let Some(index) = self.empty.pop() {
             index
         } else {
             self.max_index += 1;
             self.max_index - 1
         };
-
-        let node = Node::new(index);
-        self.preloaded_data.insert(index, node);
-
-        index
-    }
-
-    /// Adds a new leaf to the tree.
-    /// # Arguments
-    /// * `value` - Value to add.
-    /// # Returns
-    /// * usize - Index of the new leaf.
-    pub fn add_leaf(&mut self, value: T) -> usize {
-        let index = if let Some(index) = self.empty.pop() {
-            index
-        } else {
-            self.max_index += 1;
-            self.max_index - 1
-        };
-
-        let mut node = Node::new(index);
-        node.add_value(value, 0).unwrap();
-        self.preloaded_data.insert(index, node);
+        self.preloaded_data.insert(node.get_index().index, node);
 
         index
     }
@@ -94,6 +74,13 @@ where
     pub fn update_node(&mut self, index: usize, node: Node<T, NODE_SIZE>) {
         self.preloaded_data.insert(index, node);
     }
+
+    /// Returns the next index.
+    /// # Returns
+    /// * usize - Next index.
+    pub fn get_next_index(&self) -> usize {
+        self.max_index
+    }
 }
 
 #[cfg(test)]
@@ -101,7 +88,7 @@ mod tests {
     use super::*;
     use crate::structs::{
         hash_table::scalable::ScalableHashTable,
-        tree::object::b_tree::node_loader::NodeLoader,
+        tree::{nodes::btree::leaf, object::b_tree::node_loader::NodeLoader},
     };
 
     struct MockNodeLoader {}
@@ -138,23 +125,8 @@ mod tests {
             4,
         >::new(MockNodeLoader {});
 
-        let index = b_tree_vec.add_node();
-
-        assert_eq!(index, 0);
-        assert_eq!(b_tree_vec.max_index, 1);
-        assert_eq!(b_tree_vec.empty, Vec::new());
-    }
-
-    #[test]
-    fn add_leaf() {
-        let mut b_tree_vec = BTreeVec::<
-            usize,
-            MockNodeLoader,
-            ScalableHashTable<usize, Node<usize, 4>>,
-            4,
-        >::new(MockNodeLoader {});
-
-        let index = b_tree_vec.add_leaf(1);
+        let node = Node::Leaf(leaf::Leaf::new(0));
+        let index = b_tree_vec.add_node(node);
 
         assert_eq!(index, 0);
         assert_eq!(b_tree_vec.max_index, 1);
@@ -170,10 +142,11 @@ mod tests {
             4,
         >::new(MockNodeLoader {});
 
-        let index = b_tree_vec.add_node();
-        let node = b_tree_vec.get_node(index);
+        let node = Node::Leaf(leaf::Leaf::new(0));
+        let index = b_tree_vec.add_node(node.clone());
+        let res = b_tree_vec.get_node(index);
 
-        assert_eq!(node, Some(Node::new(index)));
+        assert_eq!(res, Some(node));
     }
 
     #[test]
@@ -185,12 +158,13 @@ mod tests {
             4,
         >::new(MockNodeLoader {});
 
-        let index = b_tree_vec.add_node();
-        let node = Node::new(index);
-        b_tree_vec.update_node(index, node);
+        let node = Node::Leaf(leaf::Leaf::new(0));
+        let index = b_tree_vec.add_node(node);
+        let node = Node::Leaf(leaf::Leaf::new(1));
+        b_tree_vec.update_node(index, node.clone());
 
-        let node = b_tree_vec.get_node(index);
+        let res = b_tree_vec.get_node(index);
 
-        assert_eq!(node, Some(Node::new(index)));
+        assert_eq!(res, Some(node));
     }
 }
