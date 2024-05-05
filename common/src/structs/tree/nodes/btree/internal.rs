@@ -143,7 +143,7 @@ where
     pub fn get_max_value(&self) -> &T {
         self.keys.last().map(|(v, _)| v).expect("node is not empty")
     }
-    
+
     /// Returns the children of the node.
     /// # Returns
     /// * impl Iterator<Item = usize> - Iterator of the children.

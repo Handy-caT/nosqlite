@@ -13,6 +13,7 @@ use crate::structs::{
 };
 use std::cmp::Ordering;
 
+mod iter;
 mod node_loader;
 mod node_vector;
 
@@ -46,24 +47,47 @@ where
             len: 0,
         }
     }
-    
-    pub fn update_parent(&mut self, index: usize) {
+
+    pub fn update_indexes(&mut self, index: usize) {
         let node = self.data.get_node(index).unwrap();
-        
+
         if let Node::Internal(node) = node {
-            for child in node.get_children() {
+            let mut iter = node.get_children().peekable();
+            let mut next = iter.next();
+
+            while next.is_some() {
+                let child = next.unwrap();
+
                 let child_node = self.data.get_node(child).unwrap();
                 match child_node {
                     Node::Leaf(mut child_node) => {
                         child_node.index.parent = Some(index);
+                        let next = iter.peek();
+                        if next.is_none() {
+                            child_node.index.right = None;
+                        } else {
+                            child_node.index.right = next.copied();
+                        }
+
                         self.data.update_node(child, Node::Leaf(child_node));
                     }
                     Node::Internal(mut child_node) => {
                         child_node.index.parent = Some(index);
-                        self.data.update_node(child, Node::Internal(child_node));
+                        let next = iter.peek();
+                        if next.is_none() {
+                            child_node.index.right = None;
+                        } else {
+                            child_node.index.right = next.copied();
+                        }
+
+                        self.data
+                            .update_node(child, Node::Internal(child_node));
                     }
                 }
+
+                next = iter.next();
             }
+            drop(iter);
             self.data.update_node(index, Node::Internal(node));
         }
     }
@@ -77,9 +101,10 @@ where
 
                 let split_max = split.get_max_value().clone();
                 let node_max = node.get_max_value().clone();
-                
+
                 self.data.add_node(Node::Leaf(split));
                 let parent = node.index.parent;
+                self.data.update_node(index, Node::Leaf(node));
 
                 (node_max, split_max, parent)
             }
@@ -88,15 +113,16 @@ where
 
                 let split_max = split.get_max_value().clone();
                 let node_max = node.get_max_value().clone();
-                
+
                 self.data.add_node(Node::Internal(split));
-                self.update_parent(new_index);
+                self.update_indexes(new_index);
                 let parent = node.index.parent;
+                self.data.update_node(index, Node::Internal(node));
 
                 (node_max, split_max, parent)
             }
         };
-        
+
         if let Some(parent) = parent {
             let parent_node = self.data.get_node(parent).unwrap();
             match parent_node {
@@ -105,15 +131,10 @@ where
                         self.split_node(parent)
                     } else {
                         parent_node
-                            .add_value(
-                                node_max,
-                                new_index,
-                            )
+                            .add_value(node_max, new_index)
                             .expect("not full because of check before");
-                        self.data.update_node(
-                            parent,
-                            Node::Internal(parent_node),
-                        );
+                        self.data
+                            .update_node(parent, Node::Internal(parent_node));
 
                         parent
                     }
@@ -134,7 +155,7 @@ where
 
             self.root = Some(new_root_index);
             self.data.add_node(Node::Internal(new_node));
-            self.update_parent(new_root_index);
+            self.update_indexes(new_root_index);
 
             new_root_index
         }
@@ -352,7 +373,7 @@ mod test {
 
         assert_eq!(index, Some(0));
     }
-    
+
     #[test]
     fn splits_node() {
         let mut tree: BTree<u16, 3, MockNodeLoader> =
@@ -362,8 +383,28 @@ mod test {
         tree.push(2);
         tree.push(3);
         let index = tree.push(4);
-        
+
         assert_eq!(tree.root, Some(2));
         assert_eq!(index, 1);
+
+        let node = tree.data.get_node(2).unwrap();
+        match node {
+            Node::Internal(node) => {
+                assert_eq!(node.len(), 2);
+                assert_eq!(node.get(0), Some(&(1, 0)));
+                assert_eq!(node.get(1), Some(&(3, 1)));
+            }
+            _ => panic!("node is not internal"),
+        }
+
+        let left = tree.data.get_node(0).unwrap();
+        match left {
+            Node::Leaf(node) => {
+                assert_eq!(node.len(), 1);
+                assert_eq!(node.get(0), Some(&1));
+                assert_eq!(node.index.right, Some(1));
+            }
+            _ => panic!("node is not leaf"),
+        }
     }
 }

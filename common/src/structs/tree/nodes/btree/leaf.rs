@@ -41,7 +41,7 @@ where
     /// * `value` - Value to search.
     /// # Returns
     /// * usize - Position of the value.
-    fn get_position_by_value(&self, value: &T) -> usize {
+    pub fn get_position_by_value(&self, value: &T) -> usize {
         let find_index = self.keys.binary_search(value);
         if let Ok(index) = find_index {
             index
