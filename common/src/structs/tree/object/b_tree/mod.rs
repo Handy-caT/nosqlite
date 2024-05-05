@@ -97,8 +97,9 @@ where
             let leaf_index = self.data.add_leaf(value.clone());
 
             let mut node = self.data.get_node(node_index).unwrap();
-            node.push_value(value).unwrap();
-            node.push_link_index(leaf_index).unwrap();
+            node.push_value(value).expect("first value must be valid");
+            node.push_link_index(leaf_index)
+                .expect("first value must be valid");
             self.data.update_node(node_index, node);
 
             self.len += 1;
