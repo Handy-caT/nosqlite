@@ -1,22 +1,22 @@
+pub mod output_descriptor;
 pub mod single_item;
 pub mod storable;
 pub mod storable_integer;
 
 use crate::{
     descriptor::{
-        integer::IntegerDescriptor, r#type::BoolDescription, Description,
-        Descriptor as _,
+        integer::IntegerDescriptor, r#type::BoolDescription, Descriptor as _,
     },
     ser::{encoder::single_item::SingleItemEncoder, error::Error},
 };
-
-use smart_default::SmartDefault;
 
 use crate::descriptor::{
     array::ArrayDescription,
     integer::IntegerDescription,
     r#type::{CharDescription, F32Description, F64Description},
 };
+
+pub use output_descriptor::OutputDescriptor;
 pub use storable::Storable;
 pub use storable_integer::StorableInteger;
 
@@ -41,34 +41,12 @@ impl OutputBytes {
     }
 }
 
-/// Descriptor bytes after encoding.
-#[derive(SmartDefault, Debug, Clone)]
-pub struct OutputDescriptor {
-    /// List of descriptor of encoded values.
-    descriptors: Vec<(Vec<u8>, String)>,
-}
-
-impl OutputDescriptor {
-    /// Create a new [`OutputDescriptor`].
-    pub fn new() -> Self {
-        <Self as Default>::default()
-    }
-
-    pub fn get_descriptors<'a>(&self) -> Vec<(Vec<u8>, String)> {
-        self.descriptors.clone()
-    }
-
-    /// Append a description to the [`OutputDescriptor`].
-    pub fn append<D: Description>(&mut self, description: D) {
-        self.descriptors
-            .push((description.get_bytes(), description.get_name()));
-    }
-}
-
 /// StorageEncoder is a helper for encoding items.
 #[derive(Default, Debug)]
 pub struct StorageEncoder {
+    /// [`OutputBytes`] is the output after encoding.
     pub output: OutputBytes,
+    /// [`OutputDescriptor`] is the descriptor.
     pub descriptor: OutputDescriptor,
 }
 
@@ -165,10 +143,24 @@ impl StorageEncoder {
 
         Ok(())
     }
+
+    pub fn emit_struct(
+        &mut self,
+        values: Vec<Box<dyn Storable>>,
+    ) -> Result<(), Error> {
+        for value in values {
+            let encoder = SingleItemEncoder {
+                encoder: self,
+                value_written: &mut false,
+            };
+            value.encode(encoder)?;
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_storage_encoder {
     use super::*;
 
     #[test]
@@ -257,5 +249,25 @@ mod tests {
         let descriptor = encoder.descriptor.get_descriptors();
         assert_eq!(descriptor.len(), 1);
         assert_eq!(descriptor[0].1, "f64");
+    }
+
+    #[test]
+    fn test_struct() {
+        let value: Vec<Box<dyn Storable>> = vec![
+            Box::new(1u32),
+            Box::new(true),
+            Box::new("Hello, world!".to_string()),
+        ];
+
+        let mut encoder = StorageEncoder::new();
+
+        let res = encoder.emit_struct(value);
+        assert!(res.is_ok());
+
+        let descriptor = encoder.descriptor.get_descriptors();
+        assert_eq!(descriptor.len(), 3);
+        assert_eq!(descriptor[0].1, "u32");
+        assert_eq!(descriptor[1].1, "bool");
+        assert_eq!(descriptor[2].1, "array_char_13");
     }
 }

@@ -1,7 +1,6 @@
 use crate::ser::{encoder::single_item::SingleItemEncoder, error::Error};
 
 pub trait Storable {
-    // fn to_storable(&self) -> Vec<u8>;
     fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error>;
 }
 
@@ -47,5 +46,11 @@ impl Storable for f32 {
 impl Storable for f64 {
     fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
         encoder.emit_f64(*self)
+    }
+}
+
+impl Storable for &[u8] {
+    fn encode(&self, encoder: SingleItemEncoder) -> Result<(), Error> {
+        encoder.emit_bytes(self)
     }
 }

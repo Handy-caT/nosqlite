@@ -1,0 +1,16 @@
+[package]
+name = "ser-storage-derive"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
+serde-storage = { path = "../serde-storage" }
+syn = { version = "*"}
+quote = "*"
+proc-macro2 = "*"
+regex = "1.9.3"

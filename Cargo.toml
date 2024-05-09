@@ -1,4 +1,4 @@
-workspace = { members = ["serde-storage"] }
+workspace = { members = [ "backend", "backend-api", "common", "fronted-api", "frontend", "ser-storage-derive","serde-storage"] }
 [package]
 name = "nosqlite"
 version = "0.1.0"
@@ -8,7 +8,6 @@ edition = "2021"
 
 [dependencies]
 serde-storage = { path = "serde-storage" }
-queues = "1.0.2"
+common = { path = "common" }
 smart-default = "0.7.1"
 derive_more = "0.99.16"
-serde = { version = "1.0.194", features = ["derive"] }

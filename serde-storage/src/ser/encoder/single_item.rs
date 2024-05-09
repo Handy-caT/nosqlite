@@ -4,6 +4,7 @@ use crate::ser::{
 };
 
 /// SingleItemEncoder is a helper for encoding a single item.
+#[derive(Debug)]
 pub struct SingleItemEncoder<'e> {
     /// Encoder to use.
     pub encoder: &'e mut StorageEncoder,
@@ -60,5 +61,13 @@ impl<'e> SingleItemEncoder<'e> {
     pub fn emit_f64(self, value: f64) -> Result<(), Error> {
         *self.value_written = true;
         self.encoder.emit_f64(value)
+    }
+
+    pub fn emit_struct(
+        self,
+        values: Vec<Box<dyn Storable>>,
+    ) -> Result<(), Error> {
+        *self.value_written = true;
+        self.encoder.emit_struct(values)
     }
 }
